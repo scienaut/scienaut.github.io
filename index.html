@@ -2,40 +2,12 @@
 <html lang="en">
 
 <head>
-<link href="assets/css/style.css" rel="stylesheet">
-<!-- paste the block below right after the line above -->
-<style>
-  /* Page background image (full-screen) */
-  body {
-    background-image: url('assets/project_collage_bg.png'); /* <- put your file name here */
-    background-size: cover;            /* scale to cover entire viewport */
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;      /* subtle parallax on scroll */
-  }
-
-  /* Dark overlay so text stays readable (adjust opacity if needed) */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;                          /* shorthand for top/right/bottom/left:0 */
-    background: rgba(0,0,0,0.55);      /* dark overlay; change alpha for lighter/darker */
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  /* Make sure existing page content sits above the overlay */
-  /* (we keep selectors broad so nothing else needs changes) */
-  header, section, .container, .content, .portfolio, .about, .info-box, .portfolio-wrap {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Slightly dim the background more on small devices for readability */
-  @media (max-width: 768px) {
-    body::before { background: rgba(0,0,0,0.65); }
-  }
-</style>
+background-image: url('assets/project_collage_bw.png')
+          <div class="col-lg-4 col-md-6 portfolio-item filter-app" style="background: #010e1b">
+          <div class="portfolio-wrap" style="border-radius:20px">
+            <img src="project_collage_bw.png" style="border-radius:20px" class="img-fluid" alt="">
+          </div>
+        </div>
 
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
