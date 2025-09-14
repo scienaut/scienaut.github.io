@@ -2,6 +2,73 @@
 <html lang="en">
 
 <head>
+  /* ---------- HERO / BACKGROUND COLLAGE ---------- */
+.header-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 62vh;             /* change height if you want a taller or shorter hero */
+  color: #fff;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* background image layer */
+.header-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/project_collage_bg.png'); /* <- path in repo */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.03);       /* tiny upscale to hide edges on mobile */
+  filter: contrast(0.9) saturate(0.9);
+  opacity: 0.28;                /* change 0.12 - 0.45 to taste for more/less fade */
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* dark overlay so text is readable */
+.header-hero .hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.40); /* semi-transparent black overlay */
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* content above the background and overlay */
+.header-hero .header-content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 40px 0;
+}
+
+/* title & lead styling (tweak sizes if needed) */
+.header-hero .site-title { font-size: 2.8rem; margin:0; color:#fff; }
+.header-hero .lead { font-size:1.2rem; margin:6px 0 0; color:#e6eef0; }
+
+/* social links position (keeps same layout as before) */
+.header-socials { display:flex; gap:.5rem; align-items:center; }
+
+/* small screen adjustments */
+@media (max-width: 991px) {
+  .header-hero { min-height: 48vh; }
+  .header-hero .header-content { flex-direction: column; text-align:center; }
+  .header-hero .site-title { font-size: 2.1rem; }
+}
+
+/* Accessibility: reduce motion respects user prefs */
+@media (prefers-reduced-motion: reduce) {
+  .header-hero::before { transition: none; transform: none; }
+}
+  
   <!-- Google Tag Manager -->
   <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
