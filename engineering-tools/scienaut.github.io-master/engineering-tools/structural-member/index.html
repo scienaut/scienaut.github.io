@@ -1,0 +1,1059 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Structural Member Calculator</title>
+  <style>
+    :root {
+      --page: #070b13;
+      --panel: #111827;
+      --panel2: #0b1220;
+      --ink: #e6edf7;
+      --muted: #9eacc1;
+      --line: #334155;
+      --soft: #253247;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --violet: #a78bfa;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --shadow: 0 16px 34px rgba(0, 0, 0, 0.36);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    button, input, select { font: inherit; }
+
+    header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--line);
+      background: #0d1422;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 370px minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px;
+      min-height: calc(100vh - 66px);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .side {
+      padding: 12px;
+      align-self: start;
+      max-height: calc(100vh - 90px);
+      overflow: auto;
+    }
+
+    fieldset {
+      margin: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    fieldset + fieldset { margin-top: 12px; }
+
+    legend {
+      padding: 0 6px;
+      font-weight: 750;
+      color: var(--ink);
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: minmax(136px, 1fr) 128px 48px;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    .field.wide { grid-template-columns: 1fr; }
+
+    label { color: var(--ink); min-width: 0; }
+
+    .unit {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: var(--ink);
+      background: var(--panel2);
+    }
+
+    input:focus, select:focus, button:focus-visible {
+      outline: 2px solid rgba(96, 165, 250, 0.35);
+      outline-offset: 2px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      min-height: 34px;
+      border: 1px solid var(--soft);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #172033;
+      cursor: pointer;
+    }
+
+    button.primary {
+      border-color: var(--blue);
+      color: #061120;
+      background: var(--blue);
+      font-weight: 750;
+    }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto auto minmax(500px, 1fr);
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .tabbar {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+      overflow: auto;
+    }
+
+    .tab-button {
+      min-width: 126px;
+      color: var(--muted);
+      background: var(--panel2);
+    }
+
+    .tab-button.active {
+      border-color: var(--blue);
+      color: #061120;
+      background: var(--blue);
+      font-weight: 750;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--soft);
+      border-radius: 8px;
+      padding: 10px;
+      background: var(--panel2);
+      min-height: 74px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .metric strong {
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .ok { color: var(--green); }
+    .warn { color: var(--amber); }
+    .bad { color: var(--red); }
+
+    .page {
+      display: none;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .page.active {
+      display: grid;
+      grid-template-rows: minmax(420px, 1fr);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(420px, 1.1fr) minmax(360px, 0.9fr);
+      min-height: 0;
+    }
+
+    .table-panel {
+      overflow: auto;
+      padding: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th, td {
+      padding: 8px 9px;
+      border-bottom: 1px solid var(--soft);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th {
+      color: #d7e0ed;
+      background: var(--panel2);
+      font-size: 12px;
+    }
+
+    td:first-child, th:first-child { text-align: left; }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+    }
+
+    .tooltip {
+      position: absolute;
+      display: none;
+      min-width: 190px;
+      max-width: 280px;
+      padding: 9px 10px;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      background: rgba(6, 11, 21, 0.96);
+      color: var(--ink);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+      z-index: 3;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+
+    .canvas-wrap { position: relative; min-height: 420px; }
+
+    .summary {
+      white-space: pre-line;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .source {
+      padding: 10px 12px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--soft);
+    }
+
+    @media (max-width: 1100px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side { max-height: none; }
+      .cards { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+      .split { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Structural Member Calculator</h1>
+    <div class="subtitle">Hollow tubes and open sections for beam deflection, bending stress, section modulus, buckling, comparison, and welded frame checks in SI units.</div>
+  </header>
+
+  <div class="workspace">
+    <aside class="panel side">
+      <fieldset>
+        <legend>Section</legend>
+        <div class="field wide">
+          <label for="sectionType">Member type</label>
+          <select id="sectionType">
+            <option value="shs">Square hollow tube / SHS</option>
+            <option value="rhs">Rectangular hollow tube / RHS</option>
+            <option value="chs">Circular hollow tube / CHS</option>
+            <option value="i">I section</option>
+            <option value="c">C section</option>
+            <option value="l">L section</option>
+          </select>
+        </div>
+        <div class="field wide">
+          <label for="preset">Standard / common size preset</label>
+          <select id="preset"></select>
+        </div>
+        <div class="field">
+          <label for="depth">Depth / height D</label>
+          <input id="depth" type="number" min="1" step="1">
+          <span class="unit">mm</span>
+        </div>
+        <div class="field">
+          <label for="width">Width B</label>
+          <input id="width" type="number" min="1" step="1">
+          <span class="unit">mm</span>
+        </div>
+        <div class="field">
+          <label for="diameter">Outer diameter</label>
+          <input id="diameter" type="number" min="1" step="1">
+          <span class="unit">mm</span>
+        </div>
+        <div class="field">
+          <label for="thickness">Tube / web thickness</label>
+          <select id="thickness"></select>
+          <span class="unit">mm</span>
+        </div>
+        <div class="field">
+          <label for="flangeThickness">Flange thickness</label>
+          <input id="flangeThickness" type="number" min="0.1" step="0.1" value="6">
+          <span class="unit">mm</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Material</legend>
+        <div class="field wide">
+          <label for="material">Material grade</label>
+          <select id="material">
+            <option value="cold240">Cold formed steel tube YSt 240</option>
+            <option value="cold310">Cold formed steel tube YSt 310</option>
+            <option value="hot240">Hot formed steel tube YSt 240</option>
+            <option value="hot355">Hot formed steel tube YSt 355</option>
+            <option value="ss304">SS 304 hollow section</option>
+            <option value="ss316">SS 316 hollow section</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fos">Factor of safety</label>
+          <input id="fos" type="number" min="0.1" step="0.05" value="1.5">
+          <span class="unit"></span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Beam / Column Load</legend>
+        <div class="field wide">
+          <label for="support">Beam support</label>
+          <select id="support">
+            <option value="cantilever-end">Cantilever - point load at free end</option>
+            <option value="cantilever-udl">Cantilever - UDL</option>
+            <option value="simply-center">Simply supported - point load at center</option>
+            <option value="simply-udl">Simply supported - UDL</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="length">Member length L</label>
+          <input id="length" type="number" min="0.01" step="0.05" value="1.5">
+          <span class="unit">m</span>
+        </div>
+        <div class="field">
+          <label for="load">Applied load P / total UDL</label>
+          <input id="load" type="number" min="0" step="10" value="1000">
+          <span class="unit">N</span>
+        </div>
+        <div class="field">
+          <label for="kFactor">Column effective K</label>
+          <input id="kFactor" type="number" min="0.1" step="0.1" value="1">
+          <span class="unit"></span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Welded Frame</legend>
+        <div class="field wide">
+          <label for="frameType">Frame shape</label>
+          <select id="frameType">
+            <option value="rect">Rectangular frame</option>
+            <option value="square">Square frame</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="frameWidth">Frame width</label>
+          <input id="frameWidth" type="number" min="0.01" step="0.05" value="1.2">
+          <span class="unit">m</span>
+        </div>
+        <div class="field">
+          <label for="frameHeight">Frame height</label>
+          <input id="frameHeight" type="number" min="0.01" step="0.05" value="1.0">
+          <span class="unit">m</span>
+        </div>
+        <div class="field">
+          <label for="frameLoad">Frame vertical load</label>
+          <input id="frameLoad" type="number" min="0" step="10" value="2000">
+          <span class="unit">N</span>
+        </div>
+        <div class="field">
+          <label for="weldAllow">Allowable weld stress</label>
+          <input id="weldAllow" type="number" min="1" step="5" value="120">
+          <span class="unit">MPa</span>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button id="calcBtn" class="primary" type="button">Calculate</button>
+        <button id="resetBtn" type="button">Reset</button>
+      </div>
+      <div id="status" class="note">Ready.</div>
+    </aside>
+
+    <main class="main">
+      <section class="panel cards">
+        <div class="metric"><span>Bending stress</span><strong id="mStress">-</strong></div>
+        <div class="metric"><span>Deflection</span><strong id="mDeflection">-</strong></div>
+        <div class="metric"><span>Buckling load</span><strong id="mBuckling">-</strong></div>
+        <div class="metric"><span>Design status</span><strong id="mStatus">-</strong></div>
+      </section>
+
+      <section class="panel tabbar">
+        <button id="summaryTab" class="tab-button active" type="button">Summary</button>
+        <button id="compareTab" class="tab-button" type="button">Comparison</button>
+        <button id="graphsTab" class="tab-button" type="button">Graphs</button>
+        <button id="frameTab" class="tab-button" type="button">Welded Frame</button>
+      </section>
+
+      <section id="summaryPage" class="panel page active">
+        <div class="split">
+          <div class="canvas-wrap">
+            <canvas id="sectionCanvas"></canvas>
+          </div>
+          <div class="table-panel">
+            <h2>Calculated Properties</h2>
+            <div id="summaryText" class="summary"></div>
+            <div class="source">Tube presets use IS 4923-style designation by outside dimensions and wall thickness. Exact supplier tables should be checked before release drawings.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="comparePage" class="panel page">
+        <div class="table-panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Area mm2</th>
+                <th>Mass kg/m</th>
+                <th>Ixx cm4</th>
+                <th>Zxx cm3</th>
+                <th>Stress MPa</th>
+                <th>Deflection mm</th>
+                <th>Buckling kN</th>
+                <th>Utilization</th>
+              </tr>
+            </thead>
+            <tbody id="compareRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="graphsPage" class="panel page">
+        <div class="canvas-wrap">
+          <canvas id="graphCanvas"></canvas>
+          <div id="tooltip" class="tooltip"></div>
+        </div>
+      </section>
+
+      <section id="framePage" class="panel page">
+        <div class="split">
+          <div class="canvas-wrap">
+            <canvas id="frameCanvas"></canvas>
+          </div>
+          <div class="table-panel">
+            <h2>Welded Frame Check</h2>
+            <div id="frameText" class="summary"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const materials = {
+      cold240: { name: "Cold formed steel tube YSt 240", E: 200e9, fy: 240e6, density: 7850 },
+      cold310: { name: "Cold formed steel tube YSt 310", E: 200e9, fy: 310e6, density: 7850 },
+      hot240: { name: "Hot formed steel tube YSt 240", E: 200e9, fy: 240e6, density: 7850 },
+      hot355: { name: "Hot formed steel tube YSt 355", E: 200e9, fy: 355e6, density: 7850 },
+      ss304: { name: "SS 304 hollow section", E: 193e9, fy: 215e6, density: 8000 },
+      ss316: { name: "SS 316 hollow section", E: 193e9, fy: 205e6, density: 8000 }
+    };
+
+    const tubeThicknesses = [1.6, 2.0, 2.6, 3.2, 4.0, 4.8, 5.0, 6.0, 8.0, 10.0, 12.5];
+    const presets = {
+      shs: [
+        [25, 25, 2.6], [30, 30, 2.6], [40, 40, 3.2], [50, 50, 3.2], [60, 60, 4.0],
+        [80, 80, 4.0], [100, 100, 5.0], [120, 120, 6.0], [150, 150, 6.0], [180, 180, 8.0]
+      ],
+      rhs: [
+        [40, 25, 2.6], [50, 25, 2.6], [60, 40, 3.2], [80, 40, 3.2], [100, 50, 4.0],
+        [120, 60, 4.8], [150, 75, 5.0], [200, 100, 6.0], [250, 150, 8.0]
+      ],
+      chs: [
+        [26.9, 26.9, 2.6], [33.7, 33.7, 3.2], [42.4, 42.4, 3.2], [48.3, 48.3, 3.2],
+        [60.3, 60.3, 4.0], [76.1, 76.1, 4.0], [88.9, 88.9, 5.0], [114.3, 114.3, 5.0]
+      ],
+      i: [[100, 55, 4.5, 5.7], [150, 80, 5.0, 7.0], [200, 100, 5.7, 8.4], [250, 125, 6.9, 9.0]],
+      c: [[75, 40, 4.8, 7.0], [100, 50, 5.0, 7.5], [150, 75, 5.7, 10.0], [200, 75, 6.2, 12.5]],
+      l: [[50, 50, 5.0, 5.0], [65, 65, 6.0, 6.0], [75, 75, 8.0, 8.0], [100, 100, 10.0, 10.0]]
+    };
+
+    const els = Object.fromEntries([
+      "sectionType", "preset", "depth", "width", "diameter", "thickness", "flangeThickness", "material", "fos",
+      "support", "length", "load", "kFactor", "frameType", "frameWidth", "frameHeight", "frameLoad", "weldAllow",
+      "calcBtn", "resetBtn", "status", "mStress", "mDeflection", "mBuckling", "mStatus", "summaryText",
+      "compareRows", "frameText", "sectionCanvas", "graphCanvas", "frameCanvas", "tooltip",
+      "summaryTab", "compareTab", "graphsTab", "frameTab", "summaryPage", "comparePage", "graphsPage", "framePage"
+    ].map(id => [id, document.getElementById(id)]));
+
+    const state = { result: null, comparison: [], page: "summary", graphRegions: [], hover: null };
+
+    function fmt(value, digits = 2) {
+      if (!Number.isFinite(value)) return "-";
+      if (Math.abs(value) >= 1000) return value.toFixed(1);
+      return value.toFixed(digits);
+    }
+
+    function read(id, min = -Infinity) {
+      const value = Number(els[id].value);
+      if (!Number.isFinite(value) || value < min) throw new Error(id + " input is invalid.");
+      return value;
+    }
+
+    function mm2m(v) { return v / 1000; }
+    function paToMpa(v) { return v / 1e6; }
+
+    function populateThickness() {
+      const current = Number(els.thickness.value) || 3.2;
+      els.thickness.innerHTML = tubeThicknesses.map(t => `<option value="${t}">${t.toFixed(t % 1 ? 1 : 0)}</option>`).join("");
+      const nearest = tubeThicknesses.reduce((best, t) => Math.abs(t - current) < Math.abs(best - current) ? t : best, tubeThicknesses[0]);
+      els.thickness.value = nearest;
+    }
+
+    function populatePresets() {
+      const type = els.sectionType.value;
+      const list = presets[type];
+      els.preset.innerHTML = list.map((p, i) => {
+        const label = type === "chs" ? `CHS ${p[0]} x ${p[2]}` : `${type.toUpperCase()} ${p[0]} x ${p[1]} x ${p[2]}`;
+        return `<option value="${i}">${label}</option>`;
+      }).join("");
+      els.preset.value = String(Math.min(3, list.length - 1));
+      applyPreset();
+    }
+
+    function applyPreset() {
+      const type = els.sectionType.value;
+      const p = presets[type][Number(els.preset.value) || 0];
+      if (type === "chs") {
+        els.diameter.value = p[0];
+        els.depth.value = p[0];
+        els.width.value = p[0];
+        els.thickness.value = p[2];
+        els.flangeThickness.value = p[2];
+      } else {
+        els.depth.value = p[0];
+        els.width.value = p[1];
+        els.thickness.value = p[2];
+        els.flangeThickness.value = p[3] || p[2];
+        if (type === "shs") els.width.value = p[0];
+      }
+      updateFieldVisibility();
+      calculate();
+    }
+
+    function updateFieldVisibility() {
+      const type = els.sectionType.value;
+      els.diameter.closest(".field").style.display = type === "chs" ? "grid" : "none";
+      els.flangeThickness.closest(".field").style.display = ["i", "c"].includes(type) ? "grid" : "none";
+      els.width.closest(".field").style.display = type === "chs" ? "none" : "grid";
+      els.depth.closest(".field").style.display = type === "chs" ? "none" : "grid";
+    }
+
+    function sectionProps(input) {
+      const type = input.type;
+      const D = input.D / 1000;
+      const B = input.B / 1000;
+      const t = input.t / 1000;
+      const tf = input.tf / 1000;
+      const d = input.dia / 1000;
+      let A = 0, Ixx = 0, Iyy = 0, label = "";
+
+      if (type === "shs" || type === "rhs") {
+        const bi = Math.max(B - 2 * t, 0);
+        const di = Math.max(D - 2 * t, 0);
+        A = B * D - bi * di;
+        Ixx = (B * Math.pow(D, 3) - bi * Math.pow(di, 3)) / 12;
+        Iyy = (D * Math.pow(B, 3) - di * Math.pow(bi, 3)) / 12;
+        label = `${type.toUpperCase()} ${input.D} x ${input.B} x ${input.t}`;
+      } else if (type === "chs") {
+        const di = Math.max(d - 2 * t, 0);
+        A = Math.PI / 4 * (d * d - di * di);
+        Ixx = Math.PI / 64 * (Math.pow(d, 4) - Math.pow(di, 4));
+        Iyy = Ixx;
+        label = `CHS ${input.dia} x ${input.t}`;
+      } else if (type === "i") {
+        const webH = Math.max(D - 2 * tf, 0);
+        A = 2 * B * tf + webH * t;
+        Ixx = (B * Math.pow(D, 3) - (B - t) * Math.pow(webH, 3)) / 12;
+        Iyy = 2 * tf * Math.pow(B, 3) / 12 + webH * Math.pow(t, 3) / 12;
+        label = `I ${input.D} x ${input.B} x ${input.t}/${input.tf}`;
+      } else if (type === "c") {
+        const webH = Math.max(D - 2 * tf, 0);
+        A = 2 * B * tf + webH * t;
+        Ixx = (B * Math.pow(D, 3) - (B - t) * Math.pow(webH, 3)) / 12;
+        Iyy = 2 * tf * Math.pow(B, 3) / 12 + webH * Math.pow(t, 3) / 12;
+        label = `C ${input.D} x ${input.B} x ${input.t}/${input.tf}`;
+      } else {
+        A = D * t + B * t - t * t;
+        Ixx = (t * Math.pow(D, 3) + (B - t) * Math.pow(t, 3)) / 12;
+        Iyy = (D * Math.pow(t, 3) + t * Math.pow(B, 3) - Math.pow(t, 4)) / 12;
+        label = `L ${input.D} x ${input.B} x ${input.t}`;
+      }
+
+      const c = type === "chs" ? d / 2 : D / 2;
+      const cY = type === "chs" ? d / 2 : B / 2;
+      const Zxx = Ixx / Math.max(c, 1e-12);
+      const Zyy = Iyy / Math.max(cY, 1e-12);
+      const rMin = Math.sqrt(Math.min(Ixx, Iyy) / Math.max(A, 1e-12));
+      return { A, Ixx, Iyy, Zxx, Zyy, rMin, label };
+    }
+
+    function beamResult(props, input, mat) {
+      const L = input.length;
+      const P = input.load;
+      let M = 0, V = 0, delta = 0, kind = "";
+      if (input.support === "cantilever-end") {
+        M = P * L;
+        V = P;
+        delta = P * Math.pow(L, 3) / (3 * mat.E * props.Ixx);
+        kind = "Cantilever point load";
+      } else if (input.support === "cantilever-udl") {
+        const w = P / L;
+        M = w * L * L / 2;
+        V = P;
+        delta = w * Math.pow(L, 4) / (8 * mat.E * props.Ixx);
+        kind = "Cantilever UDL";
+      } else if (input.support === "simply-center") {
+        M = P * L / 4;
+        V = P / 2;
+        delta = P * Math.pow(L, 3) / (48 * mat.E * props.Ixx);
+        kind = "Simply supported center point load";
+      } else {
+        const w = P / L;
+        M = w * L * L / 8;
+        V = P / 2;
+        delta = 5 * w * Math.pow(L, 4) / (384 * mat.E * props.Ixx);
+        kind = "Simply supported UDL";
+      }
+      const stress = M / props.Zxx;
+      const allowable = mat.fy / input.fos;
+      const Pcr = Math.PI * Math.PI * mat.E * Math.min(props.Ixx, props.Iyy) / Math.pow(input.K * L, 2);
+      const mass = props.A * mat.density;
+      const defLimit = L / 250;
+      const stressUtil = stress / allowable;
+      const defUtil = delta / defLimit;
+      const bucklingUtil = P / Pcr;
+      return { M, V, delta, stress, allowable, Pcr, mass, kind, defLimit, stressUtil, defUtil, bucklingUtil };
+    }
+
+    function collectInput() {
+      const type = els.sectionType.value;
+      const D = read("depth", 1);
+      const B = type === "shs" ? D : read("width", 1);
+      return {
+        type,
+        D,
+        B,
+        dia: type === "chs" ? read("diameter", 1) : Math.max(D, B),
+        t: read("thickness", 0.1),
+        tf: read("flangeThickness", 0.1),
+        material: els.material.value,
+        fos: read("fos", 0.1),
+        support: els.support.value,
+        length: read("length", 0.01),
+        load: read("load", 0),
+        K: read("kFactor", 0.1),
+        frameType: els.frameType.value,
+        frameWidth: read("frameWidth", 0.01),
+        frameHeight: read("frameHeight", 0.01),
+        frameLoad: read("frameLoad", 0),
+        weldAllow: read("weldAllow", 1)
+      };
+    }
+
+    function buildComparison(input, mat) {
+      const type = input.type;
+      const baseList = presets[type];
+      const candidates = [];
+      baseList.forEach(p => {
+        if (["shs", "rhs", "chs"].includes(type)) {
+          tubeThicknesses.forEach(t => {
+            if (t < Math.min(p[0], p[1]) / 2) {
+              const ci = { ...input, D: p[0], B: type === "shs" ? p[0] : p[1], dia: p[0], t, tf: t };
+              const props = sectionProps(ci);
+              const beam = beamResult(props, ci, mat);
+              candidates.push({ input: ci, props, beam });
+            }
+          });
+        } else {
+          const ci = { ...input, D: p[0], B: p[1], t: p[2], tf: p[3] || p[2] };
+          const props = sectionProps(ci);
+          const beam = beamResult(props, ci, mat);
+          candidates.push({ input: ci, props, beam });
+        }
+      });
+      return candidates
+        .sort((a, b) => a.beam.mass - b.beam.mass)
+        .slice(0, 36);
+    }
+
+    function frameResult(input, props, mat) {
+      const width = input.frameType === "square" ? input.frameWidth : input.frameWidth;
+      const height = input.frameType === "square" ? input.frameWidth : input.frameHeight;
+      const perimeter = 2 * (width + height);
+      const frameMass = perimeter * props.A * mat.density;
+      const topInput = { ...input, length: width, load: input.frameLoad, support: "simply-udl", K: 1 };
+      const legInput = { ...input, length: height, load: input.frameLoad / 2, K: 1 };
+      const top = beamResult(props, topInput, mat);
+      const legPcr = Math.PI * Math.PI * mat.E * Math.min(props.Ixx, props.Iyy) / Math.pow(height, 2);
+      const cornerReaction = input.frameLoad / 4;
+      const weldLength = 2 * Math.max(input.B, input.D, input.dia) / 1000;
+      const throat = cornerReaction / (input.weldAllow * 1e6 * Math.max(weldLength, 1e-9));
+      const filletSize = throat / 0.707;
+      return { width, height, perimeter, frameMass, top, legPcr, legInput, cornerReaction, weldLength, throat, filletSize };
+    }
+
+    function calculate() {
+      try {
+        const input = collectInput();
+        const mat = materials[input.material];
+        const props = sectionProps(input);
+        const beam = beamResult(props, input, mat);
+        const frame = frameResult(input, props, mat);
+        state.result = { input, mat, props, beam, frame };
+        state.comparison = buildComparison(input, mat);
+        updateOutputs();
+        els.status.textContent = "Calculation complete.";
+      } catch (err) {
+        els.status.textContent = err.message;
+      }
+    }
+
+    function ratioClass(v) {
+      if (v <= 0.75) return "ok";
+      if (v <= 1) return "warn";
+      return "bad";
+    }
+
+    function updateOutputs() {
+      const { input, mat, props, beam, frame } = state.result;
+      const governing = Math.max(beam.stressUtil, beam.defUtil, beam.bucklingUtil);
+      els.mStress.textContent = fmt(paToMpa(beam.stress), 2) + " MPa";
+      els.mStress.className = ratioClass(beam.stressUtil);
+      els.mDeflection.textContent = fmt(beam.delta * 1000, 3) + " mm";
+      els.mDeflection.className = ratioClass(beam.defUtil);
+      els.mBuckling.textContent = fmt(beam.Pcr / 1000, 2) + " kN";
+      els.mBuckling.className = ratioClass(beam.bucklingUtil);
+      els.mStatus.textContent = governing <= 1 ? "PASS" : "CHECK";
+      els.mStatus.className = governing <= 1 ? "ok" : "bad";
+
+      els.summaryText.textContent = [
+        `Section: ${props.label}`,
+        `Material: ${mat.name}`,
+        `Area: ${fmt(props.A * 1e6, 2)} mm2`,
+        `Mass: ${fmt(beam.mass, 3)} kg/m`,
+        `Ixx: ${fmt(props.Ixx * 1e8, 3)} cm4`,
+        `Iyy: ${fmt(props.Iyy * 1e8, 3)} cm4`,
+        `Zxx: ${fmt(props.Zxx * 1e6, 3)} cm3`,
+        `Zyy: ${fmt(props.Zyy * 1e6, 3)} cm3`,
+        `Radius of gyration min: ${fmt(props.rMin * 1000, 2)} mm`,
+        `Beam case: ${beam.kind}`,
+        `Max moment: ${fmt(beam.M, 2)} N m`,
+        `Allowable stress: ${fmt(paToMpa(beam.allowable), 2)} MPa`,
+        `Stress utilization: ${fmt(beam.stressUtil * 100, 1)} %`,
+        `Deflection limit used: L/250 = ${fmt(beam.defLimit * 1000, 2)} mm`,
+        `Deflection utilization: ${fmt(beam.defUtil * 100, 1)} %`,
+        `Euler buckling utilization: ${fmt(beam.bucklingUtil * 100, 1)} %`
+      ].join("\n");
+
+      els.compareRows.innerHTML = state.comparison.map(c => {
+        const util = Math.max(c.beam.stressUtil, c.beam.defUtil, c.beam.bucklingUtil);
+        return `<tr>
+          <td>${c.props.label}</td>
+          <td>${fmt(c.props.A * 1e6, 1)}</td>
+          <td>${fmt(c.beam.mass, 3)}</td>
+          <td>${fmt(c.props.Ixx * 1e8, 2)}</td>
+          <td>${fmt(c.props.Zxx * 1e6, 2)}</td>
+          <td>${fmt(paToMpa(c.beam.stress), 2)}</td>
+          <td>${fmt(c.beam.delta * 1000, 3)}</td>
+          <td>${fmt(c.beam.Pcr / 1000, 2)}</td>
+          <td class="${ratioClass(util)}">${fmt(util * 100, 1)}%</td>
+        </tr>`;
+      }).join("");
+
+      els.frameText.textContent = [
+        `Frame: ${input.frameType === "square" ? "Square" : "Rectangular"} ${fmt(frame.width, 2)} m x ${fmt(frame.height, 2)} m`,
+        `Total perimeter: ${fmt(frame.perimeter, 2)} m`,
+        `Frame self mass: ${fmt(frame.frameMass, 2)} kg`,
+        `Vertical load: ${fmt(input.frameLoad, 1)} N`,
+        `Top member bending stress: ${fmt(paToMpa(frame.top.stress), 2)} MPa`,
+        `Top member deflection: ${fmt(frame.top.delta * 1000, 3)} mm`,
+        `Leg buckling load per leg: ${fmt(frame.legPcr / 1000, 2)} kN`,
+        `Approx corner reaction: ${fmt(frame.cornerReaction, 1)} N`,
+        `Assumed weld length per corner: ${fmt(frame.weldLength * 1000, 1)} mm`,
+        `Required effective throat: ${fmt(frame.throat * 1000, 3)} mm`,
+        `Approx fillet weld size: ${fmt(frame.filletSize * 1000, 3)} mm`
+      ].join("\n");
+
+      drawSection();
+      drawGraphs();
+      drawFrame();
+    }
+
+    function prepareCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w: rect.width, h: rect.height };
+    }
+
+    function grid(ctx, w, h) {
+      ctx.fillStyle = "#070b13";
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.15)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 28) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (let y = 0; y < h; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    }
+
+    function drawSection() {
+      const { ctx, w, h } = prepareCanvas(els.sectionCanvas);
+      grid(ctx, w, h);
+      if (!state.result) return;
+      const { input, props } = state.result;
+      const D = input.type === "chs" ? input.dia : input.D;
+      const B = input.type === "chs" ? input.dia : input.B;
+      const scale = Math.min((w - 120) / B, (h - 120) / D);
+      const cx = w / 2, cy = h / 2;
+      const bw = B * scale, dh = D * scale, t = input.t * scale, tf = input.tf * scale;
+      ctx.strokeStyle = "#60a5fa";
+      ctx.fillStyle = "rgba(96, 165, 250, 0.16)";
+      ctx.lineWidth = 3;
+
+      if (input.type === "chs") {
+        ctx.beginPath(); ctx.arc(cx, cy, bw / 2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, Math.max(bw / 2 - t, 0), 0, Math.PI * 2); ctx.fillStyle = "#070b13"; ctx.fill(); ctx.stroke();
+      } else if (input.type === "shs" || input.type === "rhs") {
+        ctx.fillRect(cx - bw / 2, cy - dh / 2, bw, dh); ctx.strokeRect(cx - bw / 2, cy - dh / 2, bw, dh);
+        ctx.clearRect(cx - bw / 2 + t, cy - dh / 2 + t, Math.max(bw - 2 * t, 0), Math.max(dh - 2 * t, 0));
+        ctx.strokeRect(cx - bw / 2 + t, cy - dh / 2 + t, Math.max(bw - 2 * t, 0), Math.max(dh - 2 * t, 0));
+      } else if (input.type === "i") {
+        ctx.fillRect(cx - bw / 2, cy - dh / 2, bw, tf);
+        ctx.fillRect(cx - t / 2, cy - dh / 2, t, dh);
+        ctx.fillRect(cx - bw / 2, cy + dh / 2 - tf, bw, tf);
+      } else if (input.type === "c") {
+        ctx.fillRect(cx - bw / 2, cy - dh / 2, t, dh);
+        ctx.fillRect(cx - bw / 2, cy - dh / 2, bw, tf);
+        ctx.fillRect(cx - bw / 2, cy + dh / 2 - tf, bw, tf);
+      } else {
+        ctx.fillRect(cx - bw / 2, cy - dh / 2, t, dh);
+        ctx.fillRect(cx - bw / 2, cy + dh / 2 - t, bw, t);
+      }
+      ctx.fillStyle = "#e6edf7";
+      ctx.font = "700 15px Segoe UI, Arial";
+      ctx.fillText(props.label, 18, 28);
+      ctx.font = "12px Segoe UI, Arial";
+      ctx.fillStyle = "#9eacc1";
+      ctx.fillText(`Area ${fmt(props.A * 1e6, 1)} mm2 | Zxx ${fmt(props.Zxx * 1e6, 2)} cm3`, 18, 50);
+    }
+
+    function drawFrame() {
+      const { ctx, w, h } = prepareCanvas(els.frameCanvas);
+      grid(ctx, w, h);
+      if (!state.result) return;
+      const fr = state.result.frame;
+      const scale = Math.min((w - 150) / fr.width, (h - 130) / fr.height);
+      const x = (w - fr.width * scale) / 2;
+      const y = (h - fr.height * scale) / 2;
+      ctx.strokeStyle = "#34d399";
+      ctx.lineWidth = 8;
+      ctx.strokeRect(x, y, fr.width * scale, fr.height * scale);
+      ctx.strokeStyle = "#f87171";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x + fr.width * scale / 2, y - 50);
+      ctx.lineTo(x + fr.width * scale / 2, y - 6);
+      ctx.stroke();
+      ctx.fillStyle = "#f87171";
+      ctx.beginPath();
+      ctx.moveTo(x + fr.width * scale / 2, y);
+      ctx.lineTo(x + fr.width * scale / 2 - 7, y - 13);
+      ctx.lineTo(x + fr.width * scale / 2 + 7, y - 13);
+      ctx.fill();
+      ctx.fillStyle = "#e6edf7";
+      ctx.font = "700 14px Segoe UI, Arial";
+      ctx.fillText("Welded frame load model", 18, 28);
+      ctx.fillStyle = "#9eacc1";
+      ctx.font = "12px Segoe UI, Arial";
+      ctx.fillText(`P = ${fmt(state.result.input.frameLoad, 1)} N`, x + fr.width * scale / 2 + 12, y - 24);
+    }
+
+    function drawGraphs() {
+      const { ctx, w, h } = prepareCanvas(els.graphCanvas);
+      grid(ctx, w, h);
+      state.graphRegions = [];
+      if (!state.comparison.length) return;
+      const defs = [
+        ["Mass", "kg/m", c => c.beam.mass],
+        ["Stress", "MPa", c => paToMpa(c.beam.stress)],
+        ["Deflection", "mm", c => c.beam.delta * 1000],
+        ["Buckling", "kN", c => c.beam.Pcr / 1000]
+      ];
+      const pad = 28, gap = 22;
+      const plotW = (w - 2 * pad - gap) / 2;
+      const plotH = (h - 2 * pad - gap) / 2;
+      defs.forEach((def, i) => {
+        const x = pad + (i % 2) * (plotW + gap);
+        const y = pad + Math.floor(i / 2) * (plotH + gap);
+        drawBarPlot(ctx, x, y, plotW, plotH, def);
+      });
+    }
+
+    function drawBarPlot(ctx, x, y, w, h, def) {
+      const [title, unit, getter] = def;
+      const vals = state.comparison.map(getter);
+      const max = Math.max(...vals, 1e-9);
+      const left = x + 48, right = x + w - 12, top = y + 28, bottom = y + h - 32;
+      ctx.fillStyle = "#e6edf7";
+      ctx.font = "700 12px Segoe UI, Arial";
+      ctx.fillText(`${title} (${unit})`, x, y + 14);
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.18)";
+      for (let i = 0; i <= 5; i++) {
+        const gy = top + i * (bottom - top) / 5;
+        ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke();
+      }
+      const count = Math.min(state.comparison.length, 18);
+      const barW = (right - left) / count * 0.68;
+      for (let i = 0; i < count; i++) {
+        const val = vals[i];
+        const bh = val / max * (bottom - top);
+        const bx = left + i * (right - left) / count + barW * 0.2;
+        ctx.fillStyle = i === 0 ? "#fbbf24" : "#60a5fa";
+        ctx.fillRect(bx, bottom - bh, barW, bh);
+        state.graphRegions.push({ x: bx, y: bottom - bh, w: barW, h: bh, title, unit, value: val, candidate: state.comparison[i].props.label });
+      }
+      ctx.strokeStyle = "#334155";
+      ctx.strokeRect(left, top, right - left, bottom - top);
+      ctx.fillStyle = "#9eacc1";
+      ctx.font = "10px Segoe UI, Arial";
+      ctx.textAlign = "right";
+      ctx.fillText(fmt(max, 2), left - 8, top + 4);
+      ctx.fillText("0", left - 8, bottom);
+      ctx.textAlign = "left";
+    }
+
+    function graphHover(event) {
+      const rect = els.graphCanvas.getBoundingClientRect();
+      const x = event.clientX - rect.left, y = event.clientY - rect.top;
+      const hit = state.graphRegions.find(r => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h);
+      if (!hit) {
+        els.tooltip.style.display = "none";
+        return;
+      }
+      els.tooltip.textContent = `${hit.candidate}\n${hit.title}: ${fmt(hit.value, 3)} ${hit.unit}`;
+      els.tooltip.style.display = "block";
+      els.tooltip.style.left = Math.max(10, Math.min(x + 16, rect.width - 290)) + "px";
+      els.tooltip.style.top = Math.max(10, Math.min(y + 16, rect.height - 120)) + "px";
+    }
+
+    function switchPage(page) {
+      state.page = page;
+      ["summary", "compare", "graphs", "frame"].forEach(name => {
+        els[name + "Tab"].classList.toggle("active", name === page);
+        els[name + "Page"].classList.toggle("active", name === page);
+      });
+      requestAnimationFrame(() => {
+        drawSection();
+        drawGraphs();
+        drawFrame();
+      });
+    }
+
+    function reset() {
+      els.sectionType.value = "shs";
+      els.material.value = "cold240";
+      els.fos.value = "1.5";
+      els.support.value = "cantilever-end";
+      els.length.value = "1.5";
+      els.load.value = "1000";
+      els.kFactor.value = "1";
+      els.frameType.value = "rect";
+      els.frameWidth.value = "1.2";
+      els.frameHeight.value = "1.0";
+      els.frameLoad.value = "2000";
+      els.weldAllow.value = "120";
+      populatePresets();
+    }
+
+    els.sectionType.addEventListener("change", () => { populatePresets(); });
+    els.preset.addEventListener("change", applyPreset);
+    els.calcBtn.addEventListener("click", calculate);
+    els.resetBtn.addEventListener("click", reset);
+    ["summary", "compare", "graphs", "frame"].forEach(name => els[name + "Tab"].addEventListener("click", () => switchPage(name)));
+    els.graphCanvas.addEventListener("mousemove", graphHover);
+    els.graphCanvas.addEventListener("mouseleave", () => els.tooltip.style.display = "none");
+    Object.values(els).forEach(el => {
+      if (el && ["INPUT", "SELECT"].includes(el.tagName) && !["sectionType", "preset"].includes(el.id)) {
+        el.addEventListener("change", calculate);
+        el.addEventListener("keydown", event => { if (event.key === "Enter") calculate(); });
+      }
+    });
+    window.addEventListener("resize", () => calculate());
+
+    populateThickness();
+    populatePresets();
+  </script>
+</body>
+</html>
