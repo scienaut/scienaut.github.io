@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slider Crank Engineering Calculator</title>
+  <style>
+    :root {
+      --ink: #e6edf7;
+      --muted: #9eacc1;
+      --line: #334155;
+      --soft-line: #263447;
+      --panel: #111827;
+      --panel-2: #0b1220;
+      --page: #070b13;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --violet: #a78bfa;
+      --red: #f87171;
+      --amber: #fbbf24;
+      --grid: rgba(148, 163, 184, 0.18);
+      --shadow: 0 16px 34px rgba(0, 0, 0, 0.36);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--line);
+      background: #0d1422;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 750;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .side {
+      padding: 12px;
+      align-self: start;
+      max-height: calc(100vh - 86px);
+      overflow: auto;
+    }
+
+    .main {
+      display: grid;
+      grid-template-rows: auto auto minmax(520px, 1fr);
+      gap: 12px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    fieldset {
+      margin: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    fieldset + fieldset {
+      margin-top: 12px;
+    }
+
+    legend {
+      padding: 0 6px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: minmax(122px, 1fr) 110px 42px;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+    }
+
+    label {
+      color: var(--ink);
+      min-width: 0;
+    }
+
+    .unit {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: var(--ink);
+      background: #0b1220;
+    }
+
+    input[type="number"]:focus,
+    input[type="range"]:focus-visible,
+    button:focus-visible {
+      outline: 2px solid rgba(37, 99, 235, 0.35);
+      outline-offset: 2px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--ink);
+      background: #172033;
+      cursor: pointer;
+    }
+
+    button.primary {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: #061120;
+      font-weight: 700;
+    }
+
+    button:hover {
+      filter: brightness(0.98);
+    }
+
+    .ratio-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .ratio-option {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 8px;
+      border: 1px solid var(--soft-line);
+      border-radius: 8px;
+      background: #0b1220;
+    }
+
+    .ratio-option strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .ratio-option span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .angle-row {
+      display: grid;
+      grid-template-columns: 1fr 58px;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .summary {
+      white-space: pre-line;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .status {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 8px;
+      background: #0b1220;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .table-panel {
+      padding: 10px;
+      overflow: auto;
+    }
+
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 16px;
+      font-weight: 750;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1010px;
+    }
+
+    th,
+    td {
+      padding: 8px 9px;
+      border-bottom: 1px solid var(--soft-line);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th {
+      color: #d7e0ed;
+      background: #0b1220;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    td:first-child,
+    th:first-child {
+      text-align: left;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-width: 70px;
+      gap: 6px;
+      font-weight: 750;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .canvas-panel {
+      position: relative;
+      min-height: 250px;
+      overflow: hidden;
+    }
+
+    .tabbar {
+      display: flex;
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .tab-button {
+      min-width: 138px;
+      border-color: var(--soft-line);
+      color: var(--muted);
+      background: #0b1220;
+    }
+
+    .tab-button.active {
+      border-color: var(--blue);
+      color: #061120;
+      background: var(--blue);
+      font-weight: 750;
+    }
+
+    .tab-page {
+      display: none;
+      min-height: 0;
+    }
+
+    .tab-page.active {
+      display: block;
+      height: 100%;
+    }
+
+    .graph-page {
+      min-height: 560px;
+    }
+
+    .graph-tooltip {
+      position: absolute;
+      display: none;
+      min-width: 190px;
+      max-width: 260px;
+      padding: 9px 10px;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      background: rgba(6, 11, 21, 0.94);
+      color: var(--ink);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+      pointer-events: none;
+      z-index: 3;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .assumptions {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .equation-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .equation-row {
+      padding: 7px 8px;
+      border: 1px solid var(--soft-line);
+      border-radius: 6px;
+      background: #09101d;
+      color: #d7e0ed;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .equation-row strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--blue);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 11px;
+    }
+
+    .motor-page {
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .motor-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .motor-metric {
+      padding: 9px 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 6px;
+      background: #09101d;
+    }
+
+    .motor-metric span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .motor-metric strong {
+      font-size: 15px;
+    }
+
+    .status-pass {
+      color: var(--green);
+      font-weight: 750;
+    }
+
+    .status-review {
+      color: var(--amber);
+      font-weight: 750;
+    }
+
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        max-height: none;
+      }
+
+      .main {
+        grid-template-rows: auto auto 560px;
+      }
+
+      .motor-summary {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Slider Crank Engineering Calculator</h1>
+      <div class="subtitle">Crank radius drives geometry. Ratio sets calculate GOOD, BETTER, BEST, and WORST connecting rod lengths.</div>
+    </header>
+
+    <div class="workspace">
+      <aside class="panel side">
+        <fieldset>
+          <legend>Input Parameters</legend>
+          <div class="field">
+            <label for="crankRadius">Crank radius R</label>
+            <input id="crankRadius" type="number" min="0.001" step="0.1" value="50">
+            <span class="unit">mm</span>
+          </div>
+          <div class="field">
+            <label for="rpm">Speed</label>
+            <input id="rpm" type="number" min="0" step="1" value="1000">
+            <span class="unit">RPM</span>
+          </div>
+          <div class="field">
+            <label for="totalLoad">Total load</label>
+            <input id="totalLoad" type="number" min="0" step="1" value="1000">
+            <span class="unit">N</span>
+          </div>
+          <div class="field">
+            <label for="tiltAngle">Piston tilt angle</label>
+            <input id="tiltAngle" type="number" min="0" max="45" step="0.1" value="2">
+            <span class="unit">deg</span>
+          </div>
+          <div class="field">
+            <label for="fos">Factor of safety</label>
+            <input id="fos" type="number" min="0" step="0.05" value="1.5">
+            <span class="unit"></span>
+          </div>
+          <div class="field">
+            <label for="shockFactor">Shock factor</label>
+            <input id="shockFactor" type="number" min="0" step="0.05" value="1.2">
+            <span class="unit"></span>
+          </div>
+          <div class="field">
+            <label for="frictionFactor">Friction factor</label>
+            <input id="frictionFactor" type="number" min="0" step="0.01" value="0.12">
+            <span class="unit">mu</span>
+          </div>
+          <div class="actions">
+            <button id="calculateBtn" class="primary" type="button">Calculate</button>
+            <button id="resetBtn" type="button">Reset</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Visualization Ratio</legend>
+          <div id="ratioList" class="ratio-list"></div>
+          <div class="angle-row">
+            <input id="angleRange" type="range" min="0" max="360" value="45">
+          <strong id="angleValue">45 deg</strong>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Calculation Equations</legend>
+          <div class="equation-list">
+            <div class="equation-row"><strong>Geometry</strong>L = (L/R)R<br>Stroke = 2R<br>&phi; = sin<sup>-1</sup>[(R/L) sin &theta;]</div>
+            <div class="equation-row"><strong>Displacement from TDC</strong>s = R(1 - cos &theta;) + L - sqrt[L<sup>2</sup> - R<sup>2</sup> sin<sup>2</sup>&theta;]</div>
+            <div class="equation-row"><strong>Angular Speed</strong>&omega; = 2&pi; RPM / 60</div>
+            <div class="equation-row"><strong>Derivative Term</strong>q = sqrt(L<sup>2</sup> - R<sup>2</sup> sin<sup>2</sup>&theta;)<br>ds/d&theta; = R sin&theta; + R<sup>2</sup> sin&theta; cos&theta; / q</div>
+            <div class="equation-row"><strong>Velocity</strong>v = &omega;[R sin&theta; + R<sup>2</sup> sin&theta; cos&theta; / q]</div>
+            <div class="equation-row"><strong>Second Derivative</strong>d<sup>2</sup>s/d&theta;<sup>2</sup> = R cos&theta; + R<sup>2</sup>(cos<sup>2</sup>&theta; - sin<sup>2</sup>&theta;)/q + R<sup>4</sup> sin<sup>2</sup>&theta; cos<sup>2</sup>&theta;/q<sup>3</sup></div>
+            <div class="equation-row"><strong>Acceleration</strong>a = &omega;<sup>2</sup> d<sup>2</sup>s/d&theta;<sup>2</sup><br>Mean speed = 2 x Stroke x RPM / 60</div>
+            <div class="equation-row"><strong>Design Load</strong>F<sub>d</sub> = F x FOS x shock factor</div>
+            <div class="equation-row"><strong>Side Thrust</strong>N = |(F<sub>d</sub>/cos &phi;) sin &phi;| + |F<sub>d</sub> tan &alpha;|</div>
+            <div class="equation-row"><strong>Friction Force</strong>F<sub>f</sub> = &mu;N</div>
+            <div class="equation-row"><strong>Crank Torque</strong>T = (F<sub>d</sub> + F<sub>f</sub>) ds/d&theta;</div>
+            <div class="equation-row"><strong>Peak Power</strong>P = |T|<sub>max</sub>&omega; / 1000</div>
+            <div class="equation-row"><strong>Motor / Gearbox</strong>n<sub>out</sub> = n<sub>motor</sub>/i<br>T<sub>out</sub> = 9550 P<sub>motor</sub>&eta;/n<sub>out</sub><br>T<sub>req</sub> = 1.25 T<sub>calculated</sub></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Selected Ratio Summary</legend>
+          <div id="summary" class="summary"></div>
+          <div id="status" class="status">Ready.</div>
+          <div class="assumptions">
+            Design axial load = total load x FOS x shock factor. Friction force is calculated as friction factor x instantaneous side thrust.
+          </div>
+        </fieldset>
+      </aside>
+
+      <main class="main">
+        <section class="panel table-panel">
+          <h2 class="panel-title">Ratio Comparison</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>L/R</th>
+                <th>Rod mm</th>
+                <th>Stroke mm</th>
+                <th>Rod angle deg</th>
+                <th>Mean m/s</th>
+                <th>Max m/s</th>
+                <th>Max m/s2</th>
+                <th>Side N</th>
+                <th>Friction N</th>
+                <th>Torque N m</th>
+                <th>Peak kW</th>
+              </tr>
+            </thead>
+            <tbody id="resultRows"></tbody>
+          </table>
+        </section>
+
+        <section class="panel tabbar" aria-label="Linked app pages">
+          <button id="mechanismTab" class="tab-button active" type="button">Mechanism Page</button>
+          <button id="graphsTab" class="tab-button" type="button">Graphs Page</button>
+          <button id="motorTab" class="tab-button" type="button">Motor &amp; Gearbox</button>
+        </section>
+
+        <section id="mechanismPage" class="panel canvas-panel tab-page active">
+          <canvas id="mechanismCanvas"></canvas>
+        </section>
+
+        <section id="graphsPage" class="panel canvas-panel tab-page graph-page">
+          <canvas id="plotCanvas"></canvas>
+          <div id="graphTooltip" class="graph-tooltip"></div>
+        </section>
+
+        <section id="motorPage" class="panel tab-page motor-page">
+          <div class="motor-summary">
+            <div class="motor-metric"><span>Selected ratio</span><strong id="motorRatio">-</strong></div>
+            <div class="motor-metric"><span>Crank speed</span><strong id="motorCrankSpeed">-</strong></div>
+            <div class="motor-metric"><span>Required mean torque</span><strong id="motorMeanTorque">-</strong></div>
+            <div class="motor-metric"><span>Required peak torque</span><strong id="motorPeakTorque">-</strong></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Motor kW</th>
+                <th>Motor RPM</th>
+                <th>Gear ratio</th>
+                <th>Output RPM</th>
+                <th>Speed error</th>
+                <th>Continuous torque</th>
+                <th>Peak capacity</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="motorRows"></tbody>
+          </table>
+          <div class="assumptions">
+            Ranking assumes 92% gearbox efficiency, 1.25 service factor, and gearbox peak capacity of 2.0 times continuous output torque.
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const presets = [
+      { name: "GOOD", ratio: 3.0, color: "#60a5fa", note: "Compact balanced rod ratio" },
+      { name: "BETTER", ratio: 4.0, color: "#34d399", note: "Lower side thrust than GOOD" },
+      { name: "BEST", ratio: 5.0, color: "#a78bfa", note: "Smoothest of the standard options" },
+      { name: "WORST", ratio: 2.5, color: "#f87171", note: "Short rod, high obliquity" }
+    ];
+
+    const defaults = {
+      crankRadius: 50,
+      rpm: 1000,
+      totalLoad: 1000,
+      tiltAngle: 2,
+      fos: 1.5,
+      shockFactor: 1.2,
+      frictionFactor: 0.12
+    };
+
+    const plotDefinitions = [
+      { title: "Displacement", unit: "mm", key: "displacementMm", digits: 2, equation: "s = R(1-cos theta) + L - sqrt(L^2-R^2 sin^2 theta)" },
+      { title: "Velocity", unit: "m/s", key: "velocityMS", digits: 3, equation: "v = omega ds/dtheta" },
+      { title: "Acceleration", unit: "m/s2", key: "accelerationMS2", digits: 1, equation: "a = omega^2 d2s/dtheta2" },
+      { title: "Torque", unit: "N m", key: "torqueNM", digits: 3, equation: "T = (Fd + Ff) ds/dtheta" },
+      { title: "Side Thrust", unit: "N", key: "sideThrustN", digits: 1, equation: "N = |(Fd/cos phi) sin phi| + |Fd tan alpha|" },
+      { title: "Friction Force", unit: "N", key: "frictionForceN", digits: 1, equation: "Ff = mu N" }
+    ];
+
+    const state = {
+      result: null,
+      selected: "BETTER",
+      angle: 45,
+      page: "mechanism",
+      hover: null,
+      plotRegions: [],
+      motorCombinations: []
+    };
+
+    const els = {
+      crankRadius: document.getElementById("crankRadius"),
+      rpm: document.getElementById("rpm"),
+      totalLoad: document.getElementById("totalLoad"),
+      tiltAngle: document.getElementById("tiltAngle"),
+      fos: document.getElementById("fos"),
+      shockFactor: document.getElementById("shockFactor"),
+      frictionFactor: document.getElementById("frictionFactor"),
+      calculateBtn: document.getElementById("calculateBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      mechanismTab: document.getElementById("mechanismTab"),
+      graphsTab: document.getElementById("graphsTab"),
+      motorTab: document.getElementById("motorTab"),
+      mechanismPage: document.getElementById("mechanismPage"),
+      graphsPage: document.getElementById("graphsPage"),
+      motorPage: document.getElementById("motorPage"),
+      ratioList: document.getElementById("ratioList"),
+      angleRange: document.getElementById("angleRange"),
+      angleValue: document.getElementById("angleValue"),
+      resultRows: document.getElementById("resultRows"),
+      summary: document.getElementById("summary"),
+      status: document.getElementById("status"),
+      mechanismCanvas: document.getElementById("mechanismCanvas"),
+      plotCanvas: document.getElementById("plotCanvas"),
+      graphTooltip: document.getElementById("graphTooltip"),
+      motorRatio: document.getElementById("motorRatio"),
+      motorCrankSpeed: document.getElementById("motorCrankSpeed"),
+      motorMeanTorque: document.getElementById("motorMeanTorque"),
+      motorPeakTorque: document.getElementById("motorPeakTorque"),
+      motorRows: document.getElementById("motorRows")
+    };
+
+    function clamp(value, low, high) {
+      return Math.max(low, Math.min(high, value));
+    }
+
+    function fmt(value, digits = 2) {
+      if (!Number.isFinite(value)) return "-";
+      const abs = Math.abs(value);
+      if (abs >= 1000) return value.toFixed(1);
+      return value.toFixed(digits);
+    }
+
+    function readNumber(id, label, min, max = Infinity) {
+      const value = Number(els[id].value);
+      if (!Number.isFinite(value)) throw new Error(label + " must be a number.");
+      if (value < min) throw new Error(label + " must be at least " + min + ".");
+      if (value > max) throw new Error(label + " must be at most " + max + ".");
+      return value;
+    }
+
+    function collectInputs() {
+      return {
+        crankRadiusMm: readNumber("crankRadius", "Crank radius", 0.001),
+        rpm: readNumber("rpm", "RPM", 0),
+        totalLoadN: readNumber("totalLoad", "Total load", 0),
+        tiltDeg: readNumber("tiltAngle", "Piston tilt angle", 0, 45),
+        fos: readNumber("fos", "Factor of safety", 0),
+        shockFactor: readNumber("shockFactor", "Shock factor", 0),
+        frictionFactor: readNumber("frictionFactor", "Friction factor", 0)
+      };
+    }
+
+    function calculateCategory(inputs, preset) {
+      const r = inputs.crankRadiusMm / 1000;
+      const l = preset.ratio * r;
+      const omega = inputs.rpm * 2 * Math.PI / 60;
+      const strokeM = 2 * r;
+      const meanPistonSpeed = 2 * strokeM * inputs.rpm / 60;
+      const designAxialLoad = inputs.totalLoadN * inputs.fos * inputs.shockFactor;
+      const tiltRad = inputs.tiltDeg * Math.PI / 180;
+      const displacement = [];
+      const velocity = [];
+      const acceleration = [];
+      const torque = [];
+      const sideThrust = [];
+      const frictionForce = [];
+      const rodAngle = [];
+
+      for (let deg = 0; deg <= 360; deg += 1) {
+        const theta = deg * Math.PI / 180;
+        const sinT = Math.sin(theta);
+        const cosT = Math.cos(theta);
+        const root = Math.sqrt(Math.max(l * l - Math.pow(r * sinT, 2), 1e-15));
+        const s = (r + l) - (r * cosT + root);
+        const dsDtheta = r * sinT + (r * r * sinT * cosT) / root;
+        const numerator = r * r * sinT * cosT;
+        const numeratorPrime = r * r * (cosT * cosT - sinT * sinT);
+        const d2sDtheta2 = r * cosT + numeratorPrime / root + (numerator * numerator) / Math.pow(root, 3);
+        const phi = Math.asin(clamp((r * sinT) / l, -0.999999, 0.999999));
+        const cosPhi = Math.max(Math.abs(Math.cos(phi)), 1e-9);
+        const rodForce = designAxialLoad / cosPhi;
+        const tiltSideForce = Math.abs(designAxialLoad * Math.tan(tiltRad));
+        const sideForce = Math.abs(rodForce * Math.sin(phi)) + tiltSideForce;
+        const friction = inputs.frictionFactor * sideForce;
+        const effectiveSliderForce = designAxialLoad + friction;
+        const crankTorque = effectiveSliderForce * dsDtheta;
+
+        displacement.push(s * 1000);
+        velocity.push(dsDtheta * omega);
+        acceleration.push(d2sDtheta2 * omega * omega);
+        torque.push(crankTorque);
+        sideThrust.push(sideForce);
+        frictionForce.push(friction);
+        rodAngle.push(phi * 180 / Math.PI);
+      }
+
+      const absMax = arr => Math.max(...arr.map(v => Math.abs(v)));
+      const meanAbs = arr => arr.reduce((sum, v) => sum + Math.abs(v), 0) / arr.length;
+      const maxTorque = absMax(torque);
+
+      return {
+        preset,
+        strokeMm: strokeM * 1000,
+        rodLengthMm: l * 1000,
+        meanPistonSpeedMS: meanPistonSpeed,
+        maxRodAngleDeg: absMax(rodAngle),
+        displacementMm: displacement,
+        velocityMS: velocity,
+        accelerationMS2: acceleration,
+        torqueNM: torque,
+        sideThrustN: sideThrust,
+        frictionForceN: frictionForce,
+        rodAngleDeg: rodAngle,
+        maxVelocityMS: absMax(velocity),
+        maxAccelerationMS2: absMax(acceleration),
+        maxTorqueNM: maxTorque,
+        meanAbsTorqueNM: meanAbs(torque),
+        peakPowerKW: maxTorque * omega / 1000,
+        maxSideThrustN: Math.max(...sideThrust),
+        maxFrictionForceN: Math.max(...frictionForce),
+        designAxialLoadN: designAxialLoad
+      };
+    }
+
+    function calculateMechanism() {
+      const inputs = collectInputs();
+      const categories = {};
+      presets.forEach(preset => {
+        categories[preset.name] = calculateCategory(inputs, preset);
+      });
+      let warning = "Calculation complete.";
+      if (inputs.tiltDeg > 8) {
+        warning += " High piston tilt angle: side thrust estimate is very sensitive above 8 deg.";
+      }
+      return { inputs, categories, warning };
+    }
+
+    function buildRatioControls() {
+      els.ratioList.innerHTML = "";
+      presets.forEach(preset => {
+        const wrapper = document.createElement("label");
+        wrapper.className = "ratio-option";
+        wrapper.innerHTML = `
+          <input type="radio" name="ratio" value="${preset.name}" ${preset.name === state.selected ? "checked" : ""}>
+          <span>
+            <strong>${preset.name} &nbsp; L/R = ${preset.ratio.toFixed(2)}</strong>
+            <span>${preset.note}</span>
+          </span>
+        `;
+        wrapper.querySelector("input").addEventListener("change", event => {
+          state.selected = event.target.value;
+          refresh();
+        });
+        els.ratioList.appendChild(wrapper);
+      });
+    }
+
+    function updateTable() {
+      els.resultRows.innerHTML = "";
+      presets.forEach(preset => {
+        const r = state.result.categories[preset.name];
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><span class="badge"><span class="dot" style="background:${preset.color}"></span>${preset.name}</span></td>
+          <td>${r.preset.ratio.toFixed(2)}</td>
+          <td>${fmt(r.rodLengthMm)}</td>
+          <td>${fmt(r.strokeMm)}</td>
+          <td>${fmt(r.maxRodAngleDeg)}</td>
+          <td>${fmt(r.meanPistonSpeedMS, 3)}</td>
+          <td>${fmt(r.maxVelocityMS, 3)}</td>
+          <td>${fmt(r.maxAccelerationMS2, 1)}</td>
+          <td>${fmt(r.maxSideThrustN, 1)}</td>
+          <td>${fmt(r.maxFrictionForceN, 1)}</td>
+          <td>${fmt(r.maxTorqueNM, 3)}</td>
+          <td>${fmt(r.peakPowerKW, 3)}</td>
+        `;
+        els.resultRows.appendChild(row);
+      });
+    }
+
+    function updateSummary() {
+      const r = state.result.categories[state.selected];
+      els.summary.textContent = [
+        "Category: " + state.selected,
+        "Rod ratio L/R: " + r.preset.ratio.toFixed(2),
+        "Crank radius: " + fmt(state.result.inputs.crankRadiusMm) + " mm",
+        "Stroke: " + fmt(r.strokeMm) + " mm",
+        "Connecting rod: " + fmt(r.rodLengthMm) + " mm",
+        "Design axial load: " + fmt(r.designAxialLoadN) + " N",
+        "Friction factor: " + fmt(state.result.inputs.frictionFactor, 3),
+        "Mean piston speed: " + fmt(r.meanPistonSpeedMS, 3) + " m/s",
+        "Max side thrust: " + fmt(r.maxSideThrustN) + " N",
+        "Max friction force: " + fmt(r.maxFrictionForceN) + " N",
+        "Max crank torque: " + fmt(r.maxTorqueNM, 3) + " N m",
+        "Peak power: " + fmt(r.peakPowerKW, 3) + " kW"
+      ].join("\n");
+    }
+
+    function updateMotorGearbox() {
+      if (!state.result) return;
+      const result = state.result.categories[state.selected];
+      const crankRpm = state.result.inputs.rpm;
+      const efficiency = 0.92;
+      const serviceFactor = 1.25;
+      const peakFactor = 2.0;
+      const requiredMeanTorque = result.meanAbsTorqueNM * serviceFactor;
+      const requiredPeakTorque = result.maxTorqueNM * serviceFactor;
+      const motorPowers = [0.18, 0.25, 0.37, 0.55, 0.75, 1.1, 1.5, 2.2, 3, 4, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37];
+      const motorSpeeds = [750, 1000, 1500, 3000];
+      const gearRatios = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50, 60, 80, 100];
+      const combinations = [];
+
+      motorSpeeds.forEach(motorRpm => {
+        gearRatios.forEach(gearRatio => {
+          const outputRpm = motorRpm / gearRatio;
+          const speedError = crankRpm > 0 ? Math.abs(outputRpm - crankRpm) / crankRpm : 0;
+          motorPowers.forEach(powerKw => {
+            const continuousTorque = outputRpm > 0 ? powerKw * 9550 * efficiency / outputRpm : 0;
+            const peakCapacity = continuousTorque * peakFactor;
+            const torquePass = continuousTorque >= requiredMeanTorque;
+            const peakPass = peakCapacity >= requiredPeakTorque;
+            const speedPass = speedError <= 0.10;
+            const pass = torquePass && peakPass && speedPass;
+            const meanDeficit = Math.max(0, requiredMeanTorque - continuousTorque) / Math.max(requiredMeanTorque, 1);
+            const peakDeficit = Math.max(0, requiredPeakTorque - peakCapacity) / Math.max(requiredPeakTorque, 1);
+            const score = (pass ? 0 : 1000) + speedError * 400 + meanDeficit * 250 + peakDeficit * 250 + powerKw * 0.08;
+            combinations.push({
+              powerKw,
+              motorRpm,
+              gearRatio,
+              outputRpm,
+              speedError,
+              continuousTorque,
+              peakCapacity,
+              pass,
+              score
+            });
+          });
+        });
+      });
+
+      combinations.sort((a, b) => a.score - b.score || a.powerKw - b.powerKw);
+      state.motorCombinations = combinations.slice(0, 10);
+      els.motorRatio.textContent = state.selected + "  L/R " + result.preset.ratio.toFixed(2);
+      els.motorCrankSpeed.textContent = fmt(crankRpm, 0) + " RPM";
+      els.motorMeanTorque.textContent = fmt(requiredMeanTorque, 2) + " N m";
+      els.motorPeakTorque.textContent = fmt(requiredPeakTorque, 2) + " N m";
+      els.motorRows.innerHTML = state.motorCombinations.map((item, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${fmt(item.powerKw, 2)}</td>
+          <td>${fmt(item.motorRpm, 0)}</td>
+          <td>${fmt(item.gearRatio, 2)}:1</td>
+          <td>${fmt(item.outputRpm, 1)}</td>
+          <td>${fmt(item.speedError * 100, 2)}%</td>
+          <td>${fmt(item.continuousTorque, 2)} N m</td>
+          <td>${fmt(item.peakCapacity, 2)} N m</td>
+          <td class="${item.pass ? "status-pass" : "status-review"}">${item.pass ? "RECOMMENDED" : "REVIEW"}</td>
+        </tr>
+      `).join("");
+    }
+
+    function prepareCanvas(canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const width = Math.max(1, Math.round(rect.width * dpr));
+      const height = Math.max(1, Math.round(rect.height * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function line(ctx, x0, y0, x1, y1, color, width = 2) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
+
+    function circle(ctx, x, y, radius, fill, stroke = null, width = 1) {
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = width;
+        ctx.stroke();
+      }
+    }
+
+    function drawGrid(ctx, width, height, spacing = 28) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.16)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= width; x += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= height; y += spacing) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function arrow(ctx, x0, y0, x1, y1, color, width = 3) {
+      line(ctx, x0, y0, x1, y1, color, width);
+      const angle = Math.atan2(y1 - y0, x1 - x0);
+      const size = 11;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 - size * Math.cos(angle - Math.PI / 6), y1 - size * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x1 - size * Math.cos(angle + Math.PI / 6), y1 - size * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawMechanism() {
+      const { ctx, width, height } = prepareCanvas(els.mechanismCanvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#09101d";
+      ctx.fillRect(0, 0, width, height);
+      drawGrid(ctx, width, height, 28);
+      if (!state.result) return;
+
+      const result = state.result.categories[state.selected];
+      const inputs = state.result.inputs;
+      const rMm = inputs.crankRadiusMm;
+      const lMm = result.rodLengthMm;
+      const theta = state.angle * Math.PI / 180;
+      const sinT = Math.sin(theta);
+      const cosT = Math.cos(theta);
+      const rodVerticalMm = Math.sqrt(Math.max(lMm * lMm - Math.pow(rMm * sinT, 2), 1e-9));
+      const mechanismHeightMm = lMm + 3.2 * rMm;
+      const scale = Math.max(0.25, Math.min((height - 120) / mechanismHeightMm, (width - 330) / Math.max(4.2 * rMm, 1)));
+      const centerX = width * 0.64;
+      const crankY = height - 62;
+      const pinX = centerX + rMm * sinT * scale;
+      const pinY = crankY - rMm * cosT * scale;
+      const sliderX = centerX;
+      const sliderY = crankY - (rMm * cosT + rodVerticalMm) * scale;
+      const tdcY = crankY - (rMm + lMm) * scale;
+      const bdcY = crankY - (lMm - rMm) * scale;
+      const pistonW = clamp(rMm * 1.35 * scale, 42, 96);
+      const pistonH = clamp(rMm * 0.95 * scale, 30, 68);
+
+      ctx.fillStyle = "#e6edf7";
+      ctx.font = "700 14px Segoe UI, Arial";
+      ctx.fillText("Vertical slider-crank mechanism", 16, 24);
+      ctx.font = "12px Segoe UI, Arial";
+      ctx.fillStyle = "#9eacc1";
+      [
+        state.selected + ": rod ratio " + result.preset.ratio.toFixed(2),
+        "R = " + fmt(inputs.crankRadiusMm) + " mm",
+        "L = " + fmt(result.rodLengthMm) + " mm",
+        "Stroke = " + fmt(result.strokeMm) + " mm",
+        "Angle = " + state.angle + " deg",
+        "Position from TDC = " + fmt(result.displacementMm[state.angle], 2) + " mm"
+      ].forEach((text, idx) => ctx.fillText(text, 16, 48 + idx * 18));
+
+      const guideTop = Math.max(28, tdcY - pistonH * 0.9);
+      const guideBottom = Math.min(height - 24, bdcY + pistonH * 0.9);
+      line(ctx, centerX - pistonW * 0.7, guideTop, centerX - pistonW * 0.7, guideBottom, "#708198", 2);
+      line(ctx, centerX + pistonW * 0.7, guideTop, centerX + pistonW * 0.7, guideBottom, "#708198", 2);
+      ctx.setLineDash([4, 5]);
+      line(ctx, centerX, guideTop, centerX, crankY + rMm * scale, "#42526a", 1);
+      ctx.setLineDash([]);
+
+      const datumLeft = centerX - Math.max(135, pistonW * 1.4);
+      const datumRight = Math.min(width - 16, centerX + Math.max(165, pistonW * 1.8));
+      ctx.setLineDash([8, 5]);
+      line(ctx, datumLeft, tdcY, datumRight, tdcY, "#34d399", 2);
+      line(ctx, datumLeft, bdcY, datumRight, bdcY, "#fbbf24", 2);
+      ctx.setLineDash([]);
+      ctx.font = "700 11px Segoe UI, Arial";
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#6ee7b7";
+      ctx.fillText("TDC  0.00 mm", datumRight, tdcY - 7);
+      ctx.fillStyle = "#fde68a";
+      ctx.fillText("BDC  " + fmt(result.strokeMm, 2) + " mm", datumRight, bdcY - 7);
+      ctx.textAlign = "left";
+
+      ctx.setLineDash([4, 4]);
+      circle(ctx, centerX, crankY, rMm * scale, null, "#334155", 1);
+      ctx.setLineDash([]);
+      circle(ctx, centerX, crankY, 5, "#e6edf7");
+      line(ctx, centerX, crankY, pinX, pinY, "#60a5fa", 5);
+      circle(ctx, pinX, pinY, 7, "#60a5fa");
+      line(ctx, pinX, pinY, sliderX, sliderY, "#94a3b8", 5);
+      circle(ctx, sliderX, sliderY, 6, "#334155", "#e6edf7", 1);
+
+      const tilt = inputs.tiltDeg * Math.PI / 180;
+      ctx.save();
+      ctx.translate(sliderX, sliderY);
+      ctx.rotate(tilt);
+      ctx.fillStyle = "#cbd5e1";
+      ctx.strokeStyle = "#e6edf7";
+      ctx.lineWidth = 2;
+      ctx.fillRect(-pistonW / 2, -pistonH / 2, pistonW, pistonH);
+      ctx.strokeRect(-pistonW / 2, -pistonH / 2, pistonW, pistonH);
+      ctx.fillStyle = "#0b1220";
+      ctx.font = "700 10px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("PISTON", 0, 0);
+      ctx.restore();
+
+      const loadEndY = sliderY - pistonH * 0.56;
+      const loadStartY = Math.max(18, loadEndY - 58);
+      arrow(ctx, sliderX, loadStartY, sliderX, loadEndY, "#f87171", 4);
+      ctx.fillStyle = "#fecaca";
+      ctx.font = "700 11px Segoe UI, Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("LOAD", sliderX, loadStartY - 7);
+      ctx.textAlign = "left";
+    }
+
+    function drawSubplot(ctx, x, y, w, h, def) {
+      const left = x + 48;
+      const right = x + w - 14;
+      const top = y + 43;
+      const bottom = y + h - 30;
+      let values = [];
+      presets.forEach(p => values = values.concat(state.result.categories[p.name][def.key]));
+      let vMin = Math.min(...values);
+      let vMax = Math.max(...values);
+      if (Math.abs(vMax - vMin) < 1e-9) {
+        vMin -= 1;
+        vMax += 1;
+      }
+      const pad = (vMax - vMin) * 0.08;
+      vMin -= pad;
+      vMax += pad;
+
+      const region = { ...def, left, right, top, bottom, vMin, vMax };
+      state.plotRegions.push(region);
+
+      ctx.fillStyle = "#e6edf7";
+      ctx.font = "700 12px Segoe UI, Arial";
+      ctx.fillText(def.title + " (" + def.unit + ")", x, y + 14);
+      ctx.fillStyle = "#9eacc1";
+      ctx.font = "10px Consolas, Courier New, monospace";
+      ctx.fillText(def.equation, x, y + 29, Math.max(80, w - 10));
+      ctx.fillStyle = "#09101d";
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1;
+      ctx.fillRect(left, top, right - left, bottom - top);
+      ctx.strokeRect(left, top, right - left, bottom - top);
+
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.18)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 8; i += 1) {
+        const gy = top + i * (bottom - top) / 8;
+        line(ctx, left, gy, right, gy, "rgba(148, 163, 184, 0.16)", 1);
+      }
+      [0, 45, 90, 135, 180, 225, 270, 315, 360].forEach(deg => {
+        const gx = left + deg / 360 * (right - left);
+        line(ctx, gx, top, gx, bottom, "rgba(148, 163, 184, 0.16)", 1);
+        ctx.fillStyle = "#9eacc1";
+        ctx.font = "10px Segoe UI, Arial";
+        ctx.textAlign = "center";
+        if (deg % 90 === 0) ctx.fillText(String(deg), gx, bottom + 15);
+      });
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#9eacc1";
+      ctx.font = "10px Segoe UI, Arial";
+      ctx.fillText(vMax.toPrecision(3), left - 8, top + 4);
+      ctx.fillText(vMin.toPrecision(3), left - 8, bottom);
+      ctx.textAlign = "left";
+
+      presets.forEach(preset => {
+        const arr = state.result.categories[preset.name][def.key];
+        ctx.beginPath();
+        for (let deg = 0; deg <= 360; deg += 3) {
+          const px = left + deg / 360 * (right - left);
+          const py = bottom - (arr[deg] - vMin) / (vMax - vMin) * (bottom - top);
+          if (deg === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = preset.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      presets.forEach((preset, idx) => {
+        const lx = left + 5 + idx * 63;
+        const ly = top + 12;
+        line(ctx, lx, ly, lx + 14, ly, preset.color, 3);
+        ctx.fillStyle = "#d7e0ed";
+        ctx.font = "10px Segoe UI, Arial";
+        ctx.fillText(preset.name, lx + 18, ly + 3);
+      });
+
+      if (state.hover && state.hover.key === def.key) {
+        const deg = state.hover.deg;
+        const hx = left + deg / 360 * (right - left);
+        line(ctx, hx, top, hx, bottom, "#fbbf24", 1.5);
+        presets.forEach(preset => {
+          const value = state.result.categories[preset.name][def.key][deg];
+          const hy = bottom - (value - vMin) / (vMax - vMin) * (bottom - top);
+          circle(ctx, hx, hy, 4, preset.color, "#ffffff", 1);
+        });
+      }
+    }
+
+    function drawPlots() {
+      const { ctx, width, height } = prepareCanvas(els.plotCanvas);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#070b13";
+      ctx.fillRect(0, 0, width, height);
+      if (!state.result) return;
+      state.plotRegions = [];
+
+      const pad = 24;
+      const gap = 20;
+      const cols = width < 820 ? 1 : 2;
+      const rows = Math.ceil(plotDefinitions.length / cols);
+      const plotW = (width - pad * 2 - gap * (cols - 1)) / cols;
+      const plotH = (height - pad * 2 - gap * (rows - 1)) / rows;
+      plotDefinitions.forEach((def, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        drawSubplot(ctx, pad + col * (plotW + gap), pad + row * (plotH + gap), plotW, plotH, def);
+      });
+    }
+
+    function refresh() {
+      if (!state.result) return;
+      updateTable();
+      updateSummary();
+      updateMotorGearbox();
+      drawMechanism();
+      drawPlots();
+    }
+
+    function calculate() {
+      try {
+        state.result = calculateMechanism();
+        els.status.textContent = state.result.warning;
+        refresh();
+      } catch (err) {
+        els.status.textContent = err.message;
+      }
+    }
+
+    function reset() {
+      Object.entries(defaults).forEach(([key, value]) => {
+        els[key].value = value;
+      });
+      state.selected = "BETTER";
+      state.angle = 45;
+      els.angleRange.value = "45";
+      els.angleValue.textContent = "45 deg";
+      buildRatioControls();
+      calculate();
+    }
+
+    function switchPage(page) {
+      state.page = page;
+      ["mechanism", "graphs", "motor"].forEach(name => {
+        els[name + "Tab"].classList.toggle("active", name === page);
+        els[name + "Page"].classList.toggle("active", name === page);
+      });
+      state.hover = null;
+      els.graphTooltip.style.display = "none";
+      requestAnimationFrame(() => {
+        drawMechanism();
+        drawPlots();
+      });
+    }
+
+    function showGraphHover(event) {
+      if (!state.result || state.page !== "graphs") return;
+      const rect = els.plotCanvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const region = state.plotRegions.find(item => x >= item.left && x <= item.right && y >= item.top && y <= item.bottom);
+      if (!region) {
+        state.hover = null;
+        els.graphTooltip.style.display = "none";
+        drawPlots();
+        return;
+      }
+
+      const deg = clamp(Math.round((x - region.left) / (region.right - region.left) * 360), 0, 360);
+      state.hover = { key: region.key, deg };
+      drawPlots();
+
+      const lines = [
+        region.title + " at " + deg + " deg",
+        ...presets.map(preset => {
+          const value = state.result.categories[preset.name][region.key][deg];
+          return preset.name + ": " + fmt(value, region.digits) + " " + region.unit;
+        })
+      ];
+      els.graphTooltip.textContent = lines.join("\n");
+      els.graphTooltip.style.display = "block";
+      const tipX = Math.min(x + 16, rect.width - 270);
+      const tipY = Math.min(y + 16, rect.height - 150);
+      els.graphTooltip.style.left = Math.max(10, tipX) + "px";
+      els.graphTooltip.style.top = Math.max(10, tipY) + "px";
+    }
+
+    function hideGraphHover() {
+      state.hover = null;
+      els.graphTooltip.style.display = "none";
+      drawPlots();
+    }
+
+    els.calculateBtn.addEventListener("click", calculate);
+    els.resetBtn.addEventListener("click", reset);
+    els.mechanismTab.addEventListener("click", () => switchPage("mechanism"));
+    els.graphsTab.addEventListener("click", () => switchPage("graphs"));
+    els.motorTab.addEventListener("click", () => switchPage("motor"));
+    els.plotCanvas.addEventListener("mousemove", showGraphHover);
+    els.plotCanvas.addEventListener("mouseleave", hideGraphHover);
+    Object.keys(defaults).forEach(key => {
+      els[key].addEventListener("keydown", event => {
+        if (event.key === "Enter") calculate();
+      });
+      els[key].addEventListener("change", calculate);
+    });
+    els.angleRange.addEventListener("input", event => {
+      state.angle = Number(event.target.value);
+      els.angleValue.textContent = state.angle + " deg";
+      drawMechanism();
+    });
+    window.addEventListener("resize", () => {
+      state.hover = null;
+      refresh();
+    });
+
+    buildRatioControls();
+    calculate();
+  </script>
+</body>
+</html>
