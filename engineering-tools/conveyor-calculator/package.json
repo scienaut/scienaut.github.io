@@ -1,0 +1,15 @@
+{
+  "name": "open-conveyor-engineering-calculator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:geometry": "node tests/geometry.test.js",
+    "test:belt-payload": "node tests/belt-payload.test.js",
+    "test:resistance": "node tests/resistance.test.js",
+    "test:drive": "node tests/drive.test.js",
+    "test:mechanical": "node tests/mechanical.test.js",
+    "test": "node tests/geometry.test.js && node tests/belt-payload.test.js && node tests/resistance.test.js && node tests/drive.test.js && node tests/mechanical.test.js",
+    "dev": "node tools/serve.mjs"
+  }
+}

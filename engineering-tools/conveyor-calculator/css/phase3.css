@@ -1,0 +1,8 @@
+.support-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.support-side{border:1px solid #2a3745;border-radius:7px;background:#141c25;padding:12px}
+.support-side-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.support-side-heading strong{font:600 11px var(--head);color:#d7e1ea}
+.support-side-heading span{font:8px var(--mono);color:#718399;letter-spacing:.08em}
+.support-empty{font-size:9px;color:#76889a;line-height:1.5;margin:12px 0}
+.shared-resistance-inputs{border-top:1px solid #293544;margin-top:12px;padding-top:12px}
+@media(max-width:760px){.support-grid{grid-template-columns:1fr}}

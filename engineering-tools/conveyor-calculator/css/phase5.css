@@ -1,0 +1,5 @@
+.phase5-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.phase5-grid .panel{min-width:0}
+.structural-panel{grid-column:1/-1}
+.phase5-grid .sim-description{margin-bottom:12px}
+@media(max-width:1120px){.phase5-grid{grid-template-columns:1fr}.structural-panel{grid-column:auto}}

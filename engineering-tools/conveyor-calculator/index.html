@@ -1,1 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151d">
+  <meta name="description" content="Transparent preliminary conveyor geometry calculator and material movement visualizer.">
+  <title>Open Conveyor Engineering Calculator</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/phase2.css">
+  <link rel="stylesheet" href="css/phase3.css">
+  <link rel="stylesheet" href="css/phase4.css">
+  <link rel="stylesheet" href="css/phase5.css">
+  <link rel="stylesheet" href="css/phase6.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#dashboard" aria-label="Open Conveyor Calculator home">
+        <span class="brand-mark" aria-hidden="true">OC</span>
+        <span><strong>OPEN CONVEYOR</strong><small>ENGINEERING CALCULATOR</small></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav id="main-nav">
+        <a class="nav-link active" href="#dashboard"><span>◫</span> Dashboard</a>
+        <a class="nav-link" href="#geometry"><span>⌁</span> Conveyor geometry</a>
+        <a class="nav-link" href="#simulator"><span>▷</span> Movement simulator</a>
+      </nav>
+      <div class="nav-label plan-label">CALCULATION MODULES</div>
+      <nav class="planned-nav" aria-label="Planned modules">
+        <a class="nav-link" href="#belt-payload"><span>◌</span> Belt & material</a>
+        <a class="nav-link" href="#belt-payload"><span>▤</span> Payload configuration</a>
+        <a class="nav-link" href="#support-resistance"><span>▥</span> Support & resistance</a>
+        <a class="nav-link" href="#drive-system"><span>⚙</span> Torque & power</a>
+        <a class="nav-link" href="#mechanical-design"><span>⌘</span> Mechanical design</a>
+        <a class="nav-link" href="#project-reports"><span>▧</span> Reports & projects</a>
+        <a class="nav-link" href="#engineering-references"><span>ⓘ</span> Engineering references</a>
+      </nav>
+      <div class="sidebar-foot"><span class="status-dot"></span> Phases 1–6 · Foundation</div>
+    </aside>
 
+    <main class="main-content" id="dashboard">
+      <header class="topbar">
+        <div class="crumb">PROJECTS <span>/</span> NEW CONVEYOR</div>
+        <div class="topbar-right"><span class="preliminary-pill">SAMPLE GEOMETRY</span><button id="reset-button" class="text-button" type="button">Reset geometry</button></div>
+      </header>
+      <div class="page-wrap">
+        <section class="page-heading">
+          <div>
+            <div class="eyebrow">ENGINEERING WORKSPACE <span>VERSION 0.1.0</span></div>
+            <h1>Conveyor overview</h1>
+            <p>Configure a conveyor, inspect its geometry, and visualize belt movement. Prefilled values are examples; replace them with project data.</p>
+          </div>
+          <div class="project-chip"><span class="project-icon">▰</span><span><small>ACTIVE PROJECT</small><strong id="project-name">Untitled conveyor</strong></span><button id="rename-button" type="button" aria-label="Rename project">✎</button></div>
+        </section>
+
+        <section class="metric-grid" aria-label="Current configuration summary">
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon blue">↔</span><span class="metric-label">CENTRE DISTANCE</span></div><div class="metric-value" id="metric-length">— <small>mm</small></div><div class="metric-foot">Drive to tail pulley centres</div></article>
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon cyan">∠</span><span class="metric-label">INCLINATION</span></div><div class="metric-value" id="metric-angle">— <small>°</small></div><div class="metric-foot">Relative to horizontal</div></article>
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon violet">↗</span><span class="metric-label">VERTICAL RISE</span></div><div class="metric-value" id="metric-rise">— <small>mm</small></div><div class="metric-foot">Calculated from centre distance</div></article>
+          <article class="metric-card"><div class="metric-top"><span class="metric-icon green">◉</span><span class="metric-label">BELT SPEED</span></div><div class="metric-value" id="metric-speed">— <small>m/s</small></div><div class="metric-foot">From drive drum diameter and RPM</div></article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel diagram-panel" id="geometry">
+            <div class="panel-heading"><div><div class="eyebrow">LIVE SIDE ELEVATION</div><h2>Conveyor geometry</h2></div><span class="live-tag"><i></i> LIVE</span></div>
+            <div class="diagram-wrap"><svg id="conveyor-svg" viewBox="0 0 900 420" role="img" aria-labelledby="svg-title svg-desc"><title id="svg-title">Parametric side elevation of the conveyor</title><desc id="svg-desc">A conveyor diagram that updates with entered centre distance and inclination.</desc></svg></div>
+            <div class="diagram-legend"><span><i class="legend-belt"></i> Belt path</span><span><i class="legend-roller"></i> Pulley / roller</span><span><i class="legend-frame"></i> Frame</span><span class="diagram-note">Schematic · not to scale</span></div>
+          </article>
+
+          <article class="panel inputs-panel">
+            <div class="panel-heading"><div><div class="eyebrow">CONFIGURATION</div><h2>Geometry inputs</h2></div><span class="input-count">01 / 06</span></div>
+            <form id="geometry-form" novalidate>
+              <div class="form-row"><label for="centre-distance">Conveyor centre distance <span class="unit">mm</span></label><input id="centre-distance" name="centreDistanceMm" type="number" min="1" max="100000" step="any" value="5000" inputmode="decimal"><small class="field-help">Distance between drive and tail pulley centres along the frame.</small><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="inclination">Inclination angle <span class="unit">deg</span></label><div class="input-with-suffix"><input id="inclination" name="inclinationDeg" type="number" min="0" max="75" step="any" value="15" inputmode="decimal"><span>°</span></div><small class="field-help">Allowed range: 0° to 75°.</small><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="entered-height">Entered vertical height <span class="unit">mm</span></label><input id="entered-height" name="enteredHeightMm" type="number" min="0" max="100000" step="any" value="1294.1" inputmode="decimal"><small class="field-help">Kept as entered and compared against calculated rise.</small><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="tolerance">Height mismatch tolerance <span class="unit">mm</span></label><input id="tolerance" name="toleranceMm" type="number" min="0" max="10000" step="any" value="10" inputmode="decimal"><small class="field-help">Configurable geometry verification threshold.</small><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-divider"></div>
+              <div class="form-row"><label for="belt-width">Belt width <span class="unit">mm</span></label><input id="belt-width" name="beltWidthMm" type="number" min="1" max="10000" step="any" value="400" inputmode="decimal"><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="drive-diameter">Drive drum diameter <span class="unit">mm</span></label><input id="drive-diameter" name="driveDiameterMm" type="number" min="1" max="10000" step="any" value="150" inputmode="decimal"><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="tail-diameter">Tail drum diameter <span class="unit">mm</span></label><input id="tail-diameter" name="tailDiameterMm" type="number" min="1" max="10000" step="any" value="150" inputmode="decimal"><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="drum-rpm">Drive drum speed <span class="unit">RPM</span></label><input id="drum-rpm" name="driveRpm" type="number" min="0" max="10000" step="any" value="60" inputmode="decimal"><small class="field-error" aria-live="polite"></small></div>
+              <button class="secondary-button" id="apply-button" type="submit">Update geometry <span>↗</span></button>
+            </form>
+          </article>
+        </section>
+
+        <section class="lower-grid">
+          <article class="panel calculations-panel">
+            <div class="panel-heading"><div><div class="eyebrow">TRACEABLE OUTPUTS</div><h2>Geometry calculations</h2></div><span class="verified-tag">FORMULA BASED</span></div>
+            <div id="geometry-results" class="calculation-list" aria-live="polite"></div>
+          </article>
+          <article class="panel simulator-panel" id="simulator">
+            <div class="panel-heading"><div><div class="eyebrow">VISUALIZATION</div><h2>Material movement</h2></div><span class="visual-tag">NOT DYNAMICS</span></div>
+            <p class="sim-description">A visual preview of belt direction and speed. This is not a validated physical dynamics simulation.</p>
+            <div class="sim-controls"><button id="play-button" class="play-button" type="button" aria-pressed="false">▶ <span>Start</span></button><button id="reverse-button" class="icon-button" type="button" aria-label="Reverse belt direction" title="Reverse direction">⇄</button><button id="reset-sim-button" class="icon-button" type="button" aria-label="Reset animation" title="Reset animation">↺</button></div>
+            <div class="sim-slider"><label for="sim-speed">Visualization speed <span id="sim-speed-value">0.47 m/s</span></label><input id="sim-speed" type="range" min="0" max="2" step="0.01" value="0.47"><div class="slider-scale"><span>0 m/s</span><span>2 m/s</span></div></div>
+            <div class="sim-status"><span id="sim-indicator" class="status-dot"></span><span id="sim-status-text">Paused</span><span class="sim-rpm">DRUM <b id="sim-rpm">60 RPM</b></span></div>
+          </article>
+        </section>
+
+        <section class="phase2-grid" id="belt-payload">
+          <article class="panel phase-panel">
+            <div class="panel-heading"><div><div class="eyebrow">PHASE 2 · BELT MASS</div><h2>Belt material & construction</h2></div><span class="input-count">02 / 06</span></div>
+            <div class="phase-form-grid">
+              <div class="form-row"><label for="belt-material">Belt material</label><select id="belt-material"><option>PU</option><option>PVC</option><option>Nylon fabric</option><option>Rubber</option><option>NBR</option><option>EPDM</option><option>Other / Custom</option></select></div>
+              <div class="form-row"><label for="belt-construction">Construction</label><select id="belt-construction"><option>Homogeneous</option><option>Fabric reinforced</option><option>Multi-ply</option><option>Supplier-defined</option></select></div>
+              <div class="form-row"><label for="belt-mass-mode">Mass calculation method</label><select id="belt-mass-mode"><option value="manual">Manual linear mass</option><option value="areal">Manufacturer areal mass</option><option value="density">Homogeneous density estimate</option></select></div>
+              <div class="form-row"><label for="belt-linear-mass">Belt mass per metre <span class="unit">kg/m</span></label><input id="belt-linear-mass" type="number" min="0" step="any" placeholder="Required for manual method"><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="belt-areal-mass">Belt areal mass <span class="unit">kg/m²</span></label><input id="belt-areal-mass" type="number" min="0" step="any" placeholder="Required for areal method"><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="belt-density">Material density <span class="unit">kg/m³</span></label><input id="belt-density" type="number" min="0" step="any" placeholder="Required for homogeneous estimate"><small class="field-help">Do not use for reinforced construction.</small><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="belt-thickness">Belt thickness <span class="unit">mm</span></label><input id="belt-thickness" type="number" min="0" step="any" placeholder="Required for density method"><small class="field-error" aria-live="polite"></small></div>
+              <div class="form-row"><label for="belt-data-source">Data source classification</label><select id="belt-data-source"><option value="user">User-entered / measured</option><option value="manufacturer">Manufacturer datasheet</option></select></div>
+              <div class="form-row"><label for="belt-source-name">Source / manufacturer</label><input id="belt-source-name" type="text" placeholder="Required to identify external source"></div>
+              <div class="form-row"><label for="belt-source-url">Datasheet URL / document reference</label><input id="belt-source-url" type="url" placeholder="Optional for user measurement; needed for sourced data"></div>
+            </div>
+            <div id="belt-result" class="phase-result" aria-live="polite"></div>
+          </article>
+          <article class="panel phase-panel">
+            <div class="panel-heading"><div><div class="eyebrow">PHASE 2 · PAYLOAD</div><h2>Payload configuration</h2></div><span class="input-count">03 / 06</span></div>
+            <div class="form-row"><label for="payload-mode">Authoritative payload mode</label><select id="payload-mode"><option value="total">Total payload currently carried</option><option value="linear">Linear material loading</option><option value="throughput">Material throughput</option></select></div>
+            <div id="payload-mode-fields" class="phase-form-grid"></div>
+            <div class="phase-form-grid">
+              <div class="form-row"><label for="loaded-length">Loaded conveyor length <span class="unit">mm</span></label><input id="loaded-length" type="number" min="0" step="any" placeholder="Blank uses centre distance"></div>
+              <div class="form-row"><label for="material-distribution">Material distribution</label><select id="material-distribution"><option value="uniform">Uniform</option><option value="discrete">Discrete boxes / loads</option></select></div>
+              <div class="form-row"><label for="box-count">Number of boxes <span class="unit">count</span></label><input id="box-count" type="number" min="0" step="1" placeholder="Optional geometry check"></div>
+              <div class="form-row"><label for="box-mass">Individual box mass <span class="unit">kg</span></label><input id="box-mass" type="number" min="0" step="any" placeholder="Optional, not added twice"></div>
+              <div class="form-row"><label for="box-length">Box length <span class="unit">mm</span></label><input id="box-length" type="number" min="0" step="any" placeholder="Optional"></div>
+              <div class="form-row"><label for="box-width">Box width <span class="unit">mm</span></label><input id="box-width" type="number" min="0" step="any" placeholder="Optional"></div>
+              <div class="form-row"><label for="box-height">Box height <span class="unit">mm</span></label><input id="box-height" type="number" min="0" step="any" placeholder="Optional"></div>
+              <div class="form-row"><label for="box-spacing">Box spacing <span class="unit">mm</span></label><input id="box-spacing" type="number" min="0" step="any" placeholder="Optional clear gap"></div>
+            </div>
+            <div id="payload-result" class="phase-result" aria-live="polite"></div>
+          </article>
+        </section>
+
+        <section class="panel resistance-panel" id="support-resistance">
+          <div class="panel-heading"><div><div class="eyebrow">PHASE 3 · SUPPORT & RESISTANCE</div><h2>Carrying and return support systems</h2></div><span class="input-count">04 / 06</span></div>
+          <p class="sim-description">Choose each side independently. Idler running resistance and belt-to-skid sliding friction are separate models with separate user-entered coefficients.</p>
+          <div class="support-grid">
+            <article class="support-side"><div class="support-side-heading"><strong>Carrying side</strong><span>LOADED RUN</span></div><div class="form-row"><label for="carry-support-type">Support arrangement</label><select id="carry-support-type"><option value="">Select arrangement…</option><option value="idler">Idlers</option><option value="skid">Skid plate</option></select></div><div id="carry-support-fields" class="phase-form-grid"></div></article>
+            <article class="support-side"><div class="support-side-heading"><strong>Return side</strong><span>EMPTY RUN</span></div><div class="form-row"><label for="return-support-type">Support arrangement</label><select id="return-support-type"><option value="">Select arrangement…</option><option value="idler">Idlers</option><option value="skid">Skid plate</option></select></div><div id="return-support-fields" class="phase-form-grid"></div></article>
+          </div>
+          <div class="phase-form-grid shared-resistance-inputs">
+            <div class="form-row"><label for="elevation-direction">Payload travel direction on incline</label><select id="elevation-direction"><option value="">Select uphill / downhill…</option><option value="uphill">Uphill</option><option value="downhill">Downhill</option></select><small class="field-help">Only required when inclination is above 0°.</small></div>
+            <div class="form-row"><label for="accessory-drag">Additional accessory resistance <span class="unit">N</span></label><input id="accessory-drag" type="number" min="0" step="any" placeholder="Enter measured/estimated value; use 0 if none"><small class="field-error" aria-live="polite"></small></div>
+            <div class="form-row"><label for="acceleration-time">Acceleration time from rest <span class="unit">s</span></label><input id="acceleration-time" type="number" min="0" step="any" placeholder="Required for acceleration force"><small class="field-help">A ramp from zero speed to calculated belt speed is modeled.</small></div>
+          </div>
+          <div id="resistance-result" class="phase-result incomplete" aria-live="polite"><div class="result-status">CALCULATION INCOMPLETE</div><p>Select both support systems and provide the required mass and resistance data.</p></div>
+        </section>
+
+        <section class="panel drive-panel" id="drive-system">
+          <div class="panel-heading"><div><div class="eyebrow">PHASE 4 · DRIVE SYSTEM</div><h2>Torque, power & traction</h2></div><span class="input-count">05 / 06</span></div>
+          <p class="sim-description">Drive outputs use the preceding resistance result. Rotating inertia, motor thermal duty, and actual belt pretension are not inferred.</p>
+          <div class="drive-grid">
+            <div class="drive-input-group"><h3>Motor & gearbox inputs</h3><div class="phase-form-grid">
+              <div class="form-row"><label for="motor-rpm">Motor rated speed <span class="unit">RPM</span></label><input id="motor-rpm" type="number" min="0" step="any" placeholder="Supplier rating"></div>
+              <div class="form-row"><label for="motor-power">Motor rated power <span class="unit">kW</span></label><input id="motor-power" type="number" min="0" step="any" placeholder="Supplier rating"></div>
+              <div class="form-row"><label for="motor-efficiency">Motor efficiency <span class="unit">0–1</span></label><input id="motor-efficiency" type="number" min="0" max="1" step="any" placeholder="User / datasheet value"></div>
+              <div class="form-row"><label for="gearbox-efficiency">Gearbox efficiency <span class="unit">0–1</span></label><input id="gearbox-efficiency" type="number" min="0" max="1" step="any" placeholder="User / datasheet value"></div>
+              <div class="form-row"><label for="coupling-efficiency">Coupling efficiency <span class="unit">0–1</span></label><input id="coupling-efficiency" type="number" min="0" max="1" step="any" placeholder="User / datasheet value"></div>
+              <div class="form-row"><label for="drive-data-source">Motor / gearbox data classification</label><select id="drive-data-source"><option value="user">User input</option><option value="manufacturer">Manufacturer data (verify)</option></select></div>
+              <div class="form-row"><label for="drive-data-reference">Motor / gearbox source reference</label><input id="drive-data-reference" type="text" placeholder="Required for manufacturer data"></div>
+              <div class="form-row"><label for="gear-ratio-mode">Gear ratio mode</label><select id="gear-ratio-mode"><option value="automatic">Calculate from speeds</option><option value="manual">Manual ratio</option></select></div>
+              <div class="form-row" id="manual-ratio-row" hidden><label for="manual-ratio">Manual reduction ratio <span class="unit">i</span></label><input id="manual-ratio" type="number" min="0" step="any"></div>
+            </div></div>
+            <div class="drive-input-group"><h3>Drive drum traction inputs</h3><div class="phase-form-grid">
+              <div class="form-row"><label for="drive-friction">Belt-to-drum friction coefficient μ</label><input id="drive-friction" type="number" min="0" step="any" placeholder="User / supplier value"></div>
+              <div class="form-row"><label for="wrap-angle">Drive drum wrap angle <span class="unit">deg</span></label><input id="wrap-angle" type="number" min="0" max="360" step="any" placeholder="User geometry"></div>
+              <div class="form-row"><label for="slack-tension">Known slack-side tension <span class="unit">N</span></label><input id="slack-tension" type="number" min="0" step="any" placeholder="Optional take-up / pretension input"></div>
+              <div class="form-row"><label for="belt-working-tension">Allowable working tension <span class="unit">N</span></label><input id="belt-working-tension" type="number" min="0" step="any" placeholder="Supplier data required"></div>
+              <div class="form-row"><label for="belt-tensile-rating">Belt tensile rating <span class="unit">N/mm</span></label><input id="belt-tensile-rating" type="number" min="0" step="any" placeholder="Supplier data required"></div>
+              <div class="form-row"><label for="traction-source">Traction data classification</label><select id="traction-source"><option value="user">User input / measured</option><option value="manufacturer">Manufacturer reference (verify)</option></select></div>
+              <div class="form-row"><label for="traction-reference">Traction data reference</label><input id="traction-reference" type="text" placeholder="Required for manufacturer source"></div>
+            </div></div>
+          </div>
+          <div id="drive-result" class="phase-result incomplete" aria-live="polite"><div class="result-status">CALCULATION INCOMPLETE</div><p>Torque and power require complete resistance data and user or supplier efficiency values.</p></div>
+          <div id="traction-result" class="phase-result incomplete" aria-live="polite"><div class="result-status">CALCULATION INCOMPLETE</div><p>Traction requires effective force, drum friction and wrap angle.</p></div>
+        </section>
+        <section class="phase5-grid" id="mechanical-design">
+          <article class="panel phase-panel"><div class="panel-heading"><div><div class="eyebrow">PHASE 5 · SHAFT</div><h2>Preliminary shaft check</h2></div><span class="visual-tag">USER DATA REQUIRED</span></div>
+            <p class="sim-description">Overhung radial point-load model with a circular solid or hollow shaft. This is a static preliminary check; fatigue and keyway-specific analysis are not included.</p>
+            <div class="phase-form-grid">
+              <div class="form-row"><label for="shaft-radial-load">Radial load at pulley <span class="unit">N</span></label><input id="shaft-radial-load" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-torque">Shaft torque <span class="unit">N·m</span></label><input id="shaft-torque" type="number" min="0" step="any" placeholder="Blank uses linear-load peak torque"></div>
+              <div class="form-row"><label for="shaft-span">Bearing spacing <span class="unit">mm</span></label><input id="shaft-span" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-overhang">Pulley overhang <span class="unit">mm</span></label><input id="shaft-overhang" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-od">Shaft outside diameter <span class="unit">mm</span></label><input id="shaft-od" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-id">Shaft bore diameter <span class="unit">mm</span></label><input id="shaft-id" type="number" min="0" step="any" placeholder="Blank or 0 for solid shaft"></div>
+              <div class="form-row"><label for="shaft-modulus">Elastic modulus E <span class="unit">GPa</span></label><input id="shaft-modulus" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-shear">Shear modulus G <span class="unit">GPa</span></label><input id="shaft-shear" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-yield">Yield strength <span class="unit">MPa</span></label><input id="shaft-yield" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-kt">Bending concentration factor Kt</label><input id="shaft-kt" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-kfs">Torsional concentration factor Kfs</label><input id="shaft-kfs" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="shaft-source-class">Shaft data classification</label><select id="shaft-source-class"><option value="user">User-entered properties</option><option value="manufacturer">Manufacturer / material reference</option></select></div>
+              <div class="form-row"><label for="shaft-source-ref">Material / factor reference</label><input id="shaft-source-ref" type="text" placeholder="Required for manufacturer data"></div>
+            </div><div id="shaft-result" class="phase-result incomplete" aria-live="polite"><div class="result-status">CALCULATION INCOMPLETE</div><p>Enter shaft geometry, load, material properties and concentration factors.</p></div>
+          </article>
+
+          <article class="panel phase-panel"><div class="panel-heading"><div><div class="eyebrow">PHASE 5 · BEARING</div><h2>Rating-life calculation</h2></div><span class="visual-tag">SUPPLIER RATINGS</span></div>
+            <p class="sim-description">Uses manufacturer bearing ratings and factors entered below. No bearing is selected from shaft diameter alone.</p>
+            <div class="form-row"><label for="bearing-type">Bearing type</label><select id="bearing-type"><option value="ball">Ball bearing</option><option value="roller">Roller bearing</option></select></div>
+            <div class="phase-form-grid">
+              <div class="form-row"><label for="bearing-C">Dynamic rating C <span class="unit">N</span></label><input id="bearing-C" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-C0">Static rating C0 <span class="unit">N</span></label><input id="bearing-C0" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-Fr">Radial load Fr <span class="unit">N</span></label><input id="bearing-Fr" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-Fa">Axial load Fa <span class="unit">N</span></label><input id="bearing-Fa" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-speed">Bearing speed <span class="unit">RPM</span></label><input id="bearing-speed" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-X">Dynamic factor X</label><input id="bearing-X" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-Y">Dynamic factor Y</label><input id="bearing-Y" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-X0">Static factor X0</label><input id="bearing-X0" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-Y0">Static factor Y0</label><input id="bearing-Y0" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="bearing-source-class">Bearing data classification</label><select id="bearing-source-class"><option value="manufacturer">Manufacturer catalogue data</option><option value="user">User-entered data</option></select></div>
+              <div class="form-row"><label for="bearing-reference">Manufacturer / bearing reference</label><input id="bearing-reference" type="text" placeholder="Designation and catalogue source"></div>
+            </div><div id="bearing-result" class="phase-result incomplete" aria-live="polite"><div class="result-status">SUPPLIER DATA REQUIRED</div><p>Enter C, C0, actual X/Y factors, load, speed and source reference.</p></div>
+          </article>
+
+          <article class="panel phase-panel structural-panel"><div class="panel-heading"><div><div class="eyebrow">PHASE 5 · STRUCTURE</div><h2>RHS / SHS beam check</h2></div><span class="visual-tag">SIMPLIFIED MODEL</span></div>
+            <p class="sim-description">Simply supported beam with uniform vertical load. Load and material properties must be supplied; joints, buckling and frame stability are not assessed.</p>
+            <div class="phase-form-grid">
+              <div class="form-row"><label for="frame-load">Uniform line load <span class="unit">N/m</span></label><input id="frame-load" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-span">Support span <span class="unit">mm</span></label><input id="frame-span" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-width">RHS / SHS width b <span class="unit">mm</span></label><input id="frame-width" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-height">Section height h <span class="unit">mm</span></label><input id="frame-height" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-wall">Wall thickness t <span class="unit">mm</span></label><input id="frame-wall" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-modulus">Elastic modulus E <span class="unit">GPa</span></label><input id="frame-modulus" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-yield">Yield strength <span class="unit">MPa</span></label><input id="frame-yield" type="number" min="0" step="any"></div>
+              <div class="form-row"><label for="frame-source-class">Section data classification</label><select id="frame-source-class"><option value="user">User-entered properties</option><option value="manufacturer">Manufacturer / material reference</option></select></div>
+              <div class="form-row"><label for="frame-reference">Material / section reference</label><input id="frame-reference" type="text" placeholder="User value or supplier document"></div>
+            </div><div id="structure-result" class="phase-result incomplete" aria-live="polite"><div class="result-status">CALCULATION INCOMPLETE</div><p>Enter section geometry, support span, line load and material properties.</p></div>
+          </article>
+        </section>
+        <section class="panel project-panel" id="project-reports">
+          <div class="panel-heading"><div><div class="eyebrow">PHASE 6 · PROJECTS & REPORTS</div><h2>Save, reopen and report</h2></div><span class="input-count">06 / 06</span></div>
+          <div class="project-tools">
+            <button id="save-project" class="secondary-button" type="button">Save project locally</button>
+            <select id="saved-projects" aria-label="Saved projects"><option value="">Choose a saved project…</option></select>
+            <button id="open-project" class="secondary-button" type="button">Open saved project</button>
+            <button id="export-json" class="secondary-button" type="button">Export JSON</button>
+            <button id="print-report-button" class="secondary-button" type="button">Print / Save PDF</button>
+            <button id="audit-snapshot" class="text-button" type="button">Record audit snapshot</button>
+          </div>
+          <div id="project-status" class="project-status" aria-live="polite">Projects stay in this browser unless exported.</div>
+          <p class="sim-description">The report uses the browser print dialog; choose “Save as PDF” to create a PDF file. JSON exports include current inputs, displayed calculation results, source references, warnings and timestamp.</p>
+        </section>
+        <section class="panel references-panel" id="engineering-references">
+          <div class="panel-heading"><div><div class="eyebrow">ENGINEERING REFERENCES</div><h2>Standards and manufacturer sources</h2></div><span class="input-count">CHECKED 2026-11-03</span></div>
+          <p class="sim-description">Reference applicability is stated separately from implemented formulas. These links identify source documents; this application does not claim full standard conformance or include proprietary tables.</p>
+          <div class="reference-grid">
+            <article class="reference-card"><span class="reference-type">STANDARD · CONVEYOR RESISTANCE</span><h3>ISO 5048:1989</h3><p><strong>Current published edition at check:</strong> Edition 2, published 1989-09; ISO shows it confirmed on 2026-06-22.</p><p>Scope: operating power and tensile forces for belt conveyors with carrying idlers and smooth, patternless belts. The application’s simplified skid-plate model and current force approximation do not claim ISO 5048 conformance.</p><a href="https://www.iso.org/standard/11069.html" target="_blank" rel="noopener">Official ISO record ↗</a></article>
+            <article class="reference-card"><span class="reference-type">STANDARD · TEXTILE BELTS</span><h3>ISO 14890:2026</h3><p><strong>Edition 3:</strong> published 2026-02. Applies to rubber- or plastics-covered textile conveyor belts for general surface use on flat or troughed idlers; excludes light conveyor belts described in ISO 21183-1.</p><p>Use the selected belt supplier’s datasheet for mass, tensile rating and allowable working tension.</p><a href="https://www.iso.org/standard/88543.html" target="_blank" rel="noopener">Official ISO record ↗</a></article>
+            <article class="reference-card"><span class="reference-type">STANDARD · BEARING DYNAMIC LIFE</span><h3>ISO 281:2007</h3><p><strong>Current published edition at check:</strong> Edition 2, reviewed and confirmed in 2021. ISO notes a replacement is expected in the coming months as ISO/DIS 281 proceeds.</p><p>The calculator uses the basic L10 form with user-entered manufacturer ratings and X/Y factors; modified life and application corrections are not implemented.</p><a href="https://www.iso.org/standard/38102.html" target="_blank" rel="noopener">Official ISO record ↗</a></article>
+            <article class="reference-card"><span class="reference-type">STANDARD · BEARING STATIC LOAD</span><h3>ISO 76:2006 + Amd 1:2017</h3><p>ISO lists the 2006 edition with its 2017 amendment as published; the ISO record indicates revision is planned. Static rating methods and actual manufacturer factors must be checked for the selected bearing.</p><a href="https://www.iso.org/standard/38101.html" target="_blank" rel="noopener">Official ISO record ↗</a></article>
+            <article class="reference-card"><span class="reference-type">TECHNICAL BOOK · BULK CONVEYORS</span><h3>CEMA Belt Conveyors for Bulk Materials</h3><p>CEMA’s official store lists the 7th Edition, Second Printing, August 2020. It is an engineering reference book, not an ISO standard. The simplified equations in this app are not a substitute for its methods.</p><a href="https://cemastore.com/product/cema-belt-conveyors-for-bulk-materials-7th-ed-eng-book-pdf/" target="_blank" rel="noopener">CEMA official publication listing ↗</a></article>
+            <article class="reference-card"><span class="reference-type">MANUFACTURER CATALOGS</span><h3>Bearing ratings & selection</h3><p>Use the current catalogue for the exact bearing designation, load ratings, dynamic/static factors, fits, lubrication and temperature limits. This app does not bundle or infer bearing ratings.</p><div class="reference-links"><a href="https://productselect.skf.com/" target="_blank" rel="noopener">SKF Product Select ↗</a><a href="https://medias.schaeffler.com/" target="_blank" rel="noopener">Schaeffler medias ↗</a><a href="https://www.nsk.com/catalogs-and-cad/" target="_blank" rel="noopener">NSK Catalogs & CAD ↗</a></div></article>
+          </div>
+          <p class="reference-footnote">Standards and catalog status checked 2026-11-03. Re-check the official publisher before use; editions and applicability can change. For material properties, friction, efficiency and component data, enter the actual supplier document and verify the relevant operating conditions.</p>
+        </section>
+        <article id="print-report" class="print-report" hidden></article>
+        <section class="notice-bar"><span class="notice-icon">i</span><div><strong>Engineering status: Phases 1–6 foundation</strong><p>Prefilled geometry is an interaction example, not an engineering recommendation. Material strengths, bearing ratings and load cases require supplier or project data. Inertia, fatigue, bearing fits, lubrication and detailed structural stability remain incomplete.</p></div><span class="notice-status">PRELIMINARY</span></section>
+        <footer class="app-footer"><span>OPEN CONVEYOR ENGINEERING CALCULATOR</span><span>Phases 1–6 foundation · No design certification implied</span></footer>
+      </div>
+    </main>
+  </div>
+  <aside id="startup-error" class="startup-error" role="alert" aria-live="assertive" hidden></aside>
+  <dialog id="project-dialog" class="project-dialog"><form method="dialog"><label for="project-name-input">Project name</label><input id="project-name-input" maxlength="60" value="Untitled conveyor"><div><button class="text-button" value="cancel">Cancel</button><button class="secondary-button" id="save-project-name" value="ok">Save name</button></div></form></dialog>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+  <script>
+    // ES modules are blocked when this page is opened as file://. Explain that
+    // clearly instead of leaving the static form looking like a working app.
+    window.__conveyorAppStarted = false;
+    window.setTimeout(() => {
+      if (window.__conveyorAppStarted) return;
+      const notice = document.getElementById('startup-error');
+      if (!notice) return;
+      notice.innerHTML = location.protocol === 'file:'
+        ? '<strong>Calculator not started.</strong> This page was opened directly from a file, so the browser blocked its calculation modules. Close this tab and double-click <code>START-WINDOWS.bat</code> in the calculator folder. If Node.js is unavailable, use the hosted app or follow the local server steps in README.'
+        : '<strong>Calculator could not start.</strong> Its JavaScript modules did not finish loading. Reload from the project server; if this continues, check that the project folder includes the complete <code>js</code> directory.';
+      notice.hidden = false;
+    }, 2500);
+  </script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

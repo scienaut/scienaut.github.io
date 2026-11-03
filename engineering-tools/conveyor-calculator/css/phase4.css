@@ -1,0 +1,7 @@
+.drive-panel{margin-top:14px}
+.drive-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.drive-input-group{border:1px solid #2a3745;border-radius:7px;background:#141c25;padding:12px}
+.drive-input-group h3{font:600 11px var(--head);color:#d7e1ea;margin:0 0 10px}
+.drive-panel .phase-result+.phase-result{margin-top:12px}
+.drive-panel sup{font-size:8px}
+@media(max-width:1120px){.drive-grid{grid-template-columns:1fr}}
