@@ -299,6 +299,62 @@
       .split { grid-template-columns: 1fr; }
     }
   </style>
+
+  <!-- Google Analytics 4: Scienaut Portfolio -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NPS7S0WWJ0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NPS7S0WWJ0');
+
+    // Track link clicks across the portfolio and engineering tools.
+    document.addEventListener('click', function(event) {
+      var link = event.target.closest && event.target.closest('a[href]');
+      if (!link || typeof gtag !== 'function') return;
+
+      var href = link.href || '';
+      var label = (link.getAttribute('data-ga-name') ||
+                   link.getAttribute('aria-label') ||
+                   link.innerText ||
+                   link.getAttribute('title') ||
+                   href).trim().replace(/\s+/g, ' ').slice(0, 100);
+
+      var category = link.getAttribute('data-ga-category');
+      if (!category) {
+        if (/\.pdf(?:$|[?#])/i.test(href)) category = 'Resume & Documents';
+        else if (/linkedin\.com/i.test(href)) category = 'LinkedIn';
+        else if (/github\.com/i.test(href)) category = 'GitHub';
+        else if (/grabcad\.com/i.test(href)) category = 'CAD Portfolio';
+        else if (/^mailto:/i.test(href)) category = 'Contact';
+        else if (href.indexOf('/engineering-tools') !== -1) category = 'Engineering Tools';
+        else if (link.hostname && link.hostname !== location.hostname) category = 'External Links';
+        else category = 'Portfolio Navigation';
+      }
+
+      gtag('event', 'portfolio_link_click', {
+        link_name: label || 'Unnamed link',
+        link_category: category,
+        link_url: href,
+        link_domain: link.hostname || '',
+        page_location: location.href
+      });
+    });
+
+    // Record visits to each individual calculator page.
+    if (location.pathname.indexOf('/engineering-tools/') !== -1 &&
+        !location.pathname.endsWith('/engineering-tools/')) {
+      gtag('event', 'engineering_tool_view', {
+        tool_name: document.title,
+        tool_path: location.pathname
+      });
+    } else if (location.pathname.endsWith('/engineering-tools/')) {
+      gtag('event', 'engineering_tools_directory_view', {
+        page_location: location.href
+      });
+    }
+  </script>
+
 </head>
 <body>
   <header>
