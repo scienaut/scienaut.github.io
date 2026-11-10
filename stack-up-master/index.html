@@ -78,7 +78,7 @@ function rnd(min,max){return Math.round((min+Math.random()*(max-min))*100)/100;}
 function buildChallenge(n){
  const count=levelCounts[n],type=n%3===0?'clearance':n%3===1?'overall length':'end float';
  const isClear=type!=='overall length';
- const parts=[];for(let i=0;i<count;i++){const p=componentPool[(i*3+n*2+Math.floor(Math.random()*componentPool.length))%componentPool.length];const nominal=rnd(4.5,18.5);const tol= n<2?0.03:n<5?0.05:n<8?0.08:0.10;const t=rnd(tol*.55,tol);const sign=isClear?(i===0?1:-1):1;parts.push({name:p[0],icon:p[1],nom:nominal,tol:Math.round(t*1000)/1000,sign,sigma:Math.round(t/3/1000*100000)/100000});}
+ const parts=[];for(let i=0;i<count;i++){const p=componentPool[(i*3+n*2+Math.floor(Math.random()*componentPool.length))%componentPool.length];const nominal=rnd(4.5,18.5);const tol= n<2?0.03:n<5?0.05:n<8?0.08:0.10;const t=rnd(tol*.55,tol);const sign=isClear?(i===0?1:-1):1;parts.push({name:p[0],icon:p[1],nom:nominal,tol:Math.round(t*1000)/1000,sign,sigma:Math.round((t/3)*100000)/100000});}
  if(isClear){parts[0].name=n%3===0?'Housing width':'Available cavity';parts[0].icon='▣';}
  const nominal=parts.reduce((s,p)=>s+p.sign*p.nom,0),min=parts.reduce((s,p)=>s+p.sign*p.nom-p.tol,0),max=parts.reduce((s,p)=>s+p.sign*p.nom+p.tol,0);
  // For negative contributors, reverse adverse limits.
