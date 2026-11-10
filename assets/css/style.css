@@ -1096,3 +1096,33 @@ section .container {
     transform: translateX(-50%);
   }
 }
+
+
+/* GoatCounter visitor total beneath the social links */
+#header .portfolio-visitor-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
+}
+
+#header .portfolio-visitor-count i {
+  color: #12d640;
+  font-size: 15px;
+}
+
+#header .portfolio-visitor-count strong {
+  color: #12d640;
+  font-weight: 600;
+}
+
+@media (max-width: 992px) {
+  #header .portfolio-visitor-count {
+    justify-content: center;
+    margin-top: 10px;
+  }
+}
