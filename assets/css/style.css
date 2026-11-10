@@ -1126,3 +1126,136 @@ section .container {
     margin-top: 10px;
   }
 }
+
+/* ==========================================================
+   Portfolio navigation refresh
+   Individual ocean-green bordered links on desktop and mobile.
+   Layout and destinations remain unchanged.
+   ========================================================== */
+.nav-menu {
+  margin-top: 30px;
+}
+
+.nav-menu ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-menu li + li {
+  margin-left: 0;
+}
+
+.nav-menu a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px 13px;
+  border: 1px solid rgba(18, 214, 160, 0.58);
+  border-radius: 8px;
+  color: #f4f7fb;
+  font-size: 16px;
+  line-height: 1.35;
+  white-space: nowrap;
+  transition: color 0.2s ease, background-color 0.2s ease,
+              border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nav-menu a:before {
+  display: none;
+  content: none;
+}
+
+.nav-menu a:hover,
+.nav-menu li:hover > a,
+.nav-menu .active > a {
+  color: #12d6a0;
+  background: rgba(18, 214, 160, 0.09);
+  border-color: #12d6a0;
+  box-shadow: 0 0 0 1px rgba(18, 214, 160, 0.10);
+  text-decoration: none;
+}
+
+/* Mobile menu: one clearly separated, full-width link per row. */
+.mobile-nav {
+  padding: 14px;
+  border: 1px solid rgba(18, 214, 160, 0.55);
+  border-radius: 12px;
+  background: rgba(3, 17, 27, 0.97);
+}
+
+.mobile-nav ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.mobile-nav li {
+  width: 100%;
+  margin: 0;
+}
+
+.mobile-nav a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 15px;
+  border: 1px solid rgba(18, 214, 160, 0.58);
+  border-radius: 8px;
+  color: #f4f7fb;
+  font-size: 15px;
+  line-height: 1.4;
+  background: rgba(18, 214, 160, 0.035);
+  transition: color 0.2s ease, background-color 0.2s ease,
+              border-color 0.2s ease;
+}
+
+.mobile-nav a:hover,
+.mobile-nav li:hover > a,
+.mobile-nav .active > a {
+  color: #12d6a0;
+  background: rgba(18, 214, 160, 0.12);
+  border-color: #12d6a0;
+  text-decoration: none;
+}
+
+@media (min-width: 993px) {
+  .nav-menu ul {
+    column-gap: 10px;
+    row-gap: 10px;
+  }
+}
+
+@media (max-width: 992px) {
+  .mobile-nav {
+    top: 64px;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-nav-toggle {
+    padding: 8px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-nav {
+    padding: 10px;
+  }
+
+  .mobile-nav a {
+    min-height: 46px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
