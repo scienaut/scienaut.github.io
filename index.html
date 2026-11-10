@@ -1526,38 +1526,35 @@
   <script src="assets/js/main.js"></script>
 
 
-  <!-- Display total public site visits using GoatCounter's official visitor-counter API -->
+  <!-- Display total portfolio visits using GoatCounter's public counter JSON endpoint -->
   <script>
     (function () {
-      var container = document.getElementById('portfolio-visitor-count');
       var output = document.getElementById('goatcounter-total');
-      if (!container || !output) return;
+      if (!output) return;
 
-      var attempts = 0;
-      var timer = window.setInterval(function () {
-        attempts += 1;
-
-        if (window.goatcounter && typeof window.goatcounter.visit_count === 'function') {
-          window.clearInterval(timer);
-          try {
-            window.goatcounter.visit_count({
-              append: '#portfolio-visitor-count',
-              path: 'TOTAL',
-              no_branding: true,
-              style: 'div { border:0; background:transparent; color:#f4f7fb; padding:0; margin:0; font:600 12px Arial,sans-serif; } #gcvc-for { display:none; } #gcvc-views { color:#f4f7fb; font-weight:600; } #gcvc-by { display:none; }'
-            });
-            output.remove();
-          } catch (error) {
-            output.textContent = 'Unavailable';
+      fetch('https://scienaut.goatcounter.com/counter/TOTAL.json', {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store'
+      })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Counter request failed: ' + response.status);
+          return response.json();
+        })
+        .then(function (data) {
+          if (data && typeof data.count !== 'undefined') {
+            output.textContent = data.count;
+            output.setAttribute('aria-label', data.count + ' total portfolio visits');
+          } else {
+            throw new Error('Counter response did not include a count');
           }
-          return;
-        }
-
-        if (attempts >= 50) {
-          window.clearInterval(timer);
-          output.textContent = 'Unavailable';
-        }
-      }, 100);
+        })
+        .catch(function (error) {
+          console.error('GoatCounter visitor count could not be loaded:', error);
+          output.textContent = '—';
+          output.title = 'Visitor count is temporarily unavailable';
+        });
     })();
   </script>
 
