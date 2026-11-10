@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#071321">
+<meta name="description" content="Mechanical Fun – a gear train engineering jackpot challenge by Scienaut.">
+<title>Mechanical Fun | Scienaut Engineering Playground</title>
+<style>
+:root{color-scheme:dark;--bg:#071321;--panel:#10263a;--panel2:#0b1d2d;--text:#f3f7fb;--muted:#a8b7c7;--green:#12d6a0;--line:rgba(18,214,160,.35);--gold:#ffc857}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,#153b52 0,transparent 42%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+a{color:inherit;text-decoration:none}.shell{width:min(1060px,calc(100% - 32px));margin:auto}
+header{border-bottom:1px solid rgba(255,255,255,.1);background:rgba(4,15,26,.75)}.top{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font-weight:800;letter-spacing:.4px}.brand span{color:var(--green)}.back{color:var(--muted);font-size:14px}
+main{padding:42px 0 64px}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--green);font-weight:800}.hero{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:24px}h1{font-size:clamp(34px,6vw,54px);line-height:1.05;margin:10px 0}.intro{max-width:620px;color:var(--muted);line-height:1.65;margin:0}.pill{border:1px solid var(--line);color:var(--green);padding:8px 12px;border-radius:999px;font-size:12px;white-space:nowrap}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.85fr);gap:18px}.panel{background:linear-gradient(145deg,rgba(18,43,64,.96),rgba(9,27,43,.97));border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:22px;box-shadow:0 16px 40px rgba(0,0,0,.18)}.panel h2{font-size:18px;margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:12px;line-height:1.55;color:var(--muted)}
+label{display:block;font-size:13px;font-weight:700;margin:0 0 8px}input,select{width:100%;min-height:44px;border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:10px 12px;background:#071827;color:var(--text);font:inherit}input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+button{font:inherit;cursor:pointer}.btn{border:1px solid var(--green);background:var(--green);color:#041711;font-weight:800;padding:11px 16px;border-radius:9px;min-height:44px}.btn.secondary{background:transparent;color:var(--green)}.btn:disabled{opacity:.45;cursor:not-allowed}.field{margin:14px 0}.row{display:flex;gap:10px;align-items:end}.row>*{flex:1;min-width:0}
+.machine{margin:18px 0 14px;padding:14px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(3,15,26,.45)}.machine-head{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:var(--muted);margin-bottom:8px}.gear-stage{display:flex;align-items:center;justify-content:center;gap:clamp(3px,2vw,14px);min-height:160px;overflow:hidden}.gear{width:clamp(68px,14vw,112px);aspect-ratio:1;border-radius:50%;border:7px dotted var(--green);background:radial-gradient(circle,#173a4d 0 24%,#0b1c2b 25% 43%,#1a4253 44% 48%,#0b1c2b 49%);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(18,214,160,.1);flex-shrink:0}.gear.driver{border-color:#56b4ff}.gear.output{border-color:var(--gold)}.gear b{font-size:20px}.gear span{font-size:10px;color:var(--muted)}.mesh{height:3px;width:clamp(8px,3vw,24px);background:var(--muted);flex-shrink:0}.gear.idler{width:clamp(44px,9vw,68px);border-width:5px}.gear.idler b{font-size:15px}
+.target{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.metric{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px}.metric span{display:block;color:var(--muted);font-size:11px}.metric strong{display:block;margin-top:4px;font-size:16px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{border:1px solid rgba(18,214,160,.45);background:rgba(18,214,160,.04);color:var(--text);border-radius:9px;min-height:46px;padding:9px}.choice.selected{background:rgba(18,214,160,.18);border-color:var(--green);color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.feedback{min-height:28px;margin-top:12px;font-size:14px;font-weight:700}.success{color:var(--green)}.error{color:#ff9b8f}.jackpot{display:none;text-align:center;padding:14px;border:1px solid rgba(255,200,87,.6);background:rgba(255,200,87,.09);border-radius:12px;color:var(--gold);margin-top:12px}.jackpot.show{display:block;animation:pop .35s ease}@keyframes pop{from{transform:scale(.96);opacity:.5}to{transform:scale(1);opacity:1}}
+.scoreline{display:flex;justify-content:space-between;gap:10px;margin:12px 0;color:var(--muted);font-size:13px}.scoreline strong{color:var(--text)}.leaderboard{margin-top:14px}.leaderboard ol{padding-left:22px;margin:12px 0 0}.leaderboard li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}.leaderboard li span{color:var(--muted);display:block;font-size:11px;margin-top:3px}.empty{color:var(--muted);font-size:13px;padding:12px 0}.rules{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+footer{border-top:1px solid rgba(255,255,255,.1);padding:20px 0;color:var(--muted);font-size:12px}
+@media(max-width:760px){main{padding-top:30px}.hero{display:block}.pill{display:inline-block;margin-top:14px}.layout{grid-template-columns:1fr}.panel{padding:17px}.gear-stage{min-height:130px}.row{align-items:stretch;flex-direction:column}.target{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:380px){.shell{width:calc(100% - 22px)}.gear{width:62px}.gear.idler{width:42px}.target{gap:5px}.metric{padding:8px}.metric strong{font-size:14px}.choices{gap:6px}.choice{font-size:13px}}
+</style>
+</head>
+<body>
+<header><div class="shell top"><a class="brand" href="../index.html">SCIENAUT <span>· MECHANICAL FUN</span></a><a class="back" href="../index.html">← Back to Portfolio</a></div></header>
+<main class="shell">
+  <div class="hero"><div><div class="eyebrow">Engineering Playground · Game 01</div><h1>Mechanical Fun</h1><p class="intro">Build a simple gear train, hit the target output speed and direction, and unlock the jackpot. A little machine design thinking goes a long way.</p></div><span class="pill">GEAR TRAIN JACKPOT</span></div>
+  <div class="layout">
+    <section class="panel" aria-labelledby="challenge-title">
+      <h2 id="challenge-title">01 / Gear Train Challenge</h2>
+      <p class="small">You have a 20-tooth driver gear rotating at 60 RPM. Choose the driven gear and the number of idler gears to meet the target.</p>
+      <div class="field"><label for="playerName">Player name</label><input id="playerName" maxlength="24" autocomplete="nickname" placeholder="Enter your name"></div>
+      <div class="target">
+        <div class="metric"><span>Input speed</span><strong>60 RPM</strong></div>
+        <div class="metric"><span>Target output</span><strong id="targetRpm">30 RPM</strong></div>
+        <div class="metric"><span>Target direction</span><strong id="targetDirection">Opposite ↺</strong></div>
+      </div>
+      <div class="machine">
+        <div class="machine-head"><span>YOUR GEAR TRAIN</span><span id="gearCount">2 gears · 1 mesh</span></div>
+        <div class="gear-stage" id="gearStage" aria-label="Gear train illustration">
+          <div class="gear driver"><b>20T</b><span>DRIVER</span></div><div class="mesh"></div><div class="gear output"><b>40T</b><span>DRIVEN</span></div>
+        </div>
+        <div class="small">Illustrative schematic · External gears rotate in opposite directions at each mesh.</div>
+      </div>
+      <div class="field"><label>Choose driven gear teeth</label><div class="choices" id="toothChoices"><button class="choice" data-teeth="20">20 teeth</button><button class="choice" data-teeth="30">30 teeth</button><button class="choice selected" data-teeth="40">40 teeth</button><button class="choice" data-teeth="60">60 teeth</button><button class="choice" data-teeth="80">80 teeth</button></div></div>
+      <div class="field"><label>Choose number of idler gears</label><div class="choices" id="idlerChoices"><button class="choice selected" data-idlers="0">0 idlers</button><button class="choice" data-idlers="1">1 idler</button><button class="choice" data-idlers="2">2 idlers</button></div><p class="small">Idler gears change rotation direction but do not change the overall gear ratio (for a simple external gear train).</p></div>
+      <div class="actions"><button class="btn" id="checkBtn">Engage &amp; test</button><button class="btn secondary" id="nextBtn">Next challenge</button></div>
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      <div class="jackpot" id="jackpot"><div style="font-size:26px">★ JACKPOT! ★</div><strong id="jackpotText">Perfect gear train!</strong><div class="small" style="color:#f6dca3">Your score has been saved on this device.</div></div>
+      <div class="scoreline"><span>Current score: <strong id="score">0</strong></span><span>Round: <strong id="round">1</strong></span><span>Streak: <strong id="streak">0</strong></span></div>
+    </section>
+    <aside class="panel">
+      <h2>02 / Jackpot leaderboard</h2>
+      <p class="small">Top scores saved in this browser. Each entry includes the player name, score and date.</p>
+      <div class="scoreline"><span>Best score</span><strong id="bestScore">0</strong></div>
+      <div class="leaderboard" id="leaderboard"><div class="empty">No scores yet. Be the first to win!</div></div>
+      <div class="rules"><h2>How to play</h2><ol class="small"><li>Enter a player name.</li><li>Read the target output RPM and rotation direction.</li><li>Select a driven gear and 0, 1 or 2 idler gears.</li><li>Press <b>Engage &amp; test</b> to check your arrangement.</li><li>Earn points for a correct gear train. Build a streak for bonus points.</li></ol><p class="small">Scores are stored locally in this browser and automatically expire after 90 days. They are not shared between devices or browsers.</p></div>
+    </aside>
+  </div>
+</main>
+<footer><div class="shell">© <span id="year"></span> Hashim Khan · Scienaut Engineering Playground · Educational game, not a machine-design approval tool.</div></footer>
+<script>
+(function(){
+'use strict';
+const STORAGE_KEY='scienaut_mechanical_fun_scores_v1';
+const EXPIRY_DAYS=90, DRIVER_TEETH=20, INPUT_RPM=60, OPTIONS=[20,30,40,60,80];
+const $=id=>document.getElementById(id);
+let targetTeeth=40,targetSameDirection=false,selectedTeeth=40,selectedIdlers=0,score=0,round=1,streak=0,solved=false;
+const now=()=>Date.now();
+function readScores(){
+  try{
+    const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    const valid=Array.isArray(parsed)?parsed.filter(x=>x&&typeof x.name==='string'&&Number.isFinite(x.score)&&Number.isFinite(x.timestamp)&&now()-x.timestamp<EXPIRY_DAYS*86400000):[];
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(valid));
+    return valid.sort((a,b)=>b.score-a.score||b.timestamp-a.timestamp).slice(0,10);
+  }catch(e){return [];}
+}
+function saveScore(){
+  const name=$('playerName').value.trim().slice(0,24);
+  if(!name){$('feedback').textContent='Please enter your name before saving a jackpot score.';$('feedback').className='feedback error';$('playerName').focus();return;}
+  const entries=readScores();
+  entries.push({name,score,date:new Date().toISOString(),timestamp:now()});
+  entries.sort((a,b)=>b.score-a.score||b.timestamp-a.timestamp);
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(entries.slice(0,10)));}catch(e){$('feedback').textContent='Browser storage is unavailable; your score could not be saved.';}
+  renderLeaderboard();
+}
+function renderLeaderboard(){
+  const entries=readScores(),el=$('leaderboard');
+  $('bestScore').textContent=entries.length?entries[0].score:'0';
+  if(!entries.length){el.innerHTML='<div class="empty">No scores yet. Be the first to win!</div>';return;}
+  const list=document.createElement('ol');
+  entries.forEach(entry=>{
+    const li=document.createElement('li'),name=document.createElement('strong'),meta=document.createElement('span');
+    name.textContent=entry.name+' — '+entry.score+' pts';
+    const date=new Date(entry.date||entry.timestamp);
+    meta.textContent=Number.isNaN(date.getTime())?'Date unavailable':date.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+    li.append(name,meta);list.appendChild(li);
+  });
+  el.replaceChildren(list);
+}
+function chooseTarget(){
+  targetTeeth=OPTIONS[Math.floor(Math.random()*OPTIONS.length)];
+  targetSameDirection=Math.random()<.5;
+  $('targetRpm').textContent=(INPUT_RPM*DRIVER_TEETH/targetTeeth).toFixed(1).replace(/\.0$/,'')+' RPM';
+  $('targetDirection').textContent=targetSameDirection?'Same ↻':'Opposite ↺';
+  selectedTeeth=40;selectedIdlers=0;solved=false;
+  document.querySelectorAll('[data-teeth]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.teeth)===selectedTeeth));
+  document.querySelectorAll('[data-idlers]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.idlers)===selectedIdlers));
+  $('feedback').textContent='';$('feedback').className='feedback';$('jackpot').classList.remove('show');$('checkBtn').disabled=false;
+  renderGears();
+}
+function renderGears(){
+  const stage=$('gearStage');stage.replaceChildren();
+  const gear=(teeth,label,kind)=>{const d=document.createElement('div');d.className='gear '+kind;const b=document.createElement('b');b.textContent=teeth+'T';const s=document.createElement('span');s.textContent=label;d.append(b,s);return d;};
+  const mesh=()=>{const d=document.createElement('div');d.className='mesh';return d;};
+  stage.append(gear(DRIVER_TEETH,'DRIVER','driver'),mesh());
+  for(let i=0;i<selectedIdlers;i++){stage.append(gear(20,'IDLER','idler'),mesh());}
+  stage.append(gear(selectedTeeth,'DRIVEN','output'));
+  const gears=2+selectedIdlers;$('gearCount').textContent=gears+' gears · '+(gears-1)+' meshes';
+}
+document.querySelectorAll('[data-teeth]').forEach(b=>b.addEventListener('click',()=>{if(solved)return;selectedTeeth=Number(b.dataset.teeth);document.querySelectorAll('[data-teeth]').forEach(x=>x.classList.toggle('selected',x===b));renderGears();}));
+document.querySelectorAll('[data-idlers]').forEach(b=>b.addEventListener('click',()=>{if(solved)return;selectedIdlers=Number(b.dataset.idlers);document.querySelectorAll('[data-idlers]').forEach(x=>x.classList.toggle('selected',x===b));renderGears();}));
+$('checkBtn').addEventListener('click',()=>{
+  if(solved)return;
+  const name=$('playerName').value.trim();
+  if(!name){$('feedback').textContent='Enter your name to play and record your score.';$('feedback').className='feedback error';$('playerName').focus();return;}
+  const outputRPM=INPUT_RPM*DRIVER_TEETH/selectedTeeth;
+  const sameDirection=(selectedIdlers+1)%2===0;
+  const rpmCorrect=Math.abs(outputRPM-INPUT_RPM*DRIVER_TEETH/targetTeeth)<0.001;
+  if(rpmCorrect&&sameDirection===targetSameDirection){
+    solved=true;streak++;const points=100+Math.max(0,50-round*2)+(streak-1)*25;score+=points;
+    $('score').textContent=score;$('streak').textContent=streak;
+    $('feedback').textContent='Correct! Output: '+outputRPM.toFixed(1).replace(/\.0$/,'')+' RPM · '+(sameDirection?'same':'opposite')+' direction.';$('feedback').className='feedback success';
+    $('jackpotText').textContent='+'+points+' points · '+name+' hit the jackpot!';
+    $('jackpot').classList.add('show');$('checkBtn').disabled=true;saveScore();
+    if(typeof window.gtag==='function')window.gtag('event','mechanical_fun_jackpot',{score:score,round:round,player_name:name});
+  }else{
+    streak=0;$('streak').textContent=streak;
+    let message=!rpmCorrect?'Not quite. Check the gear ratio: output RPM = input RPM × driver teeth ÷ driven teeth.':'The speed is correct, but the rotation direction is not. Check the number of gear meshes.';
+    $('feedback').textContent=message;$('feedback').className='feedback error';
+  }
+});
+$('nextBtn').addEventListener('click',()=>{round++;$('round').textContent=round;chooseTarget();});
+$('year').textContent=new Date().getFullYear();
+renderLeaderboard();chooseTarget();
+})();
+</script>
+</body>
+</html>
