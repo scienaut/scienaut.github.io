@@ -1438,10 +1438,10 @@
       </div>
       <div class="portfolio-visitor-count" id="portfolio-visitor-count"
            aria-live="polite"
-           style="display:flex; justify-content:flex-end; align-items:center; gap:7px; margin-top:12px; padding:4px 2px 0; color:#a8b7c7; font-size:12px; opacity:.9;">
+           style="position:fixed; right:16px; bottom:16px; z-index:9999; display:flex; justify-content:center; align-items:center; gap:7px; margin:0; padding:9px 13px; color:#a8b7c7; font-size:12px; background:rgba(4,15,26,.94); border:1px solid rgba(255,255,255,.18); border-radius:999px; box-shadow:0 4px 18px rgba(0,0,0,.28);">
         <i class="bx bx-show" aria-hidden="true" style="color:#12d640;"></i>
         <span>Portfolio visits</span>
-        <span id="goatcounter-total" style="color:#f4f7fb; font-weight:600;">Loading…</span>
+        <span id="goatcounter-total" style="color:#f4f7fb; font-weight:700;">Loading…</span>
       </div>
     </div>
   </section> <!--End Links Section -->
@@ -1526,35 +1526,33 @@
   <script src="assets/js/main.js"></script>
 
 
-  <!-- Display total portfolio visits using GoatCounter's public counter JSON endpoint -->
+  <!-- Load the site-wide visitor total from GoatCounter -->
   <script>
     (function () {
       var output = document.getElementById('goatcounter-total');
       if (!output) return;
 
-      fetch('https://scienaut.goatcounter.com/counter/TOTAL.json', {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit',
-        cache: 'no-store'
-      })
-        .then(function (response) {
-          if (!response.ok) throw new Error('Counter request failed: ' + response.status);
-          return response.json();
-        })
-        .then(function (data) {
-          if (data && typeof data.count !== 'undefined') {
-            output.textContent = data.count;
-            output.setAttribute('aria-label', data.count + ' total portfolio visits');
-          } else {
-            throw new Error('Counter response did not include a count');
+      var attempts = 0;
+      var timer = window.setInterval(function () {
+        attempts += 1;
+        if (window.goatcounter && typeof window.goatcounter.visit_count === 'function') {
+          window.clearInterval(timer);
+          try {
+            window.goatcounter.visit_count({
+              append: '#goatcounter-total',
+              path: 'TOTAL',
+              no_branding: true
+            });
+            output.textContent = '';
+          } catch (error) {
+            console.error('GoatCounter display could not be initialized:', error);
+            output.textContent = 'Unavailable';
           }
-        })
-        .catch(function (error) {
-          console.error('GoatCounter visitor count could not be loaded:', error);
-          output.textContent = '—';
-          output.title = 'Visitor count is temporarily unavailable';
-        });
+        } else if (attempts >= 50) {
+          window.clearInterval(timer);
+          output.textContent = 'Unavailable';
+        }
+      }, 100);
     })();
   </script>
 
