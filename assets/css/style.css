@@ -1325,3 +1325,70 @@ section .container {
     font-size: 13px;
   }
 }
+
+/* Final mobile navigation override: keep links visible and remove the hamburger. */
+@media (max-width: 992px) {
+  #header .mobile-nav-toggle,
+  body > .mobile-nav-toggle,
+  .mobile-nav-toggle,
+  .mobile-nav,
+  .mobile-nav-overly {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  #header .nav-menu {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 24px 0 0 !important;
+  }
+
+  #header .nav-menu ul {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #header .nav-menu li {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  #header .nav-menu li a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 10px 7px !important;
+    border: 1px solid rgba(18, 214, 160, 0.72) !important;
+    border-radius: 8px !important;
+    color: #f4f7fb !important;
+    background: rgba(18, 214, 160, 0.045) !important;
+    font-size: 14px !important;
+    line-height: 1.3 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  #header .nav-menu li a:hover,
+  #header .nav-menu li.active a {
+    color: #12d6a0 !important;
+    border-color: #12d6a0 !important;
+    background: rgba(18, 214, 160, 0.13) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #header .nav-menu ul { gap: 8px !important; }
+  #header .nav-menu li a { font-size: 13px !important; padding: 9px 5px !important; }
+}
