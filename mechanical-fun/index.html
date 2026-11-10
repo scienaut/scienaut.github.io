@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#071321">
-<meta name="description" content="Mechanical Fun – a gear train engineering jackpot challenge by Scienaut.">
-<title>Mechanical Fun | Scienaut Engineering Playground</title>
+<meta name="description" content="Gear Train Challenge — calculate gear ratios, output speed and rotation direction in an interactive engineering game by Scienaut.">
+<title>Gear Train Challenge | Scienaut Engineering Playground</title>
 <style>
 :root{color-scheme:dark;--bg:#071321;--panel:#10263a;--panel2:#0b1d2d;--text:#f3f7fb;--muted:#a8b7c7;--green:#12d6a0;--line:rgba(18,214,160,.35);--gold:#ffc857}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,#153b52 0,transparent 42%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
@@ -20,15 +20,17 @@ button{font:inherit;cursor:pointer}.btn{border:1px solid var(--green);background
 .choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{border:1px solid rgba(18,214,160,.45);background:rgba(18,214,160,.04);color:var(--text);border-radius:9px;min-height:46px;padding:9px}.choice.selected{background:rgba(18,214,160,.18);border-color:var(--green);color:var(--green);box-shadow:inset 0 0 0 1px var(--green)}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.feedback{min-height:28px;margin-top:12px;font-size:14px;font-weight:700}.success{color:var(--green)}.error{color:#ff9b8f}.jackpot{display:none;text-align:center;padding:14px;border:1px solid rgba(255,200,87,.6);background:rgba(255,200,87,.09);border-radius:12px;color:var(--gold);margin-top:12px}.jackpot.show{display:block;animation:pop .35s ease}@keyframes pop{from{transform:scale(.96);opacity:.5}to{transform:scale(1);opacity:1}}
 .scoreline{display:flex;justify-content:space-between;gap:10px;margin:12px 0;color:var(--muted);font-size:13px}.scoreline strong{color:var(--text)}.leaderboard{margin-top:14px}.leaderboard ol{padding-left:22px;margin:12px 0 0}.leaderboard li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}.leaderboard li span{color:var(--muted);display:block;font-size:11px;margin-top:3px}.empty{color:var(--muted);font-size:13px;padding:12px 0}.rules{margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+.calc-panel{grid-column:1/-1;margin-top:18px}.calc-panel[hidden]{display:none}.calc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}.calc-step{padding:14px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid rgba(18,214,160,.18)}.calc-label{font-size:11px;color:var(--green);font-weight:800;letter-spacing:.7px;text-transform:uppercase}.equation{font-size:16px;font-weight:750;margin:10px 0;color:var(--text);line-height:1.6}.calc-result{font-size:13px;color:var(--muted);line-height:1.6;margin:0}.calc-note{margin-top:14px;padding:14px;border-radius:11px;background:rgba(255,200,87,.07);border:1px solid rgba(255,200,87,.25)}.calc-note strong{color:var(--gold)}.calc-note p{margin:8px 0 0}.reference{margin-top:14px}
+@media(max-width:600px){.calc-grid{grid-template-columns:1fr}.equation{font-size:14px}}
 footer{border-top:1px solid rgba(255,255,255,.1);padding:20px 0;color:var(--muted);font-size:12px}
 @media(max-width:760px){main{padding-top:30px}.hero{display:block}.pill{display:inline-block;margin-top:14px}.layout{grid-template-columns:1fr}.panel{padding:17px}.gear-stage{min-height:130px}.row{align-items:stretch;flex-direction:column}.target{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:380px){.shell{width:calc(100% - 22px)}.gear{width:62px}.gear.idler{width:42px}.target{gap:5px}.metric{padding:8px}.metric strong{font-size:14px}.choices{gap:6px}.choice{font-size:13px}}
 </style>
 </head>
 <body>
-<header><div class="shell top"><a class="brand" href="../index.html">SCIENAUT <span>· MECHANICAL FUN</span></a><a class="back" href="../index.html">← Back to Portfolio</a></div></header>
+<header><div class="shell top"><a class="brand" href="../index.html">SCIENAUT <span>· GEAR TRAIN CHALLENGE</span></a><a class="back" href="../index.html">← Back to Portfolio</a></div></header>
 <main class="shell">
-  <div class="hero"><div><div class="eyebrow">Engineering Playground · Game 01</div><h1>Mechanical Fun</h1><p class="intro">Build a simple gear train, hit the target output speed and direction, and unlock the jackpot. A little machine design thinking goes a long way.</p></div><span class="pill">GEAR TRAIN JACKPOT</span></div>
+  <div class="hero"><div><div class="eyebrow">Engineering Playground · Game 01</div><h1>Gear Train Challenge</h1><p class="intro">Choose a driven gear and idlers to meet the target output speed and direction. After your first win, unlock the worked calculations behind the gear train.</p></div><span class="pill">GEAR TRAIN JACKPOT</span></div>
   <div class="layout">
     <section class="panel" aria-labelledby="challenge-title">
       <h2 id="challenge-title">01 / Gear Train Challenge</h2>
@@ -52,6 +54,18 @@ footer{border-top:1px solid rgba(255,255,255,.1);padding:20px 0;color:var(--mute
       <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
       <div class="jackpot" id="jackpot"><div style="font-size:26px">★ JACKPOT! ★</div><strong id="jackpotText">Perfect gear train!</strong><div class="small" style="color:#f6dca3">Your score has been saved on this device.</div></div>
       <div class="scoreline"><span>Current score: <strong id="score">0</strong></span><span>Round: <strong id="round">1</strong></span><span>Streak: <strong id="streak">0</strong></span></div>
+      <section class="panel calc-panel" id="calculationPanel" hidden aria-live="polite">
+        <h2>03 / Engineering calculations unlocked</h2>
+        <p class="small">Your first successful arrangement, worked through using the standard simple external gear-train relationships.</p>
+        <div class="calc-grid">
+          <div class="calc-step"><span class="calc-label">1 · Gear ratio</span><div class="equation">i = z<sub>driven</sub> / z<sub>driver</sub></div><p id="calcRatio" class="calc-result"></p></div>
+          <div class="calc-step"><span class="calc-label">2 · Output speed</span><div class="equation">n<sub>out</sub> = n<sub>in</sub> × z<sub>driver</sub> / z<sub>driven</sub></div><p id="calcSpeed" class="calc-result"></p></div>
+          <div class="calc-step"><span class="calc-label">3 · Rotation direction</span><div class="equation">Direction reversals = number of external meshes</div><p id="calcDirection" class="calc-result"></p></div>
+          <div class="calc-step"><span class="calc-label">4 · Ideal torque relationship</span><div class="equation">T<sub>out</sub> / T<sub>in</sub> ≈ z<sub>driven</sub> / z<sub>driver</sub></div><p id="calcTorque" class="calc-result"></p></div>
+        </div>
+        <div class="calc-note"><strong>Worked example from your winning round</strong><p id="calcWorked" class="small"></p><p class="small">Assumptions: simple external spur gears, steady speed, no slip, and ideal loss-free transmission for the torque ratio. Real output torque is lower because of mesh, bearing and lubricant losses. Idler gears change the direction parity and spacing, not the overall speed ratio.</p></div>
+        <p class="small reference">Textbook basis: standard simple gear-train kinematics and torque relationships as taught in R.S. Khurmi, <em>Machine Design</em>, and Budynas &amp; Nisbett, <em>Shigley’s Mechanical Engineering Design</em>. Equations are presented as learning relationships, not a detailed gear strength or rating calculation.</p>
+      </section>
     </section>
     <aside class="panel">
       <h2>02 / Jackpot leaderboard</h2>
@@ -113,6 +127,19 @@ function chooseTarget(){
   $('feedback').textContent='';$('feedback').className='feedback';$('jackpot').classList.remove('show');$('checkBtn').disabled=false;
   renderGears();
 }
+function revealCalculations(){
+  const panel=$('calculationPanel');if(!panel)return;
+  const ratio=selectedTeeth/DRIVER_TEETH;
+  const output=INPUT_RPM*DRIVER_TEETH/selectedTeeth;
+  const meshes=selectedIdlers+1;
+  const direction=meshes%2===0?'Same direction as input':'Opposite direction to input';
+  $('calcRatio').textContent='i = '+selectedTeeth+' / '+DRIVER_TEETH+' = '+ratio.toFixed(3).replace(/0+$/,'').replace(/\\.$/,'');
+  $('calcSpeed').textContent='n_out = '+INPUT_RPM+' × '+DRIVER_TEETH+' / '+selectedTeeth+' = '+output.toFixed(2).replace(/\\.00$/,'')+' RPM';
+  $('calcDirection').textContent=meshes+' external mesh(es) → '+(meshes%2===0?'even':'odd')+' number of reversals → '+direction+'.';
+  $('calcTorque').textContent='Ideal torque multiplication = '+selectedTeeth+' / '+DRIVER_TEETH+' = '+ratio.toFixed(3)+'× input torque (before losses).';
+  $('calcWorked').textContent='Input: '+INPUT_RPM+' RPM; driver: '+DRIVER_TEETH+' teeth; driven: '+selectedTeeth+' teeth; idlers: '+selectedIdlers+'. Therefore output speed = '+INPUT_RPM+' × '+DRIVER_TEETH+' / '+selectedTeeth+' = '+output.toFixed(2)+' RPM. There are '+meshes+' external gear meshes, so the output rotates '+(meshes%2===0?'in the same direction':'in the opposite direction')+' as the driver.';
+  panel.hidden=false;
+}
 function renderGears(){
   const stage=$('gearStage');stage.replaceChildren();
   const gear=(teeth,label,kind)=>{const d=document.createElement('div');d.className='gear '+kind;const b=document.createElement('b');b.textContent=teeth+'T';const s=document.createElement('span');s.textContent=label;d.append(b,s);return d;};
@@ -136,7 +163,7 @@ $('checkBtn').addEventListener('click',()=>{
     $('score').textContent=score;$('streak').textContent=streak;
     $('feedback').textContent='Correct! Output: '+outputRPM.toFixed(1).replace(/\.0$/,'')+' RPM · '+(sameDirection?'same':'opposite')+' direction.';$('feedback').className='feedback success';
     $('jackpotText').textContent='+'+points+' points · '+name+' hit the jackpot!';
-    $('jackpot').classList.add('show');$('checkBtn').disabled=true;saveScore();
+    $('jackpot').classList.add('show');$('checkBtn').disabled=true;revealCalculations();saveScore();
     if(typeof window.gtag==='function')window.gtag('event','mechanical_fun_jackpot',{score:score,round:round,player_name:name});
   }else{
     streak=0;$('streak').textContent=streak;
