@@ -102,6 +102,10 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+
+  <!-- GoatCounter analytics -->
+  <script data-goatcounter="https://scienaut.goatcounter.com/count"
+          async src="https://gc.zgo.at/count.js"></script>
 </head>
 
 <body>
@@ -144,6 +148,12 @@
           <a href="mailto:hkhan.robotics@gmail.com" target="_blank" class="google"><i class="bx bx-mail-send"></i></a>
           <a href="https://grabcad.com/hashim.khan-6" target="_blank" class="google"><i class="bx bxs-cube"></i></a>
 
+      </div>
+
+      <div class="portfolio-visitor-count" id="portfolio-visitor-count" aria-live="polite">
+        <i class="bx bx-show" aria-hidden="true"></i>
+        <span>Portfolio visits</span>
+        <strong id="portfolio-visit-total">Loading…</strong>
       </div>
     </div>
 
@@ -1512,6 +1522,26 @@
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+
+  <!-- Display total public site visits from GoatCounter -->
+  <script>
+    (function () {
+      var output = document.getElementById('portfolio-visit-total');
+      if (!output) return;
+      fetch('https://scienaut.goatcounter.com/counter/TOTAL.json')
+        .then(function (response) {
+          if (!response.ok) throw new Error('Visitor count unavailable');
+          return response.json();
+        })
+        .then(function (data) {
+          output.textContent = data.count || '0';
+        })
+        .catch(function () {
+          output.textContent = '—';
+        });
+    })();
+  </script>
 
 </body>
 
