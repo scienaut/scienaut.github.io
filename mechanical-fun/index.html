@@ -54,6 +54,15 @@ footer{border-top:1px solid rgba(255,255,255,.1);padding:20px 0;color:var(--mute
       <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
       <div class="jackpot" id="jackpot"><div style="font-size:26px">★ JACKPOT! ★</div><strong id="jackpotText">Perfect gear train!</strong><div class="small" style="color:#f6dca3">Your score has been saved on this device.</div></div>
       <div class="scoreline"><span>Current score: <strong id="score">0</strong></span><span>Round: <strong id="round">1</strong></span><span>Streak: <strong id="streak">0</strong></span></div>
+    </section>
+    <aside class="panel">
+      <h2>02 / Jackpot leaderboard</h2>
+      <p class="small">Top scores saved in this browser. Each entry includes the player name, score and date.</p>
+      <div class="scoreline"><span>Best score</span><strong id="bestScore">0</strong></div>
+      <div class="leaderboard" id="leaderboard"><div class="empty">No scores yet. Be the first to win!</div></div>
+      <div class="rules"><h2>How to play</h2><ol class="small"><li>Enter a player name.</li><li>Read the target output RPM and rotation direction.</li><li>Select a driven gear and 0, 1 or 2 idler gears.</li><li>Press <b>Engage &amp; test</b> to check your arrangement.</li><li>Earn points for a correct gear train. Build a streak for bonus points.</li></ol><p class="small">Scores are stored locally in this browser and automatically expire after 90 days. They are not shared between devices or browsers.</p></div>
+    </aside>
+  </div>
       <section class="panel calc-panel" id="calculationPanel" hidden aria-live="polite">
         <h2>03 / Engineering calculations unlocked</h2>
         <p class="small">Your first successful arrangement, worked through using the standard simple external gear-train relationships.</p>
@@ -66,15 +75,6 @@ footer{border-top:1px solid rgba(255,255,255,.1);padding:20px 0;color:var(--mute
         <div class="calc-note"><strong>Worked example from your winning round</strong><p id="calcWorked" class="small"></p><p class="small">Assumptions: simple external spur gears, steady speed, no slip, and ideal loss-free transmission for the torque ratio. Real output torque is lower because of mesh, bearing and lubricant losses. Idler gears change the direction parity and spacing, not the overall speed ratio.</p></div>
         <p class="small reference">Textbook basis: standard simple gear-train kinematics and torque relationships as taught in R.S. Khurmi, <em>Machine Design</em>, and Budynas &amp; Nisbett, <em>Shigley’s Mechanical Engineering Design</em>. Equations are presented as learning relationships, not a detailed gear strength or rating calculation.</p>
       </section>
-    </section>
-    <aside class="panel">
-      <h2>02 / Jackpot leaderboard</h2>
-      <p class="small">Top scores saved in this browser. Each entry includes the player name, score and date.</p>
-      <div class="scoreline"><span>Best score</span><strong id="bestScore">0</strong></div>
-      <div class="leaderboard" id="leaderboard"><div class="empty">No scores yet. Be the first to win!</div></div>
-      <div class="rules"><h2>How to play</h2><ol class="small"><li>Enter a player name.</li><li>Read the target output RPM and rotation direction.</li><li>Select a driven gear and 0, 1 or 2 idler gears.</li><li>Press <b>Engage &amp; test</b> to check your arrangement.</li><li>Earn points for a correct gear train. Build a streak for bonus points.</li></ol><p class="small">Scores are stored locally in this browser and automatically expire after 90 days. They are not shared between devices or browsers.</p></div>
-    </aside>
-  </div>
 </main>
 <footer><div class="shell">© <span id="year"></span> Hashim Khan · Scienaut Engineering Playground · Educational game, not a machine-design approval tool.</div></footer>
 <script>
