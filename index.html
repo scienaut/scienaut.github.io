@@ -1436,11 +1436,12 @@
           <p class="description" style="color:#fff;">Download my resume (PDF)</p>
         </div>
       </div>
-      <div class="portfolio-visitor-count" id="portfolio-visitor-count" aria-live="polite"
+      <div class="portfolio-visitor-count" id="portfolio-visitor-count"
+           aria-live="polite"
            style="display:flex; justify-content:flex-end; align-items:center; gap:7px; margin-top:12px; padding:4px 2px 0; color:#a8b7c7; font-size:12px; opacity:.9;">
         <i class="bx bx-show" aria-hidden="true" style="color:#12d640;"></i>
         <span>Portfolio visits</span>
-        <strong id="portfolio-visit-total" style="color:#f4f7fb; font-weight:600;">Loading…</strong>
+        <span id="goatcounter-total" style="color:#f4f7fb; font-weight:600;">Loading…</span>
       </div>
     </div>
   </section> <!--End Links Section -->
@@ -1525,22 +1526,38 @@
   <script src="assets/js/main.js"></script>
 
 
-  <!-- Display total public site visits from GoatCounter -->
+  <!-- Display total public site visits using GoatCounter's official visitor-counter API -->
   <script>
     (function () {
-      var output = document.getElementById('portfolio-visit-total');
-      if (!output) return;
-      fetch('https://scienaut.goatcounter.com/counter/TOTAL.json')
-        .then(function (response) {
-          if (!response.ok) throw new Error('Visitor count unavailable');
-          return response.json();
-        })
-        .then(function (data) {
-          output.textContent = data.count || '0';
-        })
-        .catch(function () {
-          output.textContent = '—';
-        });
+      var container = document.getElementById('portfolio-visitor-count');
+      var output = document.getElementById('goatcounter-total');
+      if (!container || !output) return;
+
+      var attempts = 0;
+      var timer = window.setInterval(function () {
+        attempts += 1;
+
+        if (window.goatcounter && typeof window.goatcounter.visit_count === 'function') {
+          window.clearInterval(timer);
+          try {
+            window.goatcounter.visit_count({
+              append: '#portfolio-visitor-count',
+              path: 'TOTAL',
+              no_branding: true,
+              style: 'div { border:0; background:transparent; color:#f4f7fb; padding:0; margin:0; font:600 12px Arial,sans-serif; } #gcvc-for { display:none; } #gcvc-views { color:#f4f7fb; font-weight:600; } #gcvc-by { display:none; }'
+            });
+            output.remove();
+          } catch (error) {
+            output.textContent = 'Unavailable';
+          }
+          return;
+        }
+
+        if (attempts >= 50) {
+          window.clearInterval(timer);
+          output.textContent = 'Unavailable';
+        }
+      }, 100);
     })();
   </script>
 
