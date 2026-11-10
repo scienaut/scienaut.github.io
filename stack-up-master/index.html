@@ -115,8 +115,36 @@ examples:'<h3>Example 1 — two lengths in series</h3><p>A = 25.00 ±0.05 mm; B 
 function openHelp(tab){$('helpModal').classList.add('open');document.body.style.overflow='hidden';setHelpTab(tab||'basics');}
 function closeHelp(){$('helpModal').classList.remove('open');document.body.style.overflow='';}
 function setHelpTab(key){$('helpContent').innerHTML=help[key]||help.basics;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===key));}
-$('startBtn').addEventListener('click',start);$('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')start();});$('checkChoice').addEventListener('click',checkChoice);$('hintBtn').addEventListener('click',hint);$('checkCalc').addEventListener('click',checkCalc);$('nextLevel').addEventListener('click',next);$('restartLevel').addEventListener('click',renderLevel);$('refreshScores').addEventListener('click',renderScores);$('helpOpen').addEventListener('click',()=>openHelp());$('helpDuring').addEventListener('click',()=>openHelp());$('helpClose').addEventListener('click',closeHelp);$('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))closeHelp();});$('helpTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)setHelpTab(b.dataset.tab);});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp();});
-renderScores();
+// Bind controls after the complete page has been parsed. Delegated click handling
+// also keeps controls responsive if a panel is re-rendered during play.
+function bindGameControls(){
+ document.addEventListener('click',function(e){
+  const el=e.target.closest('button');
+  if(!el)return;
+  switch(el.id){
+   case 'startBtn': start(); break;
+   case 'checkChoice': checkChoice(); break;
+   case 'hintBtn': hint(); break;
+   case 'checkCalc': checkCalc(); break;
+   case 'nextLevel': next(); break;
+   case 'restartLevel': renderLevel(); break;
+   case 'refreshScores': renderScores(); break;
+   case 'helpOpen': case 'helpDuring': openHelp(); break;
+   case 'helpClose': closeHelp(); break;
+  }
+ });
+ $('playerName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();start();}});
+ $('helpModal').addEventListener('click',e=>{if(e.target===$('helpModal'))closeHelp();});
+ $('helpTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)setHelpTab(b.dataset.tab);});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeHelp();});
+}
+try{bindGameControls();renderScores();}
+catch(err){
+ console.error('Stack-Up Master initialisation error:',err);
+ const box=document.createElement('div');box.className='panel';box.style.borderColor='#ff7777';
+ box.textContent='The game could not initialise in this browser. Please reload the page or report this error to hkhan.robotics@gmail.com.';
+ document.body.appendChild(box);
+}
 })();
 </script>
 </body>
