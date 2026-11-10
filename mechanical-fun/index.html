@@ -133,8 +133,8 @@ function revealCalculations(){
   const output=INPUT_RPM*DRIVER_TEETH/selectedTeeth;
   const meshes=selectedIdlers+1;
   const direction=meshes%2===0?'Same direction as input':'Opposite direction to input';
-  $('calcRatio').textContent='i = '+selectedTeeth+' / '+DRIVER_TEETH+' = '+ratio.toFixed(3).replace(/0+$/,'').replace(/\\.$/,'');
-  $('calcSpeed').textContent='n_out = '+INPUT_RPM+' × '+DRIVER_TEETH+' / '+selectedTeeth+' = '+output.toFixed(2).replace(/\\.00$/,'')+' RPM';
+  $('calcRatio').textContent='i = '+selectedTeeth+' / '+DRIVER_TEETH+' = '+Number(ratio.toFixed(3));
+  $('calcSpeed').textContent='n_out = '+INPUT_RPM+' × '+DRIVER_TEETH+' / '+selectedTeeth+' = '+Number(output.toFixed(2))+' RPM';
   $('calcDirection').textContent=meshes+' external mesh(es) → '+(meshes%2===0?'even':'odd')+' number of reversals → '+direction+'.';
   $('calcTorque').textContent='Ideal torque multiplication = '+selectedTeeth+' / '+DRIVER_TEETH+' = '+ratio.toFixed(3)+'× input torque (before losses).';
   $('calcWorked').textContent='Input: '+INPUT_RPM+' RPM; driver: '+DRIVER_TEETH+' teeth; driven: '+selectedTeeth+' teeth; idlers: '+selectedIdlers+'. Therefore output speed = '+INPUT_RPM+' × '+DRIVER_TEETH+' / '+selectedTeeth+' = '+output.toFixed(2)+' RPM. There are '+meshes+' external gear meshes, so the output rotates '+(meshes%2===0?'in the same direction':'in the opposite direction')+' as the driver.';
