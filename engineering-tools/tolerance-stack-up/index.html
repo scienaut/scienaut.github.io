@@ -47,6 +47,7 @@
 <div class="field"><label for="edition">Drawing standard / edition</label><input id="edition" placeholder="Enter drawing reference"></div>
 </div>
 <div class="hint" style="margin-top:12px"><b>Reference boundaries:</b> ISO 286-1/-2 cover limits and fits for linear sizes; ISO 14405-1 addresses linear size specification; ISO 8015 defines fundamental GPS principles; ISO 2768-1 applies general tolerances when invoked by the drawing. ASME Y14.5 covers GD&T and drawing interpretation; it is not a universal dimensional tolerance table. This first release provides standards guidance and manual tolerance entry, not an embedded licensed tolerance database or automatic complianc
+<script>
 (function(){
 const $=id=>document.getElementById(id), tbody=$('rows');let last=null;
 function num(v){return v!==''&&Number.isFinite(Number(v))?Number(v):null}
@@ -116,9 +117,6 @@ $('csvFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try
 function download(name,data,type){const blob=new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
 $('save').onclick=()=>{localStorage.setItem('scienaut_tolerance_stack_v1',JSON.stringify({rows:read(),unit:$('unit').value,reqMin:$('reqMin').value,reqMax:$('reqMax').value,standard:$('standard').value,feature:$('feature').value,designation:$('designation').value,edition:$('edition').value}));alert('Calculation inputs saved in this browser.')};
 $('load').onclick=()=>{const raw=localStorage.getItem('scienaut_tolerance_stack_v1');if(!raw){alert('No saved calculation found in this browser.');return}try{const d=JSON.parse(raw);build(d.rows.length);d.rows.forEach((x,i)=>{const tr=tbody.children[i];for(const k of ['name','nom','up','low','dir','source','mean','sigma','samples'])tr.querySelector('.'+k).value=x[k]??'';tr.querySelector('.source').dispatchEvent(new Event('change'))});$('unit').value=d.unit;$('reqMin').value=d.reqMin;$('reqMax').value=d.reqMax;$('standard').value=d.standard;$('feature').value=d.feature;$('designation').value=d.designation;$('edition').value=d.edition;alert('Saved inputs loaded. Recalculate to refresh results.')}catch(e){alert('Saved data could not be read.')}};
-build(3);
-})();
-,'source','mean','sigma'])tr.querySelector('.'+k).value=x[k]??'';tr.querySelector('.source').dispatchEvent(new Event('change'))});$('unit').value=d.unit;$('reqMin').value=d.reqMin;$('reqMax').value=d.reqMax;$('standard').value=d.standard;$('feature').value=d.feature;$('designation').value=d.designation;$('edition').value=d.edition;alert('Saved inputs loaded. Recalculate to refresh results.')}catch(e){alert('Saved data could not be read.')}};
 build(3);
 })();
 </script>
