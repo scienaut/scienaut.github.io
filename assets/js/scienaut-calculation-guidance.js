@@ -70,7 +70,13 @@ const css=[
 ".scienaut-field-help{display:block;font-size:10px;line-height:1.45;color:#91b5d1;margin-top:4px;max-width:70ch}",
 ".scienaut-help-dot{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid #6f9ab8;border-radius:50%;font-size:10px;font-weight:700;color:#a9d4f1;margin-left:5px;cursor:help;vertical-align:middle}",
 ".scienaut-tip{position:fixed;z-index:99999;max-width:min(340px,calc(100vw - 24px));padding:11px 13px;border:1px solid #3e6782;border-radius:9px;background:#061827;color:#edf6ff;box-shadow:0 10px 35px #0009;font-size:12px;line-height:1.5;pointer-events:none;display:none}.scienaut-tip strong{display:block;color:#36dc70;margin-bottom:3px}",
-"[data-scienaut-anchor]{scroll-margin-top:24px}@media(max-width:650px){.scienaut-workflow{padding:12px}.scienaut-step-list{grid-template-columns:1fr 1fr}.scienaut-step{min-height:0;padding:8px}}@media(max-width:390px){.scienaut-step-list{grid-template-columns:1fr}}"
+"[data-scienaut-anchor]{scroll-margin-top:24px}@media(max-width:650px){.scienaut-workflow{padding:12px}.scienaut-step-list{grid-template-columns:1fr 1fr}.scienaut-step{min-height:0;padding:8px}}@media(max-width:390px){.scienaut-step-list{grid-template-columns:1fr}}",
+".app.has-slider-workflow{grid-template-rows:auto auto 1fr}",
+".app.has-slider-workflow>.scienaut-workflow{margin:12px 12px 0;padding:12px 14px}",
+".app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:9px}",
+".app.has-slider-workflow>.scienaut-workflow .scienaut-step{min-height:0;padding:9px 10px}",
+"@media(max-width:1100px){.app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(3,minmax(0,1fr))}}",
+"@media(max-width:650px){.app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(2,minmax(0,1fr))}.app.has-slider-workflow>.scienaut-workflow{margin:10px 10px 0}}"
 ].join("\n");
 const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
 function targetFor(step){if(step[2]){const x=document.querySelector(step[2]);if(x)return x;}if(step[3]){const q=step[3].toLowerCase();const h=[...document.querySelectorAll("h1,h2,h3,legend")].find(x=>x.textContent.trim().toLowerCase().includes(q));return h?.closest("section,fieldset,.panel,article")||h||null;}return null;}
@@ -79,7 +85,15 @@ const h=document.createElement("div");h.innerHTML="<h2>How to use "+cfg.title+"<
 const nav=document.createElement("nav");nav.className="scienaut-step-list";nav.setAttribute("aria-label","Calculation steps");
 cfg.steps.forEach((s,i)=>{const t=targetFor(s);if(t&&!t.id)t.id="scienaut-step-target-"+(i+1);if(t)t.setAttribute("data-scienaut-anchor","");const a=document.createElement("a");a.className="scienaut-step";a.href=t?"#"+t.id:"#";a.innerHTML="<b>"+String(i+1).padStart(2,"0")+"</b><span><strong>"+s[0]+"</strong><small>"+s[1]+"</small></span>";if(!t){a.setAttribute("aria-disabled","true");a.addEventListener("click",e=>e.preventDefault());}nav.appendChild(a);});guide.appendChild(nav);
 const insertion=document.querySelector(".page-wrap")||document.querySelector("main")||document.querySelector(".workspace")||document.body.firstElementChild;
-if(cfg.key==="shaft-design"){
+if(cfg.key==="slider-crank"){
+ const app=document.querySelector(".app"),workspace=document.querySelector(".workspace");
+ if(app&&workspace){
+  app.classList.add("has-slider-workflow");
+  workspace.parentNode.insertBefore(guide,workspace);
+ }else{
+  console.error("Scienaut guidance: slider-crank app/workspace not found; workflow guide not inserted into calculator columns.");
+ }
+}else if(cfg.key==="shaft-design"){
  const main=document.querySelector("body > main")||document.querySelector("main");
  if(main){
   const layout=document.createElement("div");layout.className="scienaut-shaft-layout";
