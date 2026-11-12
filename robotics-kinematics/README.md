@@ -51,3 +51,25 @@ These simple unit checks are used to verify the conversion equations independent
 | Mechanical power | 10 N·m × 2 rad/s | 20 W at joint, 22.22 W estimated motor mechanical input at 90% efficiency |
 
 These are formula-level checks, not an independent validation of the full rigid-body dynamics engine. Continue to compare full trajectories against hand calculations and manufacturer data before hardware selection.
+
+
+## V1.3 Advanced Analysis tab
+The Advanced Analysis tab is an additional view in the same page. It reads the active robot geometry and the current commanded joint-space move from the main calculator; it does not create a separate kinematics or dynamics model.
+
+### Included checks
+- Sampled end-effector path envelope (minimum and maximum radial distance along the commanded path). This is not the full reachable workspace.
+- User-defined minimum and maximum joint angles, checked at each Advanced Analysis trajectory sample.
+- Minimum singular value of the planar translational XY Jacobian for both 2R and 3R arms. The numerical near-singular flag threshold is 1e-5 m/rad and is a screening indicator, not a universal design limit.
+- Optional 2D capsule-envelope interference screening for non-adjacent links. Link lengths are taken from the main model; users enter each link's in-plane width. The minimum centreline segment distance is reduced by the two capsule radii to obtain signed surface clearance. Positive means separated, zero means touching, negative means envelope overlap.
+
+### Optional geometry and graceful fallback
+Link envelope widths are optional. If any width is blank, physical interference is marked **NOT ASSESSED**; the other Advanced Analysis checks still run. A 2R arm has no non-adjacent link pair, so this self-interference check is also reported as not applicable for 2R. Out-of-plane thickness can be entered for reference, but is not used by the planar collision model. No 3D collision, joint housing, bracket, cable, obstacle or adjacent-joint interface checks are claimed.
+
+### Sampling and validation boundaries
+The Advanced Analysis tab can resample the same quintic joint-space trajectory at 181, 361 or 721 time points. This is a numerical trajectory screen; finite sampling can miss a very short collision between samples. Increase resolution for critical motion and verify final clearances with a CAD assembly/interference tool. It does not alter the main dynamics result or its existing 181-point torque/power calculations.
+
+### Formula checks for the advanced geometry routines
+- Segment-to-segment distance: crossing segments return 0; parallel segments separated by 5 mm return 5 mm; collinear overlapping segments return 0.
+- Capsule clearance: centreline distance 20 mm with radii 5 mm and 4 mm gives 11 mm surface clearance.
+- 2R translational Jacobian: for 1 m + 1 m links, q2 = 0° is singular (minimum singular value 0); q2 = 90° is non-singular.
+- Joint-limit checks use the sampled joint angles in degrees and compare inclusively against the entered minimum and maximum.
