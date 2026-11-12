@@ -80,13 +80,17 @@ const nav=document.createElement("nav");nav.className="scienaut-step-list";nav.s
 cfg.steps.forEach((s,i)=>{const t=targetFor(s);if(t&&!t.id)t.id="scienaut-step-target-"+(i+1);if(t)t.setAttribute("data-scienaut-anchor","");const a=document.createElement("a");a.className="scienaut-step";a.href=t?"#"+t.id:"#";a.innerHTML="<b>"+String(i+1).padStart(2,"0")+"</b><span><strong>"+s[0]+"</strong><small>"+s[1]+"</small></span>";if(!t){a.setAttribute("aria-disabled","true");a.addEventListener("click",e=>e.preventDefault());}nav.appendChild(a);});guide.appendChild(nav);
 const insertion=document.querySelector(".page-wrap")||document.querySelector("main")||document.querySelector(".workspace")||document.body.firstElementChild;
 if(cfg.key==="shaft-design"){
- const main=document.querySelector("main");
+ const main=document.querySelector("body > main")||document.querySelector("main");
  if(main){
   const layout=document.createElement("div");layout.className="scienaut-shaft-layout";
   const sidebar=document.createElement("aside");sidebar.className="scienaut-shaft-sidebar";sidebar.setAttribute("aria-label","Shaft calculator workflow");
   const content=document.createElement("div");content.className="scienaut-shaft-content";
-  while(main.firstChild)content.appendChild(main.firstChild);
-  sidebar.appendChild(guide);layout.append(sidebar,content);main.appendChild(layout);
+  const existing=[...main.childNodes];
+  main.appendChild(layout);
+  existing.forEach(node=>content.appendChild(node));
+  sidebar.appendChild(guide);layout.append(sidebar,content);
+ }else{
+  console.error("Scienaut guidance: shaft page main element not found; guide not inserted above the page.");
  }
 }else if(cfg.key!=="bolt-fastener-design"&&insertion)insertion.parentNode.insertBefore(guide,insertion);
 const reasons={
