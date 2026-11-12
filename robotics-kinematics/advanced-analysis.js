@@ -7,25 +7,22 @@ function unitScale(){return $('units').value==='fps'?25.4:1;}
 function count(){return Number($('robot').value);}
 function makeInput(id,label,value,min='0',step='.1'){return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="number" min="'+min+'" step="'+step+'" value="'+value+'"></div>';}
 function buildAdvancedInputs(){
- const c=count(),u=unitScale(),lenUnit=$('units').value==='fps'?'in':'mm';
- $('advancedLinkInputs').innerHTML=Array.from({length:c},(_,i)=>'<div class="advanced-link"><h4>Link '+(i+1)+' · optional envelope</h4><div class="fieldgrid">'+makeInput('advWidth'+i,'In-plane width ('+lenUnit+')','', '0')+makeInput('advThickness'+i,'Out-of-plane thickness ('+lenUnit+')','', '0')+'</div><span class="hint">Leave blank to skip physical interference checks for this link.</span></div>').join('');
- $('advancedJointInputs').innerHTML=Array.from({length:c},(_,i)=>'<div class="advanced-link"><h4>Joint '+(i+1)+' · allowable range</h4><div class="fieldgrid">'+makeInput('advMin'+i,'Minimum angle (deg)',-180,'-360')+makeInput('advMax'+i,'Maximum angle (deg)',180,'-360')+'</div></div>').join('');
+ const c=count(),u=unitScale(),lenUnit=$('units').value==='fps'?'in':'mm',oldUnit=buildAdvancedInputs.lastUnit||u;
+ const saved=Array.from({length:c},(_,i)=>({w:$('advWidth'+i)?.value??'',t:$('advThickness'+i)?.value??'',min:$('advMin'+i)?.value??'-180',max:$('advMax'+i)?.value??'180'}));
+ $('advancedLinkInputs').innerHTML=Array.from({length:c},(_,i)=>'<div class="advanced-link"><h4>Link '+(i+1)+' · optional envelope</h4><div class="fieldgrid">'+makeInput('advWidth'+i,'In-plane width ('+lenUnit+')',saved[i].w===''?'':(Number(saved[i].w)*oldUnit/u).toString(), '0')+makeInput('advThickness'+i,'Out-of-plane thickness ('+lenUnit+')',saved[i].t===''?'':(Number(saved[i].t)*oldUnit/u).toString(), '0')+'</div><span class="hint">Leave blank to skip physical interference checks for this link.</span></div>').join('');
+ $('advancedJointInputs').innerHTML=Array.from({length:c},(_,i)=>'<div class="advanced-link"><h4>Joint '+(i+1)+' · allowable range</h4><div class="fieldgrid">'+makeInput('advMin'+i,'Minimum angle (deg)',saved[i].min,'-360')+makeInput('advMax'+i,'Maximum angle (deg)',saved[i].max,'-360')+'</div></div>').join('');
+ buildAdvancedInputs.lastUnit=u;
 }
 function fkPoints(q,g){return window.scienautRobotics.getForwardKinematics(q,g).pts;}
 function minSegmentDistance(p1,p2,p3,p4){
- const dot=(a,b)=>a[0]*b[0]+a[1]*b[1],sub=(a,b)=>[a[0]-b[0],a[1]-b[1]],a=sub(p2,p1),b=sub(p4,p3),r=sub(p1,p3);
- const aa=dot(a,a),bb=dot(b,b),ab=dot(a,b),ar=dot(a,r),br=dot(b,r),den=aa*bb-ab*ab;
- let s=0,t=0;
- if(aa<1e-14&&bb<1e-14)return Math.hypot(r[0],r[1]);
- if(aa<1e-14)t=Math.max(0,Math.min(1,br/bb));
- else if(bb<1e-14)s=Math.max(0,Math.min(1,-ar/aa));
- else{
-  s=den>1e-14?Math.max(0,Math.min(1,(ab*br-bb*ar)/den)):0;
-  t=(ab*s+br)/bb;
-  if(t<0){t=0;s=Math.max(0,Math.min(1,-ar/aa));}
-  else if(t>1){t=1;s=Math.max(0,Math.min(1,(ab-ar)/aa));}
+ const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+ const on=(a,b,p)=>Math.min(a[0],b[0])-1e-12<=p[0]&&p[0]<=Math.max(a[0],b[0])+1e-12&&Math.min(a[1],b[1])-1e-12<=p[1]&&p[1]<=Math.max(a[1],b[1])+1e-12;
+ const c1=cross(p1,p2,p3),c2=cross(p1,p2,p4),c3=cross(p3,p4,p1),c4=cross(p3,p4,p2);
+ if(((c1<=0&&c2>=0)||(c1>=0&&c2<=0))&&((c3<=0&&c4>=0)||(c3>=0&&c4<=0))){
+  if((c1*c2<0&&c3*c4<0)||(Math.abs(c1)<1e-12&&on(p1,p2,p3))||(Math.abs(c2)<1e-12&&on(p1,p2,p4))||(Math.abs(c3)<1e-12&&on(p3,p4,p1))||(Math.abs(c4)<1e-12&&on(p3,p4,p2)))return 0;
  }
- const dx=r[0]+s*a[0]-t*b[0],dy=r[1]+s*a[1]-t*b[1];return Math.hypot(dx,dy);
+ const pointSegment=(p,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],den=dx*dx+dy*dy;if(den<1e-24)return Math.hypot(p[0]-a[0],p[1]-a[1]);const t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dy)/den));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy);};
+ return Math.min(pointSegment(p1,p3,p4),pointSegment(p2,p3,p4),pointSegment(p3,p1,p2),pointSegment(p4,p1,p2));
 }
 function jacobianSigma(q,g){
  const c=q.length,pts=fkPoints(q,g),J=[];
