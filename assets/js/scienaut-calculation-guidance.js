@@ -69,7 +69,7 @@ const guide=document.createElement("section");guide.className="scienaut-workflow
 const h=document.createElement("div");h.innerHTML="<h2>How to use "+cfg.title+"</h2><p>Follow the workflow in order. Hover over or focus an input parameter to see what value is needed and why it matters.</p>";guide.appendChild(h);
 const nav=document.createElement("nav");nav.className="scienaut-step-list";nav.setAttribute("aria-label","Calculation steps");
 cfg.steps.forEach((s,i)=>{const t=targetFor(s);if(t&&!t.id)t.id="scienaut-step-target-"+(i+1);if(t)t.setAttribute("data-scienaut-anchor","");const a=document.createElement("a");a.className="scienaut-step";a.href=t?"#"+t.id:"#";a.innerHTML="<b>"+String(i+1).padStart(2,"0")+"</b><span><strong>"+s[0]+"</strong><small>"+s[1]+"</small></span>";if(!t){a.setAttribute("aria-disabled","true");a.addEventListener("click",e=>e.preventDefault());}nav.appendChild(a);});guide.appendChild(nav);
-const insertion=document.querySelector(".page-wrap")||document.querySelector("main")||document.querySelector(".workspace")||document.body.firstElementChild;if(insertion)insertion.parentNode.insertBefore(guide,insertion);
+const insertion=document.querySelector(".page-wrap")||document.querySelector("main")||document.querySelector(".workspace")||document.body.firstElementChild;if(cfg.key!=="bolt-fastener-design"&&insertion)insertion.parentNode.insertBefore(guide,insertion);
 const reasons={
 fos:"Required factor of safety. It sets the strength margin against the selected material limit; choose it from the design basis, not as a material property.",
 fosReq:"Required screening factor of safety. It is compared with the calculated margin and must come from the applicable design basis.",
