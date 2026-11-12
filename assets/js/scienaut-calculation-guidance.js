@@ -76,7 +76,13 @@ const css=[
 ".app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:9px}",
 ".app.has-slider-workflow>.scienaut-workflow .scienaut-step{min-height:0;padding:9px 10px}",
 "@media(max-width:1100px){.app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(3,minmax(0,1fr))}}",
-"@media(max-width:650px){.app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(2,minmax(0,1fr))}.app.has-slider-workflow>.scienaut-workflow{margin:10px 10px 0}}"
+"@media(max-width:650px){.app.has-slider-workflow>.scienaut-workflow .scienaut-step-list{grid-template-columns:repeat(2,minmax(0,1fr))}.app.has-slider-workflow>.scienaut-workflow{margin:10px 10px 0}}",
+".scienaut-workflow.structural-member-workflow{margin:12px 12px 0;padding:14px 16px;border:1px solid #334155;border-radius:12px;background:linear-gradient(120deg,#10283b,#091827)}",
+".scienaut-workflow.structural-member-workflow .scienaut-step-list{grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin-top:10px}",
+".scienaut-workflow.structural-member-workflow .scienaut-step{min-height:112px;padding:10px 11px}",
+".workspace.has-structural-workflow{min-height:calc(100vh - 210px)}",
+"@media(max-width:1250px){.scienaut-workflow.structural-member-workflow .scienaut-step-list{grid-template-columns:repeat(3,minmax(0,1fr))}}",
+"@media(max-width:700px){.scienaut-workflow.structural-member-workflow{margin:10px 10px 0}.scienaut-workflow.structural-member-workflow .scienaut-step-list{grid-template-columns:repeat(2,minmax(0,1fr))}}"
 ].join("\n");
 const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
 function targetFor(step){if(step[2]){const x=document.querySelector(step[2]);if(x)return x;}if(step[3]){const q=step[3].toLowerCase();const h=[...document.querySelectorAll("h1,h2,h3,legend")].find(x=>x.textContent.trim().toLowerCase().includes(q));return h?.closest("section,fieldset,.panel,article")||h||null;}return null;}
@@ -92,6 +98,15 @@ if(cfg.key==="slider-crank"){
   workspace.parentNode.insertBefore(guide,workspace);
  }else{
   console.error("Scienaut guidance: slider-crank app/workspace not found; workflow guide not inserted into calculator columns.");
+ }
+}else if(cfg.key==="structural-member"){
+ const workspace=document.querySelector(".workspace");
+ if(workspace){
+  guide.classList.add("structural-member-workflow");
+  workspace.classList.add("has-structural-workflow");
+  workspace.parentNode.insertBefore(guide,workspace);
+ }else{
+  console.error("Scienaut guidance: structural-member workspace not found; guide not inserted into calculator columns.");
  }
 }else if(cfg.key==="shaft-design"){
  const main=document.querySelector("body > main")||document.querySelector("main");
