@@ -35,7 +35,12 @@ header a{color:var(--green);text-decoration:none}.brand{font-weight:850;letter-s
 <div class="field"><label for="jaw">Jaw opening (mm)</label><input id="jaw" type="number" min="0" step="1" value="60"></div>
 <div class="field"><label for="payloadOffset">Payload CG offset from tool (mm)</label><input id="payloadOffset" type="number" step="1" value="0"></div>
 </div><span class="hint">The two-jaw gripper is represented as a lumped tool mass at the final link. Payload is a point mass at the entered tool offset. Jaw opening is visual only in V1.0.</span></div>
-<div class="section"><h2>05 · Motion endpoints</h2><div id="fkInputs" class="fieldgrid"></div><div id="ikInputs" class="fieldgrid hidden">
+<div class="section"><h2>05 · Motor & gearbox assessment</h2>
+<div class="note">Enter one drive configuration per joint to check the joint-side dynamic results against a proposed motor and gearbox. Use manufacturer datasheet values. This is a preliminary mechanical check, not a final motor selection.</div>
+<div id="drives"></div>
+<div id="driveResults" class="status">Calculate the robot motion to assess motor and gearbox requirements.</div>
+</div>
+<div class="section"><h2>06 · Motion endpoints</h2><div id="fkInputs" class="fieldgrid"></div><div id="ikInputs" class="fieldgrid hidden">
 <div class="field"><label for="targetX">Target X (mm)</label><input id="targetX" type="number" value="300"></div>
 <div class="field"><label for="targetY">Target Y (mm)</label><input id="targetY" type="number" value="180"></div>
 <div class="field" id="phiField"><label for="targetPhi">Target tool angle φ (deg)</label><input id="targetPhi" type="number" value="0"></div>
@@ -96,6 +101,7 @@ function buildInputs(){
  $('links').innerHTML=Array.from({length:c},(_,i)=>'<div class="joint-card"><h3>Link '+(i+1)+'</h3><div class="fieldgrid">'+makeField('L'+i,'Length ('+(unit()==='fps'?'in':'mm')+')',Math.round([300,250,180][i]/s),'.1','0.1')+makeField('M'+i,'Total link assembly mass ('+(unit()==='fps'?'lbm':'kg')+')',([3.5,2.5,1.4][i]/m).toFixed(3),'.001','0')+makeField('C'+i,'COM from proximal joint (% link length)',50,'.1','0')+makeField('I'+i,'Rotational inertia about COM ('+(unit()==='fps'?'lbm·in²':'kg·m²')+')',0,'.0001','0')+'</div><span class="hint">Inertia = 0 uses uniform slender-rod estimate; edit with measured/CAD value for accuracy.</span></div>').join('');
  $('frictions').innerHTML=Array.from({length:c},(_,i)=>'<div class="joint-card"><h3>Joint '+(i+1)+'</h3><div class="fieldgrid">'+makeField('mu'+i,'Friction coefficient μ',.05,'.001','0')+makeField('N'+i,'Normal load ('+(unit()==='fps'?'lbf':'N')+')',0,'.1','0')+makeField('r'+i,'Effective friction radius ('+(unit()==='fps'?'in':'mm')+')',5/s,'.1','0')+makeField('B'+i,'Viscous coefficient ('+(unit()==='fps'?'lbf·ft·s/rad':'N·m·s/rad')+')',0,'.001','0')+'</div></div>').join('');
  $('fkInputs').innerHTML=Array.from({length:c},(_,i)=>makeField('end'+i,'Final joint '+(i+1)+' (deg)',[60,45,20][i],'.1')).join('');
+ $('drives').innerHTML=Array.from({length:c},(_,i)=>'<div class="joint-card"><h3>Joint '+(i+1)+' drive</h3><div class="fieldgrid">'+makeField('ratio'+i,'Gear reduction ratio (motor:output)',50,'.1','0.001')+makeField('eff'+i,'Gearbox efficiency (%)',90,'.1','0.1')+makeField('motorRated'+i,'Motor rated torque (N·m)',0,'.01','0')+makeField('motorPeak'+i,'Motor peak torque (N·m)',0,'.01','0')+makeField('motorMaxRpm'+i,'Motor maximum speed (rpm)',3000,'.1','0')+makeField('gbRated'+i,'Gearbox rated output torque (N·m)',0,'.01','0')+makeField('gbPeak'+i,'Gearbox peak output torque (N·m)',0,'.01','0')+'</div><span class="hint">Enter manufacturer ratings. Leave a rating at zero if unknown; that check will be marked NOT ASSESSED, not PASS.</span></div>').join('');
  $('start3Field').classList.toggle('hidden',c<3);$('phiField').classList.toggle('hidden',c<3);
  $('mode').dispatchEvent(new Event('change'));
 }
