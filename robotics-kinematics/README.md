@@ -1,4 +1,4 @@
-# Scienaut Robotics Kinematics & Dynamics V1.0
+# Scienaut Robotics Kinematics & Dynamics V1.2 (motor/gearbox assessment)
 
 Standalone portfolio tool: https://scienaut.github.io/robotics-kinematics/
 
@@ -11,6 +11,7 @@ Standalone portfolio tool: https://scienaut.github.io/robotics-kinematics/
 - Per-joint Coulomb friction coefficient, normal load, effective friction radius and viscous coefficient.
 - Two-jaw gripper lumped mass, payload mass and payload CG offset.
 - CSV time-history export and browser print / Save as PDF.
+- Preliminary motor and gearbox assessment per joint: gear ratio, gearbox efficiency, motor continuous/peak torque, motor speed, motor rated mechanical power, gearbox continuous output torque and peak output torque checks.
 
 ## Dynamic model
 The links are rigid planar bodies. The Lagrange equation is evaluated numerically:
@@ -24,3 +25,29 @@ The mass matrix is assembled from link and tool centre-of-mass Jacobians and lin
 - Torque/power are ideal joint-side mechanical estimates. Verify mass properties, gravity direction, friction, gear ratios and operating constraints from the actual design before selecting motors or gearboxes.
 - PDF export uses the browser print dialog; choose "Save as PDF".
 - SI is the internal calculation basis. FPS display conversion is limited to the geometry/mass/friction inputs and readouts; CSV remains SI.
+
+
+## V1.2 motor and gearbox assessment
+For each joint, the calculator derives absolute peak and move-RMS joint torque from the sampled dynamic trajectory. It then estimates motor-side requirements using the entered reduction ratio \(i\) and gearbox efficiency \(\eta\):
+
+- Motor torque estimate: \(T_m = T_j/(i\eta)\) for the assumed motoring direction.
+- Motor speed: \(n_m = |\omega_j| i 60/(2\pi)\).
+- Motor mechanical power RMS: move-RMS of joint mechanical power divided by gearbox efficiency.
+- Gearbox output torque checks compare move-RMS and peak joint torque with the entered continuous and peak output ratings.
+- A zero/blank manufacturer rating is reported as **NOT ASSESSED**, never as PASS.
+
+### Interpretation limits
+This is a preliminary drive-train screen, not a final component selection. The RMS calculation covers the entered move only; it does not establish thermal duty-cycle capability over a production cycle. It does not model gearbox input/output inertia, motor rotor inertia, acceleration reflected through gear ratio, motor/drive current limits, peak torque duration, thermal time constants, braking/regeneration efficiency, service factor, duty cycle, voltage/speed torque curves, gearhead life or manufacturer derating. Confirm all ratings and permitted loads against the selected manufacturer's datasheets. The efficiency-based motor torque estimate assumes motoring; regenerative/braking operation requires direction-dependent efficiency treatment.
+
+## Independent calculation spot checks (V1.2 equations)
+These simple unit checks are used to verify the conversion equations independently of the robot solver:
+
+| Check | Inputs | Expected result |
+|---|---|---|
+| Motor torque conversion | Joint torque 10 N·m, ratio 50:1, efficiency 0.90 | 0.2222 N·m motor torque |
+| Motor speed conversion | Joint speed 2 rad/s, ratio 50:1 | 954.93 rpm motor speed |
+| Gearbox output | Joint torque 10 N·m | 10 N·m gearbox output torque requirement |
+| RMS torque | Sample torques 3 and 4 N·m | 3.5355 N·m move-RMS torque |
+| Mechanical power | 10 N·m × 2 rad/s | 20 W at joint, 22.22 W estimated motor mechanical input at 90% efficiency |
+
+These are formula-level checks, not an independent validation of the full rigid-body dynamics engine. Continue to compare full trajectories against hand calculations and manufacturer data before hardware selection.
