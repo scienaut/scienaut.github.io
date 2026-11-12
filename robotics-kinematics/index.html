@@ -151,7 +151,46 @@ function drawRobot(row){const cv=$('robotCanvas'),ctx=fitCanvas(cv),W=cv.width,H
 function plot(id,seriesFns){const cv=$(id),ctx=fitCanvas(cv),W=cv.width,H=cv.height,L=Math.max(48,W*.09),R=16,T=18,B=34;ctx.clearRect(0,0,W,H);ctx.fillStyle='#071522';ctx.fillRect(0,0,W,H);if(!plotSamples.length){ctx.fillStyle='#8faec7';ctx.fillText('Calculate to generate plot',L,H/2);return;}if(!Array.isArray(seriesFns)||seriesFns.length===0||seriesFns.some(fn=>typeof fn!=='function'))throw Error('Plot data error: expected one or more numeric data-series functions for '+id+'.');const vals=plotSamples.flatMap(r=>seriesFns.map(fn=>fn(r))),lo=Math.min(0,...vals),hi=Math.max(0,...vals),range=hi-lo||1,x=t=>L+(W-L-R)*t/result.T,y=v=>T+(H-T-B)*(hi-v)/range;ctx.strokeStyle='#29465c';ctx.lineWidth=1;ctx.font='11px sans-serif';ctx.fillStyle='#9bb5ca';for(let i=0;i<=4;i++){const yy=T+(H-T-B)*i/4;ctx.beginPath();ctx.moveTo(L,yy);ctx.lineTo(W-R,yy);ctx.stroke();ctx.fillText((hi-(range*i/4)).toPrecision(3),3,yy+4);}ctx.fillText('0',L,H-9);ctx.fillText(result.T.toFixed(1)+' s',W-48,H-9);const colors=['#63adff','#12d640','#ffbd59'];seriesFns.forEach((fn,j)=>{ctx.strokeStyle=colors[j%colors.length];ctx.lineWidth=2;ctx.beginPath();plotSamples.forEach((r,i)=>{const xx=x(r.t),yy=y(fn(r));i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy)});ctx.stroke();});if(animationIndex>=0){const xx=x(plotSamples[animationIndex].t);ctx.strokeStyle='#ffbd59';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(xx,T);ctx.lineTo(xx,H-B);ctx.stroke();ctx.setLineDash([]);}}
 function drawAll(row){drawRobot(row);plot('plotX',[r=>r.p.x*1000/lengthScale()]);plot('plotY',[r=>r.p.y*1000/lengthScale()]);plot('plotSpeed',[r=>r.speed*1000/lengthScale()]);plot('plotTorque',result.g.map((_,i)=>r=>r.dyn.tau[i]*(unit()==='fps'?.737562149:1)));plot('plotPower',result.g.map((_,i)=>r=>r.dyn.power[i]*(unit()==='fps'?.00134102209:1)));plot('plotOmega',result.g.map((_,i)=>r=>r.qd[i]));renderDriveAssessment();}
 function animate(){if(!result){calculate();}if(animFrame)cancelAnimationFrame(animFrame);animStart=performance.now();lastPlotFrame=0;const step=now=>{const u=Math.min(1,(now-animStart)/(result.T*1000)),idx=Math.min(result.rows.length-1,Math.round(u*(result.rows.length-1))),r=result.rows[idx];animationIndex=idx;drawAll(r);if(u<1)animFrame=requestAnimationFrame(step);else{animationIndex=-1;drawAll(result.rows[result.rows.length-1]);animFrame=null;}};animFrame=requestAnimationFrame(step);}
-function exportCSV(){if(!result)calculate();const c=count(),headers=['time_s','x_m','y_m','tool_speed_m_s',...Array.from({length:c},(_,i)=>'q'+(i+1)+'_rad'),...Array.from({length:c},(_,i)=>'qd'+(i+1)+'_rad_s'),...Array.from({length:c},(_,i)=>'qdd'+(i+1)+'_rad_s2'),...Array.from({length:c},(_,i)=>'torque'+(i+1)+'_Nm'),...Array.from({length:c},(_,i)=>'power'+(i+1)+'_W')];const lines=[headers.join(',')];for(const r of result.rows)lines.push([r.t,r.p.x,r.p.y,r.speed,...r.q,...r.qd,...r.qdd,...r.dyn.tau,...r.dyn.power].join(','));download('scienaut-robotics-kinematics.csv',lines.join('\n'),'text/csv');}
+function exportCSV(){
+ if(!result)calculate();
+ const c=count(),lines=[],cell=v=>'"'+String(v??'').replace(/"/g,'""')+'"',row=a=>lines.push(a.map(cell).join(','));
+ row(['SCIEN AUT ROBOTICS LAB · KINEMATICS & DYNAMICS REPORT']);
+ row(['Generated',new Date().toISOString()]);
+ row(['Robot configuration',c+'R planar']);
+ row(['Calculation mode',$('mode').value==='fk'?'Forward kinematics':'Inverse kinematics']);
+ row(['Display units',$('units').selectedOptions[0]?.textContent||$('units').value]);
+ row(['Move duration (s)',result.T]);
+ row([]);
+ row(['INPUTS · CURRENT MODEL']);
+ row(['Parameter','Value','Unit']);
+ document.querySelectorAll('.controls input[id],.controls select[id]').forEach(el=>{
+  const label=document.querySelector('label[for="'+el.id+'"]')?.textContent?.trim()||el.id;
+  row([label,el.value,el.dataset.unit||'as displayed']);
+ });
+ row([]);
+ row(['CALCULATED SUMMARY']);
+ row(['Metric','Value','Unit']);
+ const final=fk(result.end,result.g);
+ row(['End-effector X',final.x*1000,'mm']);
+ row(['End-effector Y',final.y*1000,'mm']);
+ row(['End-effector orientation',deg(final.phi),'deg']);
+ row(['Peak tool speed',Math.max(...result.rows.map(r=>r.speed))*1000,'mm/s']);
+ row(['Peak absolute joint torque',result.peakTau,'N·m']);
+ row([]);
+ row(['MOTOR & GEARBOX ASSESSMENT']);
+ row(['Joint','Motor RMS torque (N·m)','Motor peak torque (N·m)','Motor peak speed (rpm)','Motor RMS power (W)','Gearbox RMS output torque (N·m)','Gearbox peak output torque (N·m)','Motor continuous check','Motor peak check','Motor speed check','Motor power check','Gearbox continuous check','Gearbox peak check']);
+ result.driveChecks.forEach((d,i)=>row([i+1,d.motorRms,d.motorPeak,d.motorRpm,d.motorPowerRms,d.rms,d.pk,d.ratedStatus,d.peakStatus,d.speedStatus,d.motorPowerStatus,d.gbRatedStatus,d.gbPeakStatus]));
+ row([]);
+ row(['TIME HISTORY · SI BASE UNITS']);
+ const headers=['time_s','x_m','y_m','tool_speed_m_s',...Array.from({length:c},(_,i)=>'q'+(i+1)+'_rad'),...Array.from({length:c},(_,i)=>'qd'+(i+1)+'_rad_s'),...Array.from({length:c},(_,i)=>'qdd'+(i+1)+'_rad_s2'),...Array.from({length:c},(_,i)=>'torque'+(i+1)+'_Nm'),...Array.from({length:c},(_,i)=>'power'+(i+1)+'_W')];
+ row(headers);
+ for(const r of result.rows)row([r.t,r.p.x,r.p.y,r.speed,...r.q,...r.qd,...r.qdd,...r.dyn.tau,...r.dyn.power]);
+ row([]);
+ row(['MODEL LIMITATIONS']);
+ row(['Planar rigid-link model; quintic joint-space interpolation; entered or slender-rod estimated inertia; gravity, entered joint friction and lumped gripper/payload included.']);
+ row(['Excludes flexibility, backlash, bearing compliance, collision/contact dynamics, gearbox/motor inertia and validated thermal duty-cycle analysis.']);
+ download('scienaut-robotics-engineering-report.csv','\\uFEFF'+lines.join('\\n'),'text/csv;charset=utf-8');
+}
 function download(name,data,type){const a=document.createElement('a'),u=URL.createObjectURL(new Blob([data],{type}));a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
 $('robot').addEventListener('change',buildInputs);$('units').addEventListener('change',buildInputs);$('mode').addEventListener('change',()=>{$('fkInputs').classList.toggle('hidden',$('mode').value!=='fk');$('ikInputs').classList.toggle('hidden',$('mode').value!=='ik');});
 $('calculate').addEventListener('click',()=>{try{if(animFrame)cancelAnimationFrame(animFrame);calculate();}catch(e){$('status').className='status warn';$('status').textContent=e.message;}});
