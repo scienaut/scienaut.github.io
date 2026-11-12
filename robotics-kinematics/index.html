@@ -64,7 +64,10 @@ header a{color:var(--green);text-decoration:none}.brand{font-weight:850;letter-s
 <div class="plot"><h3 id="torqueTitle">Joint torque vs time</h3><canvas id="plotTorque" width="600" height="260"></canvas></div>
 <div class="plot"><h3 id="powerTitle">Joint mechanical power vs time</h3><canvas id="plotPower" width="600" height="260"></canvas></div>
 <div class="plot"><h3>Joint angular speed vs time</h3><canvas id="plotOmega" width="600" height="260"></canvas></div>
-</div><section class="physics-section"><h2>Physics behind the motion</h2><div class="physics-grid">
+</div></div>
+<div class="btnrow"><button id="csv">Export CSV</button><button id="print">Export Print / Save PDF</button></div>
+<div class="note">Engineering model boundary: planar rigid links, revolute joints, gravity in the XY plane, quintic joint-space interpolation, lumped link mass and centre of mass. Link rotational inertia is entered or estimated using a uniform slender-rod approximation. Bearing compliance, backlash, gearbox efficiency, motor electrical losses, flexible links, contact/grasp dynamics and collision detection are not included. Torque and power are ideal joint-side mechanical estimates, not motor selection ratings.</div>
+<section class="physics-section"><h2>Physics behind the motion</h2><div class="physics-grid">
 <article class="physics-card"><h3>01 · Forward kinematics</h3><p>Each revolute joint rotates its link. The end-effector position is the sum of the link vectors in the XY plane.</p><code>x = Σ Lᵢ cos(Σqⱼ)<br>y = Σ Lᵢ sin(Σqⱼ)</code></article>
 <article class="physics-card"><h3>02 · Inverse kinematics</h3><p>Finds joint angles that place the tool at the requested target. A planar 2R arm can have elbow-up and elbow-down solutions; some targets are unreachable.</p><code>cos(q₂) = (x² + y² − L₁² − L₂²)/(2L₁L₂)</code></article>
 <article class="physics-card"><h3>03 · Smooth motion profile</h3><p>The move uses quintic interpolation. Velocity and acceleration are zero at the start and end, avoiding abrupt endpoint changes.</p><code>s(u) = 10u³ − 15u⁴ + 6u⁵<br>q(t) = q₀ + (qf − q₀)s(u)</code></article>
@@ -73,8 +76,6 @@ header a{color:var(--green);text-decoration:none}.brand{font-weight:850;letter-s
 <article class="physics-card"><h3>06 · Speed and power</h3><p>Tool speed is derived from the end-effector trajectory. Mechanical joint power is torque multiplied by angular velocity; negative power indicates energy returned/braking.</p><code>Pᵢ = τᵢq̇ᵢ<br>v = √(ẋ² + ẏ²)</code></article>
 <article class="physics-card"><h3>Interpretation & limits</h3><p>These are ideal rigid-link joint-side results. Gearbox efficiency, motor electrical losses, compliance, backlash, collision/contact and gripper grasp forces are excluded. Validate inertia and friction against CAD or measurement before selecting hardware.</p></article>
 </div></section>
-<div class="btnrow"><button id="csv">Export CSV</button><button id="print">Export Print / Save PDF</button></div>
-<div class="note">Engineering model boundary: planar rigid links, revolute joints, gravity in the XY plane, quintic joint-space interpolation, lumped link mass and centre of mass. Link rotational inertia is entered or estimated using a uniform slender-rod approximation. Bearing compliance, backlash, gearbox efficiency, motor electrical losses, flexible links, contact/grasp dynamics and collision detection are not included. Torque and power are ideal joint-side mechanical estimates, not motor selection ratings.</div>
 </section>
 </div>
 <footer>Scienaut Robotics Lab · V1.0 · Verify geometry, mass properties, friction and motion limits against the actual robot before use.</footer>
