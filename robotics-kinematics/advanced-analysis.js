@@ -27,20 +27,10 @@ function minSegmentDistance(p1,p2,p3,p4){
 function jacobianSigma(q,g){
  const c=q.length,pts=fkPoints(q,g),J=[];
  for(let i=0;i<2;i++)J.push(Array.from({length:c},(_,j)=>{let v=0;for(let k=j;k<c;k++)v+=i===0?-(pts[k+1][1]-pts[k][1]):(pts[k+1][0]-pts[k][0]);return v;}));
- if(c===3)J.push([1,1,1]);
+ // Translational XY Jacobian is used consistently for both 2R and 3R arms.
  const a=J.map((row,i)=>J.map((other,j)=>row.reduce((sum,v,k)=>sum+v*other[k],0)));
- if(c===2){const tr=a[0][0]+a[1][1],det=a[0][0]*a[1][1]-a[0][1]*a[1][0],disc=Math.sqrt(Math.max(0,tr*tr-4*det));return Math.sqrt(Math.max(0,(tr-disc)/2));}
- // Symmetric 3x3 eigenvalues by Jacobi rotations; sigma_min = sqrt(min eigenvalue(J*J^T)).
- for(let iter=0;iter<24;iter++){
-  let p=0,r=1,max=Math.abs(a[0][1]);
-  for(const [i,j] of [[0,2],[1,2]])if(Math.abs(a[i][j])>max){max=Math.abs(a[i][j]);p=i;r=j;}
-  if(max<1e-12)break;
-  const theta=.5*Math.atan2(2*a[p][r],a[r][r]-a[p][p]),cs=Math.cos(theta),sn=Math.sin(theta);
-  const app=cs*cs*a[p][p]-2*sn*cs*a[p][r]+sn*sn*a[r][r],arr=sn*sn*a[p][p]+2*sn*cs*a[p][r]+cs*cs*a[r][r];
-  for(let k=0;k<3;k++)if(k!==p&&k!==r){const apk=cs*a[p][k]-sn*a[r][k],ark=sn*a[p][k]+cs*a[r][k];a[p][k]=a[k][p]=apk;a[r][k]=a[k][r]=ark;}
-  a[p][p]=app;a[r][r]=arr;a[p][r]=a[r][p]=0;
- }
- return Math.sqrt(Math.max(0,Math.min(a[0][0],a[1][1],a[2][2])));
+ const tr=a[0][0]+a[1][1],det=a[0][0]*a[1][1]-a[0][1]*a[1][0],disc=Math.sqrt(Math.max(0,tr*tr-4*det));
+ return Math.sqrt(Math.max(0,(tr-disc)/2));
 }
 function readGeometry(c){
  const scale=unitScale()/1000;
@@ -73,7 +63,7 @@ function run(){
  if(!Number.isFinite(clearance)||clearance<0)throw Error('Required clearance must be zero or greater.');
  const rows=res.rows,limits=Array.from({length:c},(_,i)=>({min:Number($('advMin'+i).value),max:Number($('advMax'+i).value)}));
  limits.forEach((v,i)=>{if(!Number.isFinite(v.min)||!Number.isFinite(v.max)||v.min>=v.max)throw Error('Joint '+(i+1)+': minimum angle must be below maximum angle.');});
- const indices=Array.from({length:samples},(_,i)=>Math.round(i*(rows.length-1)/(samples-1))),sampleRows=indices.map(i=>rows[i]),violations=[];
+ const sampleRows=Array.from({length:samples},(_,i)=>{const t=res.T*i/(samples-1),u=t/res.T,s=10*u**3-15*u**4+6*u**5,q=res.start.map((v,j)=>v+(res.end[j]-v)*s);return{t,q,p:api.getForwardKinematics(q,res.g)};}),violations=[];
  sampleRows.forEach((r,k)=>r.q.forEach((q,j)=>{const a=q*180/Math.PI;if(a<limits[j].min-1e-8||a>limits[j].max+1e-8)violations.push({time:r.t,joint:j+1,angle:a,min:limits[j].min,max:limits[j].max});}));
  const sigma=sampleRows.map(r=>jacobianSigma(r.q,res.g)),singularThreshold=1e-5,nearSingular=sigma.filter(v=>v<singularThreshold).length;
  const radii=geo.map(x=>x.radius),canCheck=radii.every(v=>v!==null),clearances=[];
