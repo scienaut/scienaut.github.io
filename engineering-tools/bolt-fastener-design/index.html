@@ -61,4 +61,5 @@ $('pc').addEventListener('change',updateClass);$('pattern').addEventListener('ch
 $('calc').addEventListener('click',function(){try{calculate();}catch(e){$('status').textContent='Calculation stopped: '+e.message;}});$('csv').addEventListener('click',function(){try{exportCSV();}catch(e){$('status').textContent=e.message;}});$('pdf').addEventListener('click',function(){try{if(!last)calculate();window.print();}catch(e){$('status').textContent=e.message;}});$('example').addEventListener('click',example);$('tensionExample').addEventListener('click',tensionExample);$('unit').addEventListener('change',function(){setLabels();updateClass();draw();});['fx','fy','pz','ex','ey','mx','my','mz'].forEach(function(id){$(id).addEventListener('change',draw);});
 $('year').textContent=new Date().getFullYear();updateClass();setLabels();build();example();
 })();
-</script></body></html>
+</script><script src='../../assets/js/scienaut-calculation-guidance.js' defer></script>
+</body></html>
