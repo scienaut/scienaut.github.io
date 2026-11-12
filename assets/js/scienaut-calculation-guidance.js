@@ -54,6 +54,15 @@ const configs=[
 const cfg=configs.find(c=>path.includes(c.key));if(!cfg)return;
 const css=[
 ".scienaut-workflow{margin:14px 0 20px;padding:16px 18px;border:1px solid rgba(120,165,195,.28);border-radius:13px;background:linear-gradient(145deg,rgba(15,39,58,.98),rgba(7,22,36,.98));color:inherit;position:relative;z-index:4}",
+".scienaut-shaft-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:22px;align-items:start;width:min(1500px,calc(100% - 32px));margin:0 auto}",
+".scienaut-shaft-sidebar{min-width:0;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin}",
+".scienaut-shaft-sidebar .scienaut-workflow{margin:0;padding:15px 12px}",
+".scienaut-shaft-sidebar .scienaut-step-list{display:grid;grid-template-columns:1fr;gap:7px;margin-top:12px}",
+".scienaut-shaft-sidebar .scienaut-step{min-height:0;padding:9px 8px}",
+".scienaut-shaft-content{min-width:0;width:100%;max-width:1200px;margin:0 auto}",
+".scienaut-shaft-content .shell{width:100%}",
+"@media(max-width:900px){.scienaut-shaft-layout{grid-template-columns:220px minmax(0,1fr);gap:14px;width:calc(100% - 20px)}}",
+"@media(max-width:680px){.scienaut-shaft-layout{display:flex;flex-direction:column;width:calc(100% - 20px)}.scienaut-shaft-sidebar{position:relative;top:auto;max-height:none;width:100%;overflow:visible}.scienaut-shaft-sidebar .scienaut-step-list{grid-template-columns:1fr 1fr}.scienaut-shaft-content{width:100%}}",
 ".scienaut-workflow h2{font-size:16px;margin:0 0 5px}.scienaut-workflow p{font-size:12px;line-height:1.55;opacity:.78;margin:0}",
 ".scienaut-step-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;margin-top:13px}",
 ".scienaut-step{display:flex;gap:9px;align-items:flex-start;text-decoration:none!important;text-align:left;padding:10px;border:1px solid rgba(120,165,195,.22);border-radius:9px;background:rgba(4,17,29,.55);color:inherit!important;min-height:66px}",
@@ -69,7 +78,17 @@ const guide=document.createElement("section");guide.className="scienaut-workflow
 const h=document.createElement("div");h.innerHTML="<h2>How to use "+cfg.title+"</h2><p>Follow the workflow in order. Hover over or focus an input parameter to see what value is needed and why it matters.</p>";guide.appendChild(h);
 const nav=document.createElement("nav");nav.className="scienaut-step-list";nav.setAttribute("aria-label","Calculation steps");
 cfg.steps.forEach((s,i)=>{const t=targetFor(s);if(t&&!t.id)t.id="scienaut-step-target-"+(i+1);if(t)t.setAttribute("data-scienaut-anchor","");const a=document.createElement("a");a.className="scienaut-step";a.href=t?"#"+t.id:"#";a.innerHTML="<b>"+String(i+1).padStart(2,"0")+"</b><span><strong>"+s[0]+"</strong><small>"+s[1]+"</small></span>";if(!t){a.setAttribute("aria-disabled","true");a.addEventListener("click",e=>e.preventDefault());}nav.appendChild(a);});guide.appendChild(nav);
-const insertion=document.querySelector(".page-wrap")||document.querySelector("main")||document.querySelector(".workspace")||document.body.firstElementChild;if(cfg.key!=="bolt-fastener-design"&&insertion)insertion.parentNode.insertBefore(guide,insertion);
+const insertion=document.querySelector(".page-wrap")||document.querySelector("main")||document.querySelector(".workspace")||document.body.firstElementChild;
+if(cfg.key==="shaft-design"){
+ const main=document.querySelector("main");
+ if(main){
+  const layout=document.createElement("div");layout.className="scienaut-shaft-layout";
+  const sidebar=document.createElement("aside");sidebar.className="scienaut-shaft-sidebar";sidebar.setAttribute("aria-label","Shaft calculator workflow");
+  const content=document.createElement("div");content.className="scienaut-shaft-content";
+  while(main.firstChild)content.appendChild(main.firstChild);
+  sidebar.appendChild(guide);layout.append(sidebar,content);main.appendChild(layout);
+ }
+}else if(cfg.key!=="bolt-fastener-design"&&insertion)insertion.parentNode.insertBefore(guide,insertion);
 const reasons={
 fos:"Required factor of safety. It sets the strength margin against the selected material limit; choose it from the design basis, not as a material property.",
 fosReq:"Required screening factor of safety. It is compared with the calculated margin and must come from the applicable design basis.",
