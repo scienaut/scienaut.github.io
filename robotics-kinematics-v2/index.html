@@ -25,13 +25,13 @@ header a{color:var(--green);text-decoration:none}.brand{font-weight:850;letter-s
 <div class="field"><label for="robot">Robot configuration</label><select id="robot"><option value="2">2R planar · 2 revolute joints</option><option value="3" selected>3R planar · 3 revolute joints</option></select></div>
 <div class="field"><label for="mode">Calculation mode</label><select id="mode"><option value="fk">Forward kinematics</option><option value="ik">Inverse kinematics</option></select></div>
 <div class="field"><label for="units">Display units</label><select id="units"><option value="si">SI · mm, kg, N, N·m</option><option value="fps">FPS · in, lbm, lbf, lbf·ft, hp</option></select></div>
-<div class="field"><label for="duration">Move duration (s)</label><input id="duration" type="number" min=".1" step=".1" value="3"></div></div><div class="section"><h2>01A · Dynamic trajectory constraints</h2>
+<div class="field"><label for="duration">Move duration (s)</label><input id="duration" type="number" min=".1" step=".1" value="3"></div></div><span class="hint">Select 2R or 3R. In 3R inverse kinematics, the target tool orientation is used to calculate the wrist point before solving the first two joints. Joint angles are entered in degrees.</span></div><div class="section"><h2>01A · Dynamic trajectory constraints</h2>
 <label class="small"><input id="motionLimitsEnabled" type="checkbox" checked> Enable motion constraints</label>
 <label class="small"><input id="autoTimeScale" type="checkbox" checked> Automatically increase move time to satisfy limits</label>
 <div class="field"><label for="maxTimeScale">Maximum time scaling factor</label><input id="maxTimeScale" type="number" min="1" max="100" step=".5" value="10"></div>
 <div id="constraintInputs"></div>
 <span class="hint">Velocity, acceleration and jerk examples are editable engineering assumptions, not manufacturer ratings. Torque limits are optional and blank by default. Enter verified actuator limits to enforce them. Automatic scaling preserves the quintic path shape and increases execution time; it cannot overcome a gravity/holding-torque limit.</span>
-</div><span class="hint">Select 2R or 3R. In 3R inverse kinematics, the target tool orientation is used to calculate the wrist point before solving the first two joints. Joint angles are entered in degrees.</span></div>
+</div></div>
 <div class="section"><h2>02 · Link geometry</h2><div id="links"></div><div class="note">Link mass means the complete moving-link assembly mass: structure, fasteners, motor, gearbox, cables and sensors. Enter each assembly's total mass once; do not add the same component mass again elsewhere. Centre-of-mass position and inertia are required for dynamic accuracy.</div></div>
 <div class="section"><h2>03 · Joint friction</h2><div id="frictions"></div><span class="hint">Coulomb friction torque is estimated as μ × normal load × effective friction radius. Viscous coefficient adds a speed-dependent term. Enter measured or manufacturer-supported values.</span></div>
 <div class="section"><h2>04 · Gripper & payload</h2><div class="fieldgrid">
