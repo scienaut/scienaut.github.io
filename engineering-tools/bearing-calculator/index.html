@@ -41,7 +41,8 @@
         </select><small>Examples are published external calculations, not bearing catalogue recommendations.</small></div>
         <div class="form-section"><h3>01 · Bearing specification</h3>
           <div class="field"><label for="bearing-name">Bearing designation / description</label><input id="bearing-name" type="text" value="Custom bearing" maxlength="80"></div>
-          <div class="field"><label for="bearing-type">Bearing family</label><select id="bearing-type">
+          <div class="field"><label for="bearing-family">Bearing family</label><select id="bearing-family"><option value="deep-groove">Deep groove ball</option><option value="angular-contact">Angular contact ball</option><option value="cylindrical">Cylindrical roller</option><option value="spherical">Spherical roller</option><option value="tapered">Tapered roller</option><option value="thrust-ball">Thrust ball</option><option value="thrust-roller">Thrust roller</option><option value="other">Other / custom</option></select></div>
+          <div class="field"><label for="bearing-type">Rolling element / life exponent</label><select id="bearing-type">
             <option value="ball">Ball bearing (p = 3)</option><option value="roller">Roller bearing (p = 10/3)</option><option value="custom">Custom exponent</option>
           </select></div>
           <div class="field" id="custom-p-wrap" hidden><label for="life-exponent">Life exponent p</label><input id="life-exponent" type="number" min="0.1" max="10" step="any" value="3"></div>
