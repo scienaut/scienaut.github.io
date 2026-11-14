@@ -66,11 +66,11 @@
         <div class="form-section"><h3>03 · Catalogue ratings &amp; speed</h3>
           <div class="field-grid">
             <div class="field"><label for="c">Dynamic rating C <em>N</em></label><input id="c" type="number" min="0" step="any" value="20000"></div>
-            <div class="field"><label for="c0">Static rating C₀ <em>N</em></label><input id="c0" type="number" min="0" step="any" value="12000"></div>
+            <div class="field"><label for="c0">Static rating C₀ <em>N</em></label><input id="c0" type="number" min="0" step="any" value="0"></div>
             <div class="field"><label for="speed">Operating speed n <em>RPM</em></label><input id="speed" type="number" min="0" step="any" value="1000"></div>
             <div class="field"><label for="target-life">Required life <em>hours</em></label><input id="target-life" type="number" min="0" step="any" value="20000"></div>
           </div>
-          <small class="helper">Use the catalogue's basic dynamic and static load ratings for the exact bearing designation.</small>
+          <small class="helper">Use the catalogue's basic dynamic and static load ratings for the exact bearing designation. Enter 0 for C₀ only when static rating data is not available; static safety will then be marked not evaluated.</small>
         </div>
         <div class="form-section"><h3>04 · Static factors &amp; reliability</h3>
           <div class="field-grid">
