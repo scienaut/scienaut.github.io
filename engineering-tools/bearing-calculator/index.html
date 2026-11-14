@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071321">
+  <meta name="description" content="Advanced rolling bearing load, rating life and static safety calculator with traceable engineering calculations.">
+  <title>Bearing Design &amp; Selection Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/bearing.css">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NPS7S0WWJ0"></script>
+  <script>
+    window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+    gtag('js',new Date());gtag('config','G-NPS7S0WWJ0');
+    gtag('event','engineering_tool_view',{tool_name:document.title,tool_path:location.pathname});
+  </script>
+  <script data-goatcounter="https://scienaut.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</head>
+<body>
+  <header class="topbar"><div class="topbar-inner">
+    <a class="brand" href="/engineering-tools/"><span class="brand-mark">SC</span><span>ENGINEERING TOOLS<small>MECHANICAL DESIGN WORKSPACE</small></span></a>
+    <a class="back-link" href="/engineering-tools/">← All calculators</a>
+  </div></header>
+  <main class="shell">
+    <section class="page-heading">
+      <div><div class="eyebrow">MACHINE DESIGN / ROTATING EQUIPMENT</div><h1>Bearing Design <span>&amp; Selection</span></h1>
+      <p>Calculate equivalent bearing loads, ISO 281 basic rating life and ISO 76 static safety. Enter bearing-specific factors from a current manufacturer catalogue; every calculation is exposed for review.</p></div>
+      <div class="release-chip"><i></i> ENGINEERING CALCULATOR · V1.0</div>
+    </section>
+    <section class="notice"><strong>Engineering boundary:</strong> This release calculates rating life and static load safety from supplied catalogue data. It does not infer X/Y factors, ISO 281 aISO, lubrication suitability, internal clearance, fits, minimum load or speed limits. A result is only as reliable as the entered bearing data and load model.</section>
+    <div class="workspace">
+      <aside class="panel input-panel">
+        <div class="panel-title"><div><span class="eyebrow">CONFIGURATION</span><h2>Design inputs</h2></div><span class="step-pill">01 / INPUT</span></div>
+        <div class="example-control"><label for="example-select">Load a reference validation case</label><select id="example-select">
+          <option value="">Choose an example…</option>
+          <option value="skf-low">SKF 22217 CC/W33 · Fa/Fr below e</option>
+          <option value="skf-high">SKF 22217 CC/W33 · Fa/Fr above e</option>
+          <option value="feutex">FeuTex ball bearing · published worked example</option>
+        </select><small>Examples are published external calculations, not bearing catalogue recommendations.</small></div>
+        <div class="form-section"><h3>01 · Bearing specification</h3>
+          <div class="field"><label for="bearing-name">Bearing designation / description</label><input id="bearing-name" type="text" value="Custom bearing" maxlength="80"></div>
+          <div class="field"><label for="bearing-type">Bearing family</label><select id="bearing-type">
+            <option value="ball">Ball bearing (p = 3)</option><option value="roller">Roller bearing (p = 10/3)</option><option value="custom">Custom exponent</option>
+          </select></div>
+          <div class="field" id="custom-p-wrap" hidden><label for="life-exponent">Life exponent p</label><input id="life-exponent" type="number" min="0.1" max="10" step="any" value="3"></div>
+          <div class="field"><label for="load-method">Equivalent dynamic load method</label><select id="load-method"><option value="xy">Catalogue X / Y factors</option><option value="spherical">Spherical roller: e / Y₁ / Y₂ method</option><option value="axial">Axial-only bearing (thrust)</option></select></div>
+        </div>
+        <div class="form-section"><h3>02 · Applied loads</h3>
+          <div class="field-grid">
+            <div class="field"><label for="fr">Radial load Fr <em>N</em></label><input id="fr" type="number" min="0" step="any" value="4000"></div>
+            <div class="field"><label for="fa">Axial load Fa <em>N</em></label><input id="fa" type="number" min="0" step="any" value="0"></div>
+          </div>
+          <div class="field-grid" id="xy-fields">
+            <div class="field"><label for="x">Dynamic factor X</label><input id="x" type="number" min="0" step="any" value="1"></div>
+            <div class="field"><label for="y">Dynamic factor Y</label><input id="y" type="number" min="0" step="any" value="0"></div>
+          </div>
+          <div class="field-grid" id="spherical-fields" hidden>
+            <div class="field"><label for="e">Threshold factor e</label><input id="e" type="number" min="0" step="any" value="0.22"></div>
+            <div class="field"><label for="y1">Factor Y₁</label><input id="y1" type="number" min="0" step="any" value="3"></div>
+            <div class="field"><label for="y2">Factor Y₂</label><input id="y2" type="number" min="0" step="any" value="4.6"></div>
+          </div>
+          <p class="helper" id="load-method-help">X and Y are catalogue values for the selected bearing and load ratio. Do not assume X = 1 and Y = 0 when axial load is present.</p>
+        </div>
+        <div class="form-section"><h3>03 · Catalogue ratings &amp; speed</h3>
+          <div class="field-grid">
+            <div class="field"><label for="c">Dynamic rating C <em>N</em></label><input id="c" type="number" min="0" step="any" value="20000"></div>
+            <div class="field"><label for="c0">Static rating C₀ <em>N</em></label><input id="c0" type="number" min="0" step="any" value="12000"></div>
+            <div class="field"><label for="speed">Operating speed n <em>RPM</em></label><input id="speed" type="number" min="0" step="any" value="1000"></div>
+            <div class="field"><label for="target-life">Required life <em>hours</em></label><input id="target-life" type="number" min="0" step="any" value="20000"></div>
+          </div>
+          <small class="helper">Use the catalogue's basic dynamic and static load ratings for the exact bearing designation.</small>
+        </div>
+        <div class="form-section"><h3>04 · Static factors &amp; reliability</h3>
+          <div class="field-grid">
+            <div class="field"><label for="x0">Static factor X₀</label><input id="x0" type="number" min="0" step="any" value="0.6"></div>
+            <div class="field"><label for="y0">Static factor Y₀</label><input id="y0" type="number" min="0" step="any" value="0.5"></div>
+            <div class="field"><label for="a1">Reliability factor a₁</label><input id="a1" type="number" min="0" max="1" step="any" value="1"></div>
+            <div class="field"><label for="source">Data source / catalogue</label><input id="source" type="text" placeholder="e.g. SKF catalogue, page…"></div>
+          </div>
+          <small class="helper">a₁ = 1.0 represents 90% reliability. Adjusted life here is a₁ × L₁₀ only; ISO 281 aISO is not calculated in this release.</small>
+        </div>
+        <div class="actions"><button id="calculate-btn" class="primary" type="button">Calculate bearing performance <span>→</span></button><button id="reset-btn" class="secondary" type="button">Reset</button></div>
+        <div id="input-status" class="input-status" role="status">Ready. Enter catalogue data and loads, then calculate.</div>
+      </aside>
+      <section class="results-column">
+        <section class="metric-grid" aria-label="Bearing results">
+          <article class="metric-card"><span>Equivalent dynamic load P</span><strong id="metric-p">—</strong><small>N</small></article>
+          <article class="metric-card"><span>Basic rating life L₁₀h</span><strong id="metric-life">—</strong><small>operating hours</small></article>
+          <article class="metric-card"><span>Static safety s₀</span><strong id="metric-s0">—</strong><small>dimensionless</small></article>
+          <article class="metric-card"><span>Required dynamic rating Creq</span><strong id="metric-creq">—</strong><small>N for target life</small></article>
+        </section>
+        <section class="panel result-panel">
+          <div class="panel-title"><div><span class="eyebrow">ENGINEERING OUTPUT</span><h2>Calculation results</h2></div><span class="result-state" id="result-state">AWAITING INPUT</span></div>
+          <div id="warnings" class="warnings" aria-live="polite"><div class="empty-state">Enter your bearing data and select <b>Calculate bearing performance</b> to generate results.</div></div>
+          <div class="result-table-wrap"><table class="result-table"><tbody id="result-rows"><tr><td colspan="3" class="empty-row">No calculation performed yet.</td></tr></tbody></table></div>
+        </section>
+        <section class="panel steps-panel">
+          <div class="panel-title"><div><span class="eyebrow">TRANSPARENT ENGINEERING</span><h2>Step-by-step calculations</h2></div><span class="step-pill">AUDIT TRAIL</span></div>
+          <div id="steps" class="steps-list"><div class="empty-state">Calculation steps will appear here, including equations, substituted values, intermediate results and units.</div></div>
+        </section>
+        <section class="panel reference-panel">
+          <div class="panel-title"><div><span class="eyebrow">VERIFICATION</span><h2>Published reference examples</h2></div><span class="step-pill">3 TEST CASES</span></div>
+          <p class="reference-intro">Use the example selector to reproduce the inputs. Published results are compared with the calculator's unrounded outputs; differences are disclosed rather than hidden.</p>
+          <div class="reference-list">
+            <article><b>01 · SKF 22217 CC/W33 — Fa/Fr ≤ e</b><p>Fr = 11,121 N; Fa = 2,224 N; C = 210,000 N; n = 2,000 RPM; e = 0.22; Y₁ = 3. SKF reports P = 17,793 N and L₁₀h = 33,400 h.</p><a href="https://evolution.skf.com/us/spherical-roller-bearings-in-fans-2/" target="_blank" rel="noopener">SKF Evolution worked example ↗</a></article>
+            <article><b>02 · SKF 22217 CC/W33 — Fa/Fr &gt; e</b><p>Fr = 11,121 N; Fa = 2,667 N; C = 210,000 N; n = 2,000 RPM; e = 0.22; Y₂ = 4.6. SKF reports P = 19,719 N and L₁₀h = 22,100 h.</p><a href="https://evolution.skf.com/us/spherical-roller-bearings-in-fans-2/" target="_blank" rel="noopener">SKF Evolution worked example ↗</a></article>
+            <article><b>03 · FeuTex basic ball-bearing life</b><p>C = 20,000 N; P = 5,000 N; n = 1,000 RPM; p = 3. Published expected outputs: L₁₀ = 64 million revolutions and L₁₀h = 1,066.67 h.</p><a href="https://feutex.com/tools/bearing-basic-rating-life/" target="_blank" rel="noopener">FeuTex worked example ↗</a></article>
+          </div>
+          <div id="reference-check" class="reference-check">Run a published example to see the numerical verification status.</div>
+        </section>
+        <footer class="page-footer">Scienaut Engineering Tools · Bearing calculations are engineering aids, not a substitute for full application analysis or manufacturer approval.</footer>
+      </section>
+    </div>
+  </main>
+  <script src="js/bearing-engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
