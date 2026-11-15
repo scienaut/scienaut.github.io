@@ -83,7 +83,53 @@ function safeName(){return (syncMeta().projectName.replace(/[^a-z0-9-_]+/gi,'_')
 function tableRows(){return entries.map(e=>({ID:e.id,'Item / Process':e.item,Function:e.func,'Failure Mode':e.mode,'Failure Effect':e.effect,Severity:e.s,'Potential Cause':e.cause,Occurrence:e.o,'Prevention Control':e.prevent,'Detection Control':e.detect,Detection:e.d,RPN:rpn(e),'Risk Level':level(rpn(e)),'Recommended Action':e.action,Owner:e.owner,'Target Date':e.date,'Action Status':e.status,'Revised Severity':e.rs,'Revised Occurrence':e.ro,'Revised Detection':e.rd,'Revised RPN':revised(e),'Evidence':e.evidence}))}
 function metaRows(){const m=syncMeta();return [['Project',m.projectName],['Analysis type',m.analysisType],['Product / Process',m.productName],['Owner / Team',m.owner],['Prepared by',$('preparedBy').value],['Reviewed by',$('reviewedBy').value],['Revision',$('revision').value],['Low maximum RPN',settings.low],['Medium maximum RPN',settings.medium],['Generated',new Date().toLocaleString()]]}
 function exportXlsx(){if(!window.XLSX)return alert('Excel export library unavailable. Check internet connection.');const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(metaRows()),'Project Summary');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(tableRows()),'FMEA Worksheet');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(entries.map(e=>({ID:e.id,'Failure Mode':e.mode,Action:e.action,Owner:e.owner,'Target Date':e.date,Status:e.status,'Initial RPN':rpn(e),'Revised RPN':revised(e)}))),'Action Plan');XLSX.writeFile(wb,safeName()+'.xlsx')}
-function exportPdf(){if(!window.jspdf)return alert('PDF export library unavailable. Check internet connection.');const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'}),m=syncMeta();doc.setFontSize(18);doc.text('FMEA Report',40,40);doc.setFontSize(9);doc.text(m.projectName+' | '+m.analysisType+' | '+m.productName,40,58);doc.text('Prepared by: '+$('preparedBy').value+'   Reviewed by: '+$('reviewedBy').value+'   Revision: '+$('revision').value,40,73);doc.text('RPN = S × O × D | Low ≤ '+settings.low+' | Medium ≤ '+settings.medium+' | High > '+settings.medium,40,88);doc.autoTable({startY:105,head:[['ID','Item / Process','Failure Mode','Effect','S','Cause','O','D','RPN','Risk','Action','Owner','Status']],body:entries.map(e=>[e.id,e.item,e.mode,e.effect,e.s,e.cause,e.o,e.d,rpn(e),level(rpn(e)),e.action,e.owner,e.status]),styles:{fontSize:6,cellPadding:3,overflow:'linebreak'},headStyles:{fillColor:[16,40,61]},margin:{left:30,right:30}});doc.save(safeName()+'.pdf')}
+function exportPdf(){
+if(!window.jspdf)return alert('PDF export library unavailable. Check internet connection.');
+if(!window.Chart)return alert('Dashboard chart library unavailable. Check internet connection.');
+const {jsPDF}=window.jspdf,doc=new jsPDF({orientation:'landscape',unit:'pt',format:'a4'}),m=syncMeta();
+updateDashboard();
+const pageW=doc.internal.pageSize.getWidth(),pageH=doc.internal.pageSize.getHeight();
+const total=entries.length,counts={High:0,Medium:0,Low:0};
+entries.forEach(e=>counts[level(rpn(e))]++);
+const open=entries.filter(e=>e.status==='Open'||e.status==='In Progress').length;
+const avg=total?Math.round(entries.reduce((s,e)=>s+rpn(e),0)/total):0;
+const severe=entries.filter(e=>Number(e.s)>=9).length;
+const addHeader=(title,subtitle)=>{doc.setFont('helvetica','bold');doc.setFontSize(17);doc.text(title,32,34);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text(subtitle,32,49);doc.setDrawColor(190);doc.line(32,58,pageW-32,58)};
+doc.setFillColor(10,30,46);doc.rect(0,0,pageW,72,'F');
+doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(19);doc.text('FMEA Report',32,31);
+doc.setFont('helvetica','normal');doc.setFontSize(8);
+doc.text(m.projectName+' | '+m.analysisType+' | '+m.productName,32,47);
+doc.text('Prepared by: '+($('preparedBy').value||'—')+'   Reviewed by: '+($('reviewedBy').value||'—')+'   Revision: '+($('revision').value||'—'),32,61);
+doc.setTextColor(35,45,55);
+doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text('Dashboard summary',32,94);
+const cards=[['Failure modes',String(total)],['High risk',String(counts.High)],['Average initial RPN',total?String(avg):'—'],['Open actions',String(open)]];
+const cardGap=10,cardW=(pageW-64-cardGap*3)/4,cardY=104;
+cards.forEach((c,i)=>{const x=32+i*(cardW+cardGap);doc.setFillColor(239,244,248);doc.roundedRect(x,cardY,cardW,48,5,5,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(80,92,105);doc.text(c[0],x+10,cardY+16);doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(20,42,60);doc.text(c[1],x+10,cardY+37)});
+doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(65,75,85);
+doc.text('Risk distribution: High '+counts.High+' ('+(total?(counts.High/total*100).toFixed(1):'0')+'%), Medium '+counts.Medium+', Low '+counts.Low+'.',32,171);
+doc.text('Severity 9–10 entries requiring independent review: '+severe+'.  RPN = S × O × D | Low ≤ '+settings.low+' | Medium ≤ '+settings.medium+' | High > '+settings.medium,32,184);
+const chartItems=[['riskDonut',32,199,375,164],['actionDonut',434,199,375,164],['rpnBar',32,378,375,164],['trendLine',434,378,375,164]];
+chartItems.forEach(([id,x,y,w,h])=>{const canvas=$(id);if(!canvas)return;try{const image=canvas.toDataURL('image/png',1);doc.setDrawColor(215,222,228);doc.roundedRect(x,y,w,h,4,4,'S');doc.addImage(image,'PNG',x+5,y+5,w-10,h-10,undefined,'FAST')}catch(err){doc.setFontSize(8);doc.text('Chart image unavailable: '+id,x+8,y+18)}});
+doc.setFontSize(7);doc.setTextColor(95,105,115);doc.text('Risk bands are user-configured. RPN is a prioritisation aid, not a safety acceptance decision.',32,pageH-18);
+doc.addPage();addHeader('FMEA Worksheet','Detailed failure mode analysis · Initial and revised ratings, controls, actions and ownership');
+doc.autoTable({startY:72,head:[['ID','Item / Process','Failure Mode','Effect','S','Cause','O','D','RPN','Risk','Action','Owner','Status']],body:entries.map(e=>[e.id,e.item,e.mode,e.effect,e.s,e.cause,e.o,e.d,rpn(e),level(rpn(e)),e.action,e.owner,e.status]),styles:{fontSize:6,cellPadding:3,overflow:'linebreak',valign:'top'},headStyles:{fillColor:[16,40,61]},alternateRowStyles:{fillColor:[244,247,249]},margin:{left:25,right:25},didDrawPage:()=>{doc.setFontSize(7);doc.setTextColor(110);doc.text('FMEA Worksheet · '+m.projectName,pageW-25,pageH-12,{align:'right'})}});
+doc.addPage();addHeader('Corrective & Preventive Action Plan','Action completion does not automatically reduce S/O/D; revised ratings require evidence-based reassessment.');
+doc.autoTable({startY:72,head:[['ID','Failure Mode','Recommended Action','Owner','Target Date','Status','Initial RPN','Revised RPN']],body:entries.filter(e=>e.action||e.status!=='Open').map(e=>[e.id,e.mode,e.action,e.owner,e.date,e.status,rpn(e),revised(e)??'—']),styles:{fontSize:7,cellPadding:4,overflow:'linebreak',valign:'top'},headStyles:{fillColor:[16,40,61]},alternateRowStyles:{fillColor:[244,247,249]},margin:{left:25,right:25},didDrawPage:()=>{doc.setFontSize(7);doc.setTextColor(110);doc.text('Action Plan · '+m.projectName,pageW-25,pageH-12,{align:'right'})}});
+doc.addPage();addHeader('Method, assumptions & review notes','Use this page to retain context when the PDF is circulated outside the workbench.');
+doc.setFontSize(9);doc.setTextColor(35,45,55);
+const notes=[
+'RPN = Severity × Occurrence × Detection. The V1 rating scale uses integer scores from 1 to 10.',
+'Configured risk thresholds: Low ≤ '+settings.low+'; Medium > '+settings.low+' and ≤ '+settings.medium+'; High > '+settings.medium+'.',
+'Risk thresholds are organisation-defined examples and should be approved for the applicable product, process and customer requirements.',
+'RPN is a prioritisation aid. A low RPN does not establish that a failure mode is acceptable or safe.',
+'Failure modes with Severity 9–10 are highlighted for independent engineering review regardless of RPN.',
+'Action completion does not automatically change ratings. Revised S/O/D values should be entered only after implementation and verification evidence are available.',
+'This report reflects the data currently held in this browser project at the time of export.'
+];
+let yy=88;notes.forEach((t,i)=>{const lines=doc.splitTextToSize((i+1)+'. '+t,pageW-80);doc.text(lines,40,yy);yy+=lines.length*13+9});
+doc.setFontSize(8);doc.setTextColor(100);doc.text('Generated: '+new Date().toLocaleString(),40,pageH-35);
+doc.save(safeName()+'.pdf');
+}
 async function exportDocx(){if(!window.docx)return alert('Word export library unavailable. Check internet connection.');const d=window.docx,m=syncMeta();const rows=[['ID','Item / Process','Failure Mode','Effect','S','O','D','RPN','Risk','Action','Owner','Status'],...entries.map(e=>[e.id,e.item,e.mode,e.effect,String(e.s),String(e.o),String(e.d),String(rpn(e)),level(rpn(e)),e.action,e.owner,e.status])];const table=new d.Table({rows:rows.map((r,i)=>new d.TableRow({children:r.map(c=>new d.TableCell({children:[new d.Paragraph({text:String(c??''),bold:i===0})],width:{size:100/rows[0].length,type:d.WidthType.PERCENTAGE}}))}))});const doc=new d.Document({sections:[{children:[new d.Paragraph({text:'FMEA Report',heading:d.HeadingLevel.TITLE}),new d.Paragraph({text:m.projectName+' | '+m.analysisType}),new d.Paragraph({text:'Product / Process: '+m.productName}),new d.Paragraph({text:'Owner / Team: '+m.owner}),new d.Paragraph({text:'Prepared by: '+$('preparedBy').value+' | Reviewed by: '+$('reviewedBy').value+' | Revision: '+$('revision').value}),new d.Paragraph({text:'RPN = Severity × Occurrence × Detection. Low ≤ '+settings.low+'; Medium ≤ '+settings.medium+'; High > '+settings.medium}),table,new d.Paragraph({text:'Risk ratings and thresholds are organisation-defined. RPN is a prioritisation aid and does not replace engineering judgement.'})]}]});const blob=await d.Packer.toBlob(doc);fileDownload(blob,safeName()+'.docx')}
 function demo(){entries=[
 {id:'F-001',item:'Drive shaft',func:'Transmit torque',mode:'Fatigue fracture',effect:'Loss of drive; machine stops',s:8,cause:'Cyclic bending stress / stress concentration',o:4,prevent:'Fatigue calculation and design review',detect:'Material certificate review; periodic NDT',d:6,action:'Review fatigue margin and optimise fillet radius',owner:'Design engineering',date:'2026-12-15',status:'In Progress',rs:8,ro:2,rd:3,evidence:'Revised analysis complete; endurance test pending'},
