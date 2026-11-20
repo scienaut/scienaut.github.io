@@ -181,4 +181,105 @@
     $('.venobox').venobox();
   });
 
+
+  // Move every home-page navigation node around one shared elliptical orbit.
+  function initSharedOrbitalNavigation() {
+    var header = document.getElementById('header');
+    var navigation = document.querySelector('.section-navigation');
+    var menu = navigation && navigation.querySelector(':scope > .nav-menu');
+    var list = menu && menu.querySelector('ul');
+    var profile = header && header.querySelector('.home-profile-core');
+    if (!header || !navigation || !menu || !list || !profile || navigation.dataset.orbitReady) return;
+    navigation.dataset.orbitReady = 'true';
+
+    var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
+    if (!nodes.length) return;
+    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var selected = null;
+    var startedAt = null;
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('class', 'orbit-travel-overlay');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    var path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('class', 'orbit-travel-path');
+    svg.appendChild(path);
+    navigation.insertBefore(svg, menu);
+
+    nodes.forEach(function(node) {
+      var link = node.querySelector('a');
+      if (!link) return;
+      link.addEventListener('pointerenter', function() { selected = node; });
+      link.addEventListener('pointerleave', function() {
+        if (document.activeElement !== link) selected = null;
+      });
+      link.addEventListener('focus', function() { selected = node; });
+      link.addEventListener('blur', function() {
+        if (!node.matches(':hover')) selected = null;
+      });
+    });
+
+    function frame(now) {
+      if (startedAt === null) startedAt = now;
+      var homeMode = !header.classList.contains('header-top') && window.innerWidth > 1050;
+      if (homeMode) {
+        var rect = navigation.getBoundingClientRect();
+        var cx = rect.width / 2, cy = rect.height / 2;
+        var maxDiameter = 104;
+        var rx = Math.max(180, rect.width / 2 - maxDiameter / 2 - 12);
+        var ry = Math.max(170, rect.height / 2 - maxDiameter / 2 - 12);
+        navigation.style.setProperty('--orbit-rx', rx + 'px');
+        navigation.style.setProperty('--orbit-ry', ry + 'px');
+        var elapsed = reducedMotion ? 0 : (now - startedAt) * 0.000055;
+        var step = Math.PI * 2 / nodes.length;
+        nodes.forEach(function(node, index) {
+          var angle = -Math.PI / 2 + index * step + elapsed;
+          node.style.left = (cx + rx * Math.cos(angle)) + 'px';
+          node.style.top = (cy + ry * Math.sin(angle)) + 'px';
+        });
+
+        if (selected && selected.isConnected) {
+          var targetRect = selected.getBoundingClientRect();
+          var targetX = targetRect.left - rect.left + targetRect.width / 2;
+          var targetY = targetRect.top - rect.top + targetRect.height / 2;
+          var dx = targetX - cx, dy = targetY - cy;
+          var distance = Math.sqrt(dx * dx + dy * dy) || 1;
+          var ux = dx / distance, uy = dy / distance;
+          var profileRadius = profile.getBoundingClientRect().width / 2;
+          var targetRadius = Math.min(targetRect.width, targetRect.height) / 2;
+          var x1 = cx + ux * (profileRadius + 5);
+          var y1 = cy + uy * (profileRadius + 5);
+          var x2 = targetX - ux * (targetRadius + 3);
+          var y2 = targetY - uy * (targetRadius + 3);
+          var nx = -uy, ny = ux;
+          var bend = -Math.min(110, distance * 0.16);
+          var d = 'M ' + x1 + ' ' + y1 +
+            ' C ' + (x1 + (x2 - x1) * 0.34 + nx * bend) + ' ' + (y1 + (y2 - y1) * 0.34 + ny * bend) +
+            ', ' + (x1 + (x2 - x1) * 0.70 + nx * bend) + ' ' + (y1 + (y2 - y1) * 0.70 + ny * bend) +
+            ', ' + x2 + ' ' + y2;
+          path.setAttribute('d', d);
+          path.classList.add('is-visible');
+        } else {
+          path.classList.remove('is-visible');
+          path.removeAttribute('d');
+        }
+      } else {
+        navigation.style.removeProperty('--orbit-rx');
+        navigation.style.removeProperty('--orbit-ry');
+        nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
+        path.classList.remove('is-visible');
+        path.removeAttribute('d');
+      }
+      window.requestAnimationFrame(frame);
+    }
+    window.requestAnimationFrame(frame);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSharedOrbitalNavigation, { once: true });
+  } else {
+    initSharedOrbitalNavigation();
+  }
+
+
 })(jQuery);
