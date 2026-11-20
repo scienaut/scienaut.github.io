@@ -1395,8 +1395,8 @@ section .container {
 
 
 /* Compact, accessible menu while a portfolio section is selected. */
-#header:not(.header-top) .section-navigation > summary { display: none; }
-#header:not(.header-top) .section-navigation > .nav-menu { display: block; }
+#header:not(.header-top) .section-navigation-toggle { display: none !important; }
+#header:not(.header-top) .section-navigation > .nav-menu { display: block !important; }
 #header.header-top {
   height: 76px;
   overflow: visible;
@@ -1416,12 +1416,8 @@ section .container {
   line-height: 1.05;
   white-space: nowrap;
 }
-#header.header-top .section-navigation {
-  position: relative;
-  flex: 0 0 auto;
-  margin-left: auto;
-}
-#header.header-top .section-navigation > summary {
+#header.header-top .section-navigation { position: relative; flex: 0 0 auto; margin-left: auto; }
+#header.header-top .section-navigation-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1429,8 +1425,6 @@ section .container {
   min-width: 112px;
   min-height: 44px;
   padding: 9px 14px;
-  list-style: none;
-  cursor: pointer;
   border: 1px solid rgba(18, 214, 160, .72);
   border-radius: 8px;
   color: #f4f7fb;
@@ -1438,23 +1432,19 @@ section .container {
   font-family: "Poppins", sans-serif;
   font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
 }
-#header.header-top .section-navigation > summary::-webkit-details-marker { display: none; }
-#header.header-top .section-navigation > summary::after {
-  content: "▾";
-  color: #12d6a0;
-  font-size: 13px;
-}
-#header.header-top .section-navigation[open] > summary,
-#header.header-top .section-navigation > summary:hover,
-#header.header-top .section-navigation > summary:focus-visible {
+#header.header-top .section-navigation-toggle:hover,
+#header.header-top .section-navigation-toggle:focus-visible,
+#header.header-top .section-navigation.is-open .section-navigation-toggle {
   color: #12d6a0;
   background: rgba(18, 214, 160, .15);
   outline: 2px solid transparent;
   box-shadow: 0 0 0 2px rgba(18, 214, 160, .2);
 }
-#header.header-top .section-navigation:not([open]) > .nav-menu { display: none !important; }
-#header.header-top .section-navigation[open] > .nav-menu {
+#header.header-top .section-navigation-icon { color: #12d6a0; font-size: 17px; }
+#header.header-top .section-navigation:not(.is-open) > .nav-menu { display: none !important; }
+#header.header-top .section-navigation.is-open > .nav-menu {
   display: block !important;
   position: absolute !important;
   top: calc(100% + 12px) !important;
@@ -1470,15 +1460,15 @@ section .container {
   background: rgba(5, 20, 34, .98);
   box-shadow: 0 18px 46px rgba(0, 0, 0, .42);
 }
-#header.header-top .section-navigation[open] > .nav-menu ul {
+#header.header-top .section-navigation.is-open > .nav-menu ul {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 8px !important;
   margin: 0 !important;
   padding: 0 !important;
 }
-#header.header-top .section-navigation[open] > .nav-menu li { width: auto !important; margin: 0 !important; }
-#header.header-top .section-navigation[open] > .nav-menu li a {
+#header.header-top .section-navigation.is-open > .nav-menu li { width: auto !important; margin: 0 !important; }
+#header.header-top .section-navigation.is-open > .nav-menu li a {
   display: flex !important;
   justify-content: flex-start !important;
   width: 100% !important;
@@ -1492,14 +1482,10 @@ section .container {
 }
 @media (max-width: 992px) {
   #header.header-top { height: 64px; }
-  #header.header-top .container {
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    gap: 12px;
-  }
+  #header.header-top .container { flex-direction: row !important; justify-content: space-between !important; gap: 12px; }
   #header.header-top h1 { margin: 0 !important; font-size: 25px !important; }
   #header.header-top .section-navigation { width: auto !important; margin: 0 !important; }
-  #header.header-top .section-navigation[open] > .nav-menu {
+  #header.header-top .section-navigation.is-open > .nav-menu {
     position: fixed !important;
     top: 72px !important;
     left: 12px !important;
@@ -1510,5 +1496,5 @@ section .container {
 }
 @media (max-width: 420px) {
   #header.header-top h1 { font-size: 21px !important; }
-  #header.header-top .section-navigation[open] > .nav-menu ul { grid-template-columns: 1fr !important; }
+  #header.header-top .section-navigation.is-open > .nav-menu ul { grid-template-columns: 1fr !important; }
 }

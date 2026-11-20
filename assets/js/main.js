@@ -20,9 +20,10 @@
           $(this).closest('li').addClass('active');
         }
 
-        var sectionNavigation = $(this).closest('.section-navigation')[0];
-        if (sectionNavigation && $('#header').hasClass('header-top')) {
-          sectionNavigation.open = false;
+        var sectionNavigation = $(this).closest('.section-navigation');
+        if (sectionNavigation.length && $('#header').hasClass('header-top')) {
+          sectionNavigation.removeClass('is-open');
+          sectionNavigation.find('.section-navigation-toggle').attr('aria-expanded', 'false');
         }
 
         if (hash == '#header') {
@@ -51,6 +52,29 @@
         return false;
 
       }
+    }
+  });
+
+  // Expand the compact navigation in section view and close it after selection/outside click.
+  $(document).on('click', '.section-navigation-toggle', function() {
+    var navigation = $(this).closest('.section-navigation');
+    var isOpen = navigation.toggleClass('is-open').hasClass('is-open');
+    $(this).attr('aria-expanded', String(isOpen));
+  });
+
+  $(document).on('click', function(event) {
+    var navigation = $('.section-navigation');
+    if (navigation.length && !navigation[0].contains(event.target)) {
+      navigation.removeClass('is-open');
+      navigation.find('.section-navigation-toggle').attr('aria-expanded', 'false');
+    }
+  });
+
+  $(document).on('keydown', function(event) {
+    if (event.key === 'Escape') {
+      var navigation = $('.section-navigation');
+      navigation.removeClass('is-open');
+      navigation.find('.section-navigation-toggle').attr('aria-expanded', 'false').trigger('focus');
     }
   });
 
