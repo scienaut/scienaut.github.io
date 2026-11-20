@@ -55,26 +55,30 @@
     }
   });
 
-  // Expand the compact navigation in section view and close it after selection/outside click.
-  $(document).on('click', '.section-navigation-toggle', function() {
-    var navigation = $(this).closest('.section-navigation');
-    var isOpen = navigation.toggleClass('is-open').hasClass('is-open');
-    $(this).attr('aria-expanded', String(isOpen));
-  });
-
-  $(document).on('click', function(event) {
-    var navigation = $('.section-navigation');
-    if (navigation.length && !navigation[0].contains(event.target)) {
-      navigation.removeClass('is-open');
-      navigation.find('.section-navigation-toggle').attr('aria-expanded', 'false');
+  // Use a native click handler so the section menu works independently of legacy nav handlers.
+  document.addEventListener('click', function(event) {
+    var toggle = event.target.closest('.section-navigation-toggle');
+    var navigation = document.querySelector('.section-navigation');
+    if (!navigation) return;
+    if (toggle) {
+      var isOpen = navigation.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
+      return;
+    }
+    if (!navigation.contains(event.target)) {
+      navigation.classList.remove('is-open');
+      var button = navigation.querySelector('.section-navigation-toggle');
+      if (button) button.setAttribute('aria-expanded', 'false');
     }
   });
 
-  $(document).on('keydown', function(event) {
+  document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
-      var navigation = $('.section-navigation');
-      navigation.removeClass('is-open');
-      navigation.find('.section-navigation-toggle').attr('aria-expanded', 'false').trigger('focus');
+      var navigation = document.querySelector('.section-navigation');
+      if (!navigation) return;
+      navigation.classList.remove('is-open');
+      var button = navigation.querySelector('.section-navigation-toggle');
+      if (button) { button.setAttribute('aria-expanded', 'false'); button.focus(); }
     }
   });
 
