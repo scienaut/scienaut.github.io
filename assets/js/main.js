@@ -20,6 +20,11 @@
           $(this).closest('li').addClass('active');
         }
 
+        var sectionNavigation = $(this).closest('.section-navigation')[0];
+        if (sectionNavigation && $('#header').hasClass('header-top')) {
+          sectionNavigation.open = false;
+        }
+
         if (hash == '#header') {
           $('#header').removeClass('header-top');
           $("section").removeClass('section-show');
