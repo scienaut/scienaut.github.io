@@ -1595,3 +1595,9 @@ section .container {
     #header.header-tops:not(.header-top) .orbit-travel-path { animation: none; }
   }
 }
+
+/* Keep the injected hover-path layer out of the compact mobile menu. */
+#header.header-tops:not(.header-top) .orbit-travel-overlay { display: none; }
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .orbit-travel-overlay { display: block; }
+}
