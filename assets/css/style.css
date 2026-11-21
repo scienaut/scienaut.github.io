@@ -1735,3 +1735,24 @@ section .container {
     filter: drop-shadow(0 0 9px rgba(255, 180, 72, .82));
   }
 }
+
+
+/* Earth-mass curvature mesh: gently fades in only while an orbital item is active. */
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .orbit-space-grid {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .55s cubic-bezier(.2, .7, .25, 1);
+  }
+  #header.header-tops:not(.header-top) .orbit-space-grid.is-visible { opacity: .72; }
+  #header.header-tops:not(.header-top) .orbit-space-grid path {
+    fill: none;
+    stroke: #60b8cf;
+    stroke-width: .78;
+    stroke-opacity: .56;
+    vector-effect: non-scaling-stroke;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #header.header-tops:not(.header-top) .orbit-space-grid { transition: none; }
+}
