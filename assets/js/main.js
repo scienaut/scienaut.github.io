@@ -226,6 +226,19 @@
     var relayPath = document.createElementNS(svgNS, 'path');
     relayPath.setAttribute('class', 'orbit-signal-path orbit-relay-path');
     svg.appendChild(relayPath);
+    var curvatureGroup = document.createElementNS(svgNS, 'g');
+    curvatureGroup.setAttribute('class', 'orbit-space-grid');
+    curvatureGroup.setAttribute('aria-hidden', 'true');
+    var curvatureLines = [];
+    for (var gridLineIndex = 0; gridLineIndex < 15; gridLineIndex += 1) {
+      var verticalGrid = document.createElementNS(svgNS, 'path');
+      var horizontalGrid = document.createElementNS(svgNS, 'path');
+      curvatureGroup.appendChild(verticalGrid);
+      curvatureGroup.appendChild(horizontalGrid);
+      curvatureLines.push({ element: verticalGrid, direction: 'vertical', index: gridLineIndex });
+      curvatureLines.push({ element: horizontalGrid, direction: 'horizontal', index: gridLineIndex });
+    }
+    svg.insertBefore(curvatureGroup, path);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -266,6 +279,45 @@
         }
       });
     });
+
+    var lastCurvatureFrame = 0;
+    var earthMassKg = 5.9722e24;
+    var earthRadiusMeters = 6371000;
+    var gravitationalConstant = 6.67430e-11;
+    var speedOfLight = 299792458;
+    var earthSchwarzschildRadius = 2 * gravitationalConstant * earthMassKg / (speedOfLight * speedOfLight);
+
+    function drawCurvatureGrid(width, height, cx, cy, profileRadius, targetX, targetY, targetRadius) {
+      var surfaceRadius = earthRadiusMeters;
+      var surfaceZ = 2 * Math.sqrt(earthSchwarzschildRadius * (surfaceRadius - earthSchwarzschildRadius));
+      var metersPerPixel = surfaceRadius / Math.max(profileRadius, 1);
+      var verticalDisplayScale = 0.12;
+      var lineCount = 15;
+      var samples = 32;
+
+      function mapPoint(x, y) {
+        var earthDistancePx = Math.max(profileRadius, Math.hypot(x - cx, y - cy));
+        var earthDistanceMeters = surfaceRadius + (earthDistancePx - profileRadius) * metersPerPixel;
+        var z = 2 * Math.sqrt(earthSchwarzschildRadius * (earthDistanceMeters - earthSchwarzschildRadius));
+        var schwarzschildDisplacement = Math.max(0, z - surfaceZ) * verticalDisplayScale;
+        var focusRadius = Math.max(28, targetRadius * 2.3);
+        var focusDistance = Math.hypot(x - targetX, y - targetY);
+        var hoverFocus = Math.exp(-(focusDistance * focusDistance) / (focusRadius * focusRadius)) * Math.min(12, targetRadius * 0.22);
+        return { x: x, y: y - schwarzschildDisplacement + hoverFocus };
+      }
+
+      curvatureLines.forEach(function(line) {
+        var d = '';
+        for (var sampleIndex = 0; sampleIndex <= samples; sampleIndex += 1) {
+          var t = sampleIndex / samples;
+          var x = line.direction === 'vertical' ? line.index / (lineCount - 1) * width : t * width;
+          var y = line.direction === 'horizontal' ? line.index / (lineCount - 1) * height : t * height;
+          var point = mapPoint(x, y);
+          d += (sampleIndex === 0 ? 'M ' : ' L ') + point.x.toFixed(1) + ' ' + point.y.toFixed(1);
+        }
+        line.element.setAttribute('d', d);
+      });
+    }
 
     function frame(now) {
       if (startedAt === null) startedAt = now;
@@ -326,6 +378,11 @@
           var distance = Math.sqrt(dx * dx + dy * dy) || 1;
           var ux = dx / distance, uy = dy / distance;
           var targetRadius = Math.min(targetRect.width, targetRect.height) / 2;
+          curvatureGroup.classList.add('is-visible');
+          if (now - lastCurvatureFrame > 32) {
+            drawCurvatureGrid(rect.width, rect.height, cx, cy, profileRadius, targetX, targetY, targetRadius);
+            lastCurvatureFrame = now;
+          }
           var x1 = cx + ux * (profileRadius + 5);
           var y1 = cy + uy * (profileRadius + 5);
           var x2 = targetX - ux * (targetRadius + 3);
@@ -424,6 +481,7 @@
               (signalAngle * 180 / Math.PI + 180) + 'deg)';
           }
         } else {
+          curvatureGroup.classList.remove('is-visible');
           path.classList.remove('is-visible');
           path.removeAttribute('d');
           signalPath.classList.remove('is-visible');
@@ -445,6 +503,7 @@
           satelliteNode.classList.remove('is-relay', 'is-transmitting');
         });
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
+        curvatureGroup.classList.remove('is-visible');
         path.classList.remove('is-visible');
         path.removeAttribute('d');
         signalPath.classList.remove('is-visible');
