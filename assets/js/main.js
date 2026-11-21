@@ -331,8 +331,9 @@
         var outerRy = Math.max(170, rect.height / 2 - maxDiameter / 2 - 12);
         var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
         var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
-        var satelliteRx = window.innerWidth * 0.43;
-        var satelliteRy = window.innerHeight * 0.43;
+        // Match the larger dashed navigation ellipse while keeping all three relays evenly spaced.
+        var satelliteRx = rect.width * 0.54;
+        var satelliteRy = rect.height * 0.54;
         navigation.style.setProperty('--satellite-orbit-rx', satelliteRx + 'px');
         navigation.style.setProperty('--satellite-orbit-ry', satelliteRy + 'px');
         navigation.style.setProperty('--orbit-rx', outerRx + 'px');
