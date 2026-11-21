@@ -219,13 +219,39 @@
     nodes.forEach(function(node) {
       var link = node.querySelector('a');
       if (!link) return;
-      link.addEventListener('pointerenter', function() { selected = node; });
-      link.addEventListener('pointerleave', function() {
-        if (document.activeElement !== link) selected = null;
+
+      var dots = node.querySelector('.orbit-hover-dots');
+      if (!dots) {
+        dots = document.createElement('span');
+        dots.className = 'orbit-hover-dots';
+        dots.setAttribute('aria-hidden', 'true');
+        for (var dotIndex = 0; dotIndex < 8; dotIndex += 1) {
+          var dot = document.createElement('span');
+          dot.style.setProperty('--dot-angle', (dotIndex * 45) + 'deg');
+          dots.appendChild(dot);
+        }
+        node.appendChild(dots);
+      }
+
+      link.addEventListener('pointerenter', function() {
+        selected = node;
+        node.classList.add('orbit-hover-active');
       });
-      link.addEventListener('focus', function() { selected = node; });
+      link.addEventListener('pointerleave', function() {
+        if (document.activeElement !== link) {
+          selected = null;
+          node.classList.remove('orbit-hover-active');
+        }
+      });
+      link.addEventListener('focus', function() {
+        selected = node;
+        node.classList.add('orbit-hover-active');
+      });
       link.addEventListener('blur', function() {
-        if (!node.matches(':hover')) selected = null;
+        if (!node.matches(':hover')) {
+          selected = null;
+          node.classList.remove('orbit-hover-active');
+        }
       });
     });
 
