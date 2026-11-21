@@ -1437,8 +1437,8 @@ section .container {
 }
 #header.header-tops:not(.header-top) .section-navigation-toggle { display: none !important; }
 #header.header-tops:not(.header-top) .section-navigation::before {
-  content: ""; position: absolute; inset: 1% -1%; display: block; z-index: 0;
-  border: 1px dashed rgba(199, 219, 235, .62); border-radius: 50%; pointer-events: none;
+  content: ""; position: absolute; inset: -4% -4%; display: block; z-index: 0;
+  border: 1.5px dashed rgba(255, 210, 74, .72); border-radius: 50%; pointer-events: none;
 }
 #header.header-tops:not(.header-top) .orbit-satellite {
   position: absolute; left: 97.9%; top: 33.2%; z-index: 2;
