@@ -189,6 +189,7 @@
     var menu = navigation && navigation.querySelector(':scope > .nav-menu');
     var list = menu && menu.querySelector('ul');
     var profile = header && header.querySelector('.home-profile-core');
+    var satellite = navigation && navigation.querySelector('.orbit-satellite');
     if (!header || !navigation || !menu || !list || !profile || navigation.dataset.orbitReady) return;
     navigation.dataset.orbitReady = 'true';
 
@@ -237,6 +238,10 @@
         var outerRy = Math.max(170, rect.height / 2 - maxDiameter / 2 - 12);
         var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
         var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
+        var satelliteRx = outerRx + 100;
+        var satelliteRy = outerRy + 55;
+        navigation.style.setProperty('--satellite-orbit-rx', satelliteRx + 'px');
+        navigation.style.setProperty('--satellite-orbit-ry', satelliteRy + 'px');
         navigation.style.setProperty('--orbit-rx', outerRx + 'px');
         navigation.style.setProperty('--orbit-ry', outerRy + 'px');
         navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
@@ -252,6 +257,17 @@
         }
         place(outerNodes, outerRx, outerRy, 1);
         place(innerNodes, innerRx, innerRy, -1);
+        if (satellite) {
+          var satelliteAngle = phase - Math.PI / 3;
+          var satelliteX = cx + satelliteRx * Math.cos(satelliteAngle);
+          var satelliteY = cy + satelliteRy * Math.sin(satelliteAngle);
+          var tangentX = -satelliteRx * Math.sin(satelliteAngle);
+          var tangentY = satelliteRy * Math.cos(satelliteAngle);
+          var satelliteHeading = Math.atan2(tangentY, tangentX) * 180 / Math.PI + 180;
+          satellite.style.left = satelliteX + 'px';
+          satellite.style.top = satelliteY + 'px';
+          satellite.style.transform = 'translate(-50%, -50%) rotate(' + satelliteHeading + 'deg)';
+        }
 
         if (selected && selected.isConnected) {
           var targetRect = selected.getBoundingClientRect();
@@ -265,12 +281,42 @@
           var y1 = cy + uy * (profileRadius + 5);
           var x2 = targetX - ux * (targetRadius + 3);
           var y2 = targetY - uy * (targetRadius + 3);
-          var nx = -uy, ny = ux;
-          var bend = -Math.min(110, distance * 0.16);
-          var d = 'M ' + x1 + ' ' + y1 +
-            ' C ' + (x1 + (x2 - x1) * 0.34 + nx * bend) + ' ' + (y1 + (y2 - y1) * 0.34 + ny * bend) +
-            ', ' + (x1 + (x2 - x1) * 0.70 + nx * bend) + ' ' + (y1 + (y2 - y1) * 0.70 + ny * bend) +
-            ', ' + x2 + ' ' + y2;
+          var startAngle = Math.atan2(dy, dx);
+          var spiralPoints = [];
+          var turns = Math.PI * 2;
+          var steps = 96;
+          for (var i = 0; i <= steps; i++) {
+            var progress = i / steps;
+            var angle = startAngle + turns * progress;
+            var radiusX = profileRadius + 8 + 58 * progress;
+            var radiusY = profileRadius * 0.76 + 8 + 46 * progress;
+            spiralPoints.push({
+              x: cx + radiusX * Math.cos(angle),
+              y: cy + radiusY * Math.sin(angle)
+            });
+          }
+          var d = 'M ' + spiralPoints[0].x + ' ' + spiralPoints[0].y;
+          for (var pointIndex = 0; pointIndex < spiralPoints.length - 1; pointIndex++) {
+            var p0 = spiralPoints[Math.max(0, pointIndex - 1)];
+            var p1 = spiralPoints[pointIndex];
+            var p2 = spiralPoints[pointIndex + 1];
+            var p3 = spiralPoints[Math.min(spiralPoints.length - 1, pointIndex + 2)];
+            var c1x = p1.x + (p2.x - p0.x) / 6;
+            var c1y = p1.y + (p2.y - p0.y) / 6;
+            var c2x = p2.x - (p3.x - p1.x) / 6;
+            var c2y = p2.y - (p3.y - p1.y) / 6;
+            d += ' C ' + c1x + ' ' + c1y + ', ' + c2x + ' ' + c2y + ', ' + p2.x + ' ' + p2.y;
+          }
+          var spiralEnd = spiralPoints[spiralPoints.length - 1];
+          var priorPoint = spiralPoints[spiralPoints.length - 2];
+          var tangentLength = Math.hypot(spiralEnd.x - priorPoint.x, spiralEnd.y - priorPoint.y) || 1;
+          var connectorLength = Math.hypot(x2 - spiralEnd.x, y2 - spiralEnd.y);
+          var lead = Math.min(70, connectorLength * 0.3);
+          var control1X = spiralEnd.x + (spiralEnd.x - priorPoint.x) / tangentLength * lead;
+          var control1Y = spiralEnd.y + (spiralEnd.y - priorPoint.y) / tangentLength * lead;
+          var control2X = x2 - ux * lead;
+          var control2Y = y2 - uy * lead;
+          d += ' C ' + control1X + ' ' + control1Y + ', ' + control2X + ' ' + control2Y + ', ' + x2 + ' ' + y2;
           path.setAttribute('d', d);
           path.classList.add('is-visible');
         } else {
@@ -282,6 +328,13 @@
         navigation.style.removeProperty('--orbit-ry');
         navigation.style.removeProperty('--inner-orbit-rx');
         navigation.style.removeProperty('--inner-orbit-ry');
+        navigation.style.removeProperty('--satellite-orbit-rx');
+        navigation.style.removeProperty('--satellite-orbit-ry');
+        if (satellite) {
+          satellite.style.removeProperty('left');
+          satellite.style.removeProperty('top');
+          satellite.style.removeProperty('transform');
+        }
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
         path.classList.remove('is-visible');
         path.removeAttribute('d');
