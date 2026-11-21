@@ -211,6 +211,9 @@
     var path = document.createElementNS(svgNS, 'path');
     path.setAttribute('class', 'orbit-travel-path');
     svg.appendChild(path);
+    var signalPath = document.createElementNS(svgNS, 'path');
+    signalPath.setAttribute('class', 'orbit-signal-path');
+    svg.appendChild(signalPath);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -319,9 +322,35 @@
           d += ' C ' + control1X + ' ' + control1Y + ', ' + control2X + ' ' + control2Y + ', ' + x2 + ' ' + y2;
           path.setAttribute('d', d);
           path.classList.add('is-visible');
+
+          if (satellite) {
+            var signalDx = targetX - satelliteX;
+            var signalDy = targetY - satelliteY;
+            var signalDistance = Math.hypot(signalDx, signalDy) || 1;
+            var signalUx = signalDx / signalDistance;
+            var signalUy = signalDy / signalDistance;
+            var signalAngle = Math.atan2(signalDy, signalDx);
+            var dishOffset = 14;
+            var signalStartX = satelliteX + signalUx * dishOffset;
+            var signalStartY = satelliteY + signalUy * dishOffset;
+            var signalEndX = targetX - signalUx * (targetRadius + 4);
+            var signalEndY = targetY - signalUy * (targetRadius + 4);
+            var signalMidX = (signalStartX + signalEndX) / 2;
+            var signalMidY = (signalStartY + signalEndY) / 2;
+            var signalBend = Math.min(24, Math.max(8, signalDistance * 0.035));
+            var signalControlX = signalMidX - signalUy * signalBend;
+            var signalControlY = signalMidY + signalUx * signalBend;
+            signalPath.setAttribute('d', 'M ' + signalStartX + ' ' + signalStartY +
+              ' Q ' + signalControlX + ' ' + signalControlY + ', ' + signalEndX + ' ' + signalEndY);
+            signalPath.classList.add('is-visible');
+            var dishHeading = signalAngle * 180 / Math.PI + 180;
+            satellite.style.transform = 'translate(-50%, -50%) rotate(' + dishHeading + 'deg)';
+          }
         } else {
           path.classList.remove('is-visible');
           path.removeAttribute('d');
+          signalPath.classList.remove('is-visible');
+          signalPath.removeAttribute('d');
         }
       } else {
         navigation.style.removeProperty('--orbit-rx');
@@ -338,6 +367,8 @@
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
         path.classList.remove('is-visible');
         path.removeAttribute('d');
+        signalPath.classList.remove('is-visible');
+        signalPath.removeAttribute('d');
       }
       window.requestAnimationFrame(frame);
     }
