@@ -194,6 +194,11 @@
 
     var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
     if (!nodes.length) return;
+    var innerNodes = nodes.filter(function(node) {
+      var label = (node.querySelector('a') && node.querySelector('a').textContent || '').trim().replace(/\s+/g, ' ');
+      return label === 'Resume' || label === 'Short Portfolio';
+    });
+    var outerNodes = nodes.filter(function(node) { return innerNodes.indexOf(node) === -1; });
     var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var selected = null;
     var startedAt = null;
@@ -227,17 +232,26 @@
         var rect = navigation.getBoundingClientRect();
         var cx = rect.width / 2, cy = rect.height / 2;
         var maxDiameter = 104;
-        var rx = Math.max(180, rect.width / 2 - maxDiameter / 2 - 12);
-        var ry = Math.max(170, rect.height / 2 - maxDiameter / 2 - 12);
-        navigation.style.setProperty('--orbit-rx', rx + 'px');
-        navigation.style.setProperty('--orbit-ry', ry + 'px');
-        var elapsed = reducedMotion ? 0 : (now - startedAt) * 0.000055;
-        var step = Math.PI * 2 / nodes.length;
-        nodes.forEach(function(node, index) {
-          var angle = -Math.PI / 2 + index * step + elapsed;
-          node.style.left = (cx + rx * Math.cos(angle)) + 'px';
-          node.style.top = (cy + ry * Math.sin(angle)) + 'px';
-        });
+        var profileRadius = profile.getBoundingClientRect().width / 2;
+        var outerRx = Math.max(180, rect.width / 2 - maxDiameter / 2 - 12);
+        var outerRy = Math.max(170, rect.height / 2 - maxDiameter / 2 - 12);
+        var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
+        var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
+        navigation.style.setProperty('--orbit-rx', outerRx + 'px');
+        navigation.style.setProperty('--orbit-ry', outerRy + 'px');
+        navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
+        navigation.style.setProperty('--inner-orbit-ry', innerRy + 'px');
+        var phase = reducedMotion ? 0 : (now - startedAt) * 0.000055;
+        function place(nodesToPlace, rx, ry, direction) {
+          var step = Math.PI * 2 / nodesToPlace.length;
+          nodesToPlace.forEach(function(node, index) {
+            var angle = -Math.PI / 2 + index * step + phase * direction;
+            node.style.left = (cx + rx * Math.cos(angle)) + 'px';
+            node.style.top = (cy + ry * Math.sin(angle)) + 'px';
+          });
+        }
+        place(outerNodes, outerRx, outerRy, 1);
+        place(innerNodes, innerRx, innerRy, -1);
 
         if (selected && selected.isConnected) {
           var targetRect = selected.getBoundingClientRect();
@@ -246,7 +260,6 @@
           var dx = targetX - cx, dy = targetY - cy;
           var distance = Math.sqrt(dx * dx + dy * dy) || 1;
           var ux = dx / distance, uy = dy / distance;
-          var profileRadius = profile.getBoundingClientRect().width / 2;
           var targetRadius = Math.min(targetRect.width, targetRect.height) / 2;
           var x1 = cx + ux * (profileRadius + 5);
           var y1 = cy + uy * (profileRadius + 5);
@@ -267,6 +280,8 @@
       } else {
         navigation.style.removeProperty('--orbit-rx');
         navigation.style.removeProperty('--orbit-ry');
+        navigation.style.removeProperty('--inner-orbit-rx');
+        navigation.style.removeProperty('--inner-orbit-ry');
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
         path.classList.remove('is-visible');
         path.removeAttribute('d');
@@ -275,6 +290,7 @@
     }
     window.requestAnimationFrame(frame);
   }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSharedOrbitalNavigation, { once: true });
   } else {
