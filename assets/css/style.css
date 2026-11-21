@@ -1544,8 +1544,8 @@ section .container {
   #header.header-tops:not(.header-top) .section-navigation::before,
   #header.header-tops:not(.header-top) .nav-menu::before,
   #header.header-tops:not(.header-top) .nav-menu::after {
-    inset: calc(50% - var(--inner-orbit-ry, 210px)) calc(50% - var(--inner-orbit-rx, 240px));
-    border-color: rgba(226, 239, 248, .48); display: block !important;
+    inset: calc(50% - var(--inner-orbit-ry, 246px)) calc(50% - var(--inner-orbit-rx, 278px));
+    border-color: rgba(226, 239, 248, .52);
   }
   #header.header-tops:not(.header-top) .orbit-satellite { display: none !important; }
   #header.header-tops:not(.header-top) .nav-menu ul {
