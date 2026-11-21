@@ -1602,9 +1602,17 @@ section .container {
     animation: orbit-travel-dots 1.1s linear infinite;
   }
   #header.header-tops:not(.header-top) .orbit-travel-path.is-visible { opacity: .96; }
+  #header.header-tops:not(.header-top) .orbit-signal-path {
+    fill: none; stroke: #ffd34e; stroke-width: 1.35; stroke-linecap: round;
+    stroke-dasharray: .7 4.2; opacity: 0; transition: opacity .16s ease;
+    animation: orbit-signal-pulse 1.4s linear infinite;
+  }
+  #header.header-tops:not(.header-top) .orbit-signal-path.is-visible { opacity: .96; }
   @keyframes orbit-travel-dots { to { stroke-dashoffset: -22; } }
+  @keyframes orbit-signal-pulse { to { stroke-dashoffset: -9.8; } }
   @media (prefers-reduced-motion: reduce) {
     #header.header-tops:not(.header-top) .orbit-travel-path { animation: none; }
+    #header.header-tops:not(.header-top) .orbit-signal-path { animation: none; }
   }
 }
 
