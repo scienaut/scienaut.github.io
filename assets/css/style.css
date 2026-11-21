@@ -1573,6 +1573,12 @@ section .container {
 
 /* Shared moving orbit for the home-page navigation. */
 @media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .section-navigation::before {
+    inset: calc(50% - var(--satellite-orbit-ry, 405px)) calc(50% - var(--satellite-orbit-rx, 606px));
+    border-style: dashed;
+    border-color: rgba(199, 219, 235, .72);
+  }
+  #header.header-tops:not(.header-top) .orbit-satellite { left: 50%; top: 50%; }
   #header.header-tops:not(.header-top) .nav-menu::before {
     inset: calc(50% - var(--orbit-ry, 320px)) calc(50% - var(--orbit-rx, 560px));
     border-color: rgba(226, 239, 248, .66);
