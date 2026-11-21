@@ -1722,3 +1722,16 @@ section .container {
     }
   }
 }
+
+
+/* Three spacecraft share the outer orbit and light up as signal relays. */
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .orbit-satellite.is-transmitting {
+    color: #ffd34e;
+    filter: drop-shadow(0 0 7px rgba(255, 211, 78, .72));
+  }
+  #header.header-tops:not(.header-top) .orbit-satellite.is-relay {
+    color: #ffb448;
+    filter: drop-shadow(0 0 9px rgba(255, 180, 72, .82));
+  }
+}
