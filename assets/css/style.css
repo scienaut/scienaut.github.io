@@ -1543,7 +1543,10 @@ section .container {
   }
   #header.header-tops:not(.header-top) .section-navigation::before,
   #header.header-tops:not(.header-top) .nav-menu::before,
-  #header.header-tops:not(.header-top) .nav-menu::after { display: none !important; }
+  #header.header-tops:not(.header-top) .nav-menu::after {
+    inset: calc(50% - var(--inner-orbit-ry, 210px)) calc(50% - var(--inner-orbit-rx, 240px));
+    border-color: rgba(226, 239, 248, .48); display: block !important;
+  }
   #header.header-tops:not(.header-top) .orbit-satellite { display: none !important; }
   #header.header-tops:not(.header-top) .nav-menu ul {
     position: relative !important; inset: auto !important; display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
