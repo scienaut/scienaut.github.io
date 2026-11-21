@@ -189,9 +189,18 @@
     var menu = navigation && navigation.querySelector(':scope > .nav-menu');
     var list = menu && menu.querySelector('ul');
     var profile = header && header.querySelector('.home-profile-core');
-    var satellite = navigation && navigation.querySelector('.orbit-satellite');
+    var satellites = navigation ? Array.prototype.slice.call(navigation.querySelectorAll('.orbit-satellite')) : [];
     if (!header || !navigation || !menu || !list || !profile || navigation.dataset.orbitReady) return;
     navigation.dataset.orbitReady = 'true';
+    if (satellites.length) {
+      while (satellites.length < 3) {
+        var relaySatellite = satellites[0].cloneNode(true);
+        relaySatellite.classList.add('orbit-satellite-relay');
+        relaySatellite.setAttribute('aria-hidden', 'true');
+        navigation.appendChild(relaySatellite);
+        satellites.push(relaySatellite);
+      }
+    }
 
     var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
     if (!nodes.length) return;
@@ -214,6 +223,9 @@
     var signalPath = document.createElementNS(svgNS, 'path');
     signalPath.setAttribute('class', 'orbit-signal-path');
     svg.appendChild(signalPath);
+    var relayPath = document.createElementNS(svgNS, 'path');
+    relayPath.setAttribute('class', 'orbit-signal-path orbit-relay-path');
+    svg.appendChild(relayPath);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -286,16 +298,24 @@
         }
         place(outerNodes, outerRx, outerRy, 1);
         place(innerNodes, innerRx, innerRy, -1);
-        if (satellite) {
-          var satelliteAngle = phase - Math.PI / 3;
+        var satellitePositions = satellites.map(function(satelliteNode, satelliteIndex) {
+          var satelliteAngle = phase - Math.PI / 3 + satelliteIndex * (Math.PI * 2 / satellites.length);
           var satelliteX = cx + satelliteRx * Math.cos(satelliteAngle);
           var satelliteY = cy + satelliteRy * Math.sin(satelliteAngle);
-          var tangentX = -satelliteRx * Math.sin(satelliteAngle);
-          var tangentY = satelliteRy * Math.cos(satelliteAngle);
-          var satelliteHeading = Math.atan2(tangentY, tangentX) * 180 / Math.PI + 180;
-          satellite.style.left = satelliteX + 'px';
-          satellite.style.top = satelliteY + 'px';
-          satellite.style.transform = 'translate(-50%, -50%) rotate(' + satelliteHeading + 'deg)';
+          var earthHeading = Math.atan2(cy - satelliteY, cx - satelliteX) * 180 / Math.PI + 180;
+          satelliteNode.style.left = satelliteX + 'px';
+          satelliteNode.style.top = satelliteY + 'px';
+          satelliteNode.style.transform = 'translate(-50%, -50%) rotate(' + earthHeading + 'deg)';
+          satelliteNode.classList.remove('is-relay', 'is-transmitting');
+          return { element: satelliteNode, x: satelliteX, y: satelliteY, angle: satelliteAngle };
+        });
+
+        function segmentCrossesPlanet(x1, y1, x2, y2) {
+          var vx = x2 - x1, vy = y2 - y1;
+          var lengthSquared = vx * vx + vy * vy || 1;
+          var t = Math.max(0, Math.min(1, (-(x1 - cx) * vx - (y1 - cy) * vy) / lengthSquared));
+          var nearestX = x1 + t * vx, nearestY = y1 + t * vy;
+          return Math.hypot(nearestX - cx, nearestY - cy) < profileRadius + 10;
         }
 
         if (selected && selected.isConnected) {
@@ -349,16 +369,47 @@
           path.setAttribute('d', d);
           path.classList.add('is-visible');
 
-          if (satellite) {
-            var signalDx = targetX - satelliteX;
-            var signalDy = targetY - satelliteY;
+          if (satellitePositions.length) {
+            var directSatellite = satellitePositions[0];
+            var clearSatellites = satellitePositions.filter(function(candidate) {
+              return !segmentCrossesPlanet(candidate.x, candidate.y, targetX, targetY);
+            });
+            var activeSatellite = directSatellite;
+            var relayed = segmentCrossesPlanet(directSatellite.x, directSatellite.y, targetX, targetY);
+            if (relayed && clearSatellites.length) {
+              clearSatellites.sort(function(a, b) {
+                return Math.hypot(a.x - targetX, a.y - targetY) - Math.hypot(b.x - targetX, b.y - targetY);
+              });
+              activeSatellite = clearSatellites[0];
+            }
+            activeSatellite.element.classList.add(relayed ? 'is-relay' : 'is-transmitting');
+            if (relayed) {
+              directSatellite.element.classList.add('is-transmitting');
+              var relayDx = activeSatellite.x - directSatellite.x;
+              var relayDy = activeSatellite.y - directSatellite.y;
+              var relayMidX = (activeSatellite.x + directSatellite.x) / 2;
+              var relayMidY = (activeSatellite.y + directSatellite.y) / 2;
+              var outward = Math.hypot(relayMidX - cx, relayMidY - cy) || 1;
+              var relayControlX = relayMidX + (relayMidX - cx) / outward * 46;
+              var relayControlY = relayMidY + (relayMidY - cy) / outward * 46;
+              relayPath.setAttribute('d', 'M ' + directSatellite.x + ' ' + directSatellite.y +
+                ' Q ' + relayControlX + ' ' + relayControlY + ', ' + activeSatellite.x + ' ' + activeSatellite.y);
+              relayPath.classList.add('is-visible');
+              directSatellite.element.style.transform = 'translate(-50%, -50%) rotate(' +
+                (Math.atan2(relayDy, relayDx) * 180 / Math.PI + 180) + 'deg)';
+            } else {
+              relayPath.classList.remove('is-visible');
+              relayPath.removeAttribute('d');
+            }
+
+            var signalDx = targetX - activeSatellite.x;
+            var signalDy = targetY - activeSatellite.y;
             var signalDistance = Math.hypot(signalDx, signalDy) || 1;
             var signalUx = signalDx / signalDistance;
             var signalUy = signalDy / signalDistance;
             var signalAngle = Math.atan2(signalDy, signalDx);
-            var dishOffset = 14;
-            var signalStartX = satelliteX + signalUx * dishOffset;
-            var signalStartY = satelliteY + signalUy * dishOffset;
+            var signalStartX = activeSatellite.x + signalUx * 14;
+            var signalStartY = activeSatellite.y + signalUy * 14;
             var signalEndX = targetX - signalUx * (targetRadius + 4);
             var signalEndY = targetY - signalUy * (targetRadius + 4);
             var signalMidX = (signalStartX + signalEndX) / 2;
@@ -369,14 +420,16 @@
             signalPath.setAttribute('d', 'M ' + signalStartX + ' ' + signalStartY +
               ' Q ' + signalControlX + ' ' + signalControlY + ', ' + signalEndX + ' ' + signalEndY);
             signalPath.classList.add('is-visible');
-            var dishHeading = signalAngle * 180 / Math.PI + 180;
-            satellite.style.transform = 'translate(-50%, -50%) rotate(' + dishHeading + 'deg)';
+            activeSatellite.element.style.transform = 'translate(-50%, -50%) rotate(' +
+              (signalAngle * 180 / Math.PI + 180) + 'deg)';
           }
         } else {
           path.classList.remove('is-visible');
           path.removeAttribute('d');
           signalPath.classList.remove('is-visible');
           signalPath.removeAttribute('d');
+          relayPath.classList.remove('is-visible');
+          relayPath.removeAttribute('d');
         }
       } else {
         navigation.style.removeProperty('--orbit-rx');
@@ -385,16 +438,19 @@
         navigation.style.removeProperty('--inner-orbit-ry');
         navigation.style.removeProperty('--satellite-orbit-rx');
         navigation.style.removeProperty('--satellite-orbit-ry');
-        if (satellite) {
-          satellite.style.removeProperty('left');
-          satellite.style.removeProperty('top');
-          satellite.style.removeProperty('transform');
-        }
+        satellites.forEach(function(satelliteNode) {
+          satelliteNode.style.removeProperty('left');
+          satelliteNode.style.removeProperty('top');
+          satelliteNode.style.removeProperty('transform');
+          satelliteNode.classList.remove('is-relay', 'is-transmitting');
+        });
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
         path.classList.remove('is-visible');
         path.removeAttribute('d');
         signalPath.classList.remove('is-visible');
         signalPath.removeAttribute('d');
+        relayPath.classList.remove('is-visible');
+        relayPath.removeAttribute('d');
       }
       window.requestAnimationFrame(frame);
     }
