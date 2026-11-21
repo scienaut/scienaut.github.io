@@ -1577,7 +1577,10 @@ section .container {
     inset: calc(50% - var(--orbit-ry, 320px)) calc(50% - var(--orbit-rx, 560px));
     border-color: rgba(226, 239, 248, .66);
   }
-  #header.header-tops:not(.header-top) .nav-menu::after { display: none !important; }
+  #header.header-tops:not(.header-top) .nav-menu::after {
+    inset: calc(50% - var(--inner-orbit-ry, 246px)) calc(50% - var(--inner-orbit-rx, 278px));
+    border-color: rgba(226, 239, 248, .52);
+  }
   #header.header-tops:not(.header-top) .nav-menu li { width: 100px; }
   #header.header-tops:not(.header-top) .nav-menu li a {
     width: 92px !important; height: 92px; padding: 9px !important;
