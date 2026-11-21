@@ -1621,3 +1621,47 @@ section .container {
 @media (min-width: 1051px) {
   #header.header-tops:not(.header-top) .orbit-travel-overlay { display: block; }
 }
+
+
+/* Keep the section-page menu pinned to the viewport. */
+#header.header-top {
+  overflow: visible !important;
+}
+
+#header.header-top .section-navigation {
+  position: static !important;
+}
+
+#header.header-top .section-navigation-toggle {
+  position: fixed !important;
+  top: 14px !important;
+  right: clamp(12px, 3vw, 42px) !important;
+  z-index: 11010 !important;
+  margin: 0 !important;
+}
+
+#header.header-top .section-navigation.is-open > .nav-menu {
+  position: fixed !important;
+  top: 68px !important;
+  left: auto !important;
+  right: clamp(12px, 3vw, 42px) !important;
+  width: min(560px, calc(100vw - 24px)) !important;
+  max-height: calc(100dvh - 80px) !important;
+  overflow-y: auto !important;
+  z-index: 11000 !important;
+}
+
+@media (max-width: 768px) {
+  #header.header-top .section-navigation-toggle {
+    top: 8px !important;
+    right: 12px !important;
+  }
+
+  #header.header-top .section-navigation.is-open > .nav-menu {
+    top: 64px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 76px) !important;
+  }
+}
