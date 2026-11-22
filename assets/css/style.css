@@ -1756,3 +1756,23 @@ section .container {
 @media (prefers-reduced-motion: reduce) {
   #header.header-tops:not(.header-top) .orbit-space-grid { transition: none; }
 }
+
+
+/* Inner pages use the compact fixed header, not the animated homepage orbit.
+   Prevent the homepage satellite SVGs from rendering at their intrinsic size
+   (300x150) over Resume, Education, Expertise, Projects and Contact content. */
+#header.header-top .orbit-satellite,
+#header.header-top .orbit-travel-overlay {
+  display: none !important;
+}
+
+/* Defensive sizing if a satellite is ever rendered outside the homepage orbit. */
+#header .orbit-satellite {
+  width: 50px;
+  height: 50px;
+}
+#header .orbit-satellite svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
