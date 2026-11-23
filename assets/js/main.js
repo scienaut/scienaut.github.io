@@ -343,10 +343,10 @@
     var curvatureAmplification = 2.5; // Visual scale only; the underlying shape uses the Schwarzschild embedding equation.
     function drawCurvatureGrid(width, height, cx, cy, profileRadius) {
       // Flamm's paraboloid: z(r) = 2 sqrt(r_s (r - r_s)), r >= r_s.
-      // Map four profile radii to the Schwarzschild radius, then amplify the
-      // embedding height for legibility without changing the physical mass.
-      var pixelsPerSchwarzschildRadius = Math.max(profileRadius / 4, 8);
-      var referenceRadius = 4 * schwarzschildRadiusMeters;
+      // Map the profile boundary to 6 r_s (a compact-object surface outside r_s),
+      // then amplify the embedding height for legibility without changing mass.
+      var pixelsPerSchwarzschildRadius = Math.max(profileRadius / 6, 8);
+      var referenceRadius = 6 * schwarzschildRadiusMeters;
       var referenceZ = 2 * Math.sqrt(schwarzschildRadiusMeters * (referenceRadius - schwarzschildRadiusMeters));
       function mapPoint(x, y) {
         var dx = x - cx;
@@ -361,9 +361,9 @@
         var edgeY = unitY > 0 ? (height - cy) / unitY : (unitY < 0 ? (0 - cy) / unitY : Infinity);
         var edgeRadiusPixels = Math.max(profileRadius, Math.min(edgeX, edgeY));
         var physicalRadius = schwarzschildRadiusMeters *
-          (4 + (radialPixels - profileRadius) / pixelsPerSchwarzschildRadius);
+          (6 + (radialPixels - profileRadius) / pixelsPerSchwarzschildRadius);
         var edgePhysicalRadius = schwarzschildRadiusMeters *
-          (4 + (edgeRadiusPixels - profileRadius) / pixelsPerSchwarzschildRadius);
+          (6 + (edgeRadiusPixels - profileRadius) / pixelsPerSchwarzschildRadius);
         var z = 2 * Math.sqrt(schwarzschildRadiusMeters * Math.max(0, physicalRadius - schwarzschildRadiusMeters));
         var edgeZ = 2 * Math.sqrt(schwarzschildRadiusMeters *
           Math.max(0, edgePhysicalRadius - schwarzschildRadiusMeters));
