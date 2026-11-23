@@ -2087,3 +2087,20 @@ section .container {
     z-index: 5 !important;
   }
 }
+
+
+/* Final cleanup: plain deep-space background, no spacetime mesh. */
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) {
+    background: #000b16 !important;
+  }
+  #header.header-tops:not(.header-top) .section-navigation {
+    background: #000b16 !important;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .orbit-curvature-overlay,
+  #header.header-tops:not(.header-top) .section-navigation .orbit-space-grid {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
