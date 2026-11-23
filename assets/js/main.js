@@ -207,12 +207,12 @@
     var centralMassKg = (2 / 3) * solarMassKg;
     var gravitationalConstant = 6.67430e-11;
     var astronomicalUnitMeters = 149597870700;
-    var simulatedSecondsPerRealSecond = (365.256363004 * 86400) / 30;
+    var simulatedSecondsPerRealSecond = (365.256363004 * 86400) / 2;
     var planetData = [
-      { name: 'Earth', massKg: 5.9722e24, radiusKm: 6371.0, aAU: 0.82, color: '#4ba7ff', phase: -Math.PI / 2 },
-      { name: 'Mars', massKg: 6.4171e23, radiusKm: 3389.5, aAU: 0.55, color: '#e87955', phase: Math.PI / 4 },
-      { name: 'Neptune', massKg: 1.02413e26, radiusKm: 24622, aAU: 1.50, color: '#4778ff', phase: Math.PI },
-      { name: 'Uranus', massKg: 8.6810e25, radiusKm: 25362, aAU: 1.22, color: '#70d9dc', phase: Math.PI * 1.45 }
+      { name: 'Earth', massKg: 5.9722e24, radiusKm: 6371.0, aAU: 1.000, color: '#4ba7ff', phase: -Math.PI / 2 },
+      { name: 'Mars', massKg: 6.4171e23, radiusKm: 3389.5, aAU: 1.523679, color: '#e87955', phase: Math.PI / 4 },
+      { name: 'Neptune', massKg: 1.02413e26, radiusKm: 24622, aAU: 30.07, color: '#4778ff', phase: Math.PI },
+      { name: 'Uranus', massKg: 8.6810e25, radiusKm: 25362, aAU: 19.191, color: '#70d9dc', phase: Math.PI * 1.45 }
     ];
     var planetBodies = planetData.map(function(body) {
       var element = document.createElement('span');
@@ -235,7 +235,7 @@
     if (!massLabel) {
       massLabel = document.createElement('span');
       massLabel.className = 'central-mass-label';
-      massLabel.textContent = 'M = ⅔ M☉';
+      massLabel.textContent = 'M = ⅔ M☉  ·  rₛ ≈ 1.97 km';
       massLabel.setAttribute('title', 'Central mass: two-thirds of the Sun');
       profile.appendChild(massLabel);
     }
@@ -423,8 +423,9 @@
           var semiMajorAxis = body.aAU * astronomicalUnitMeters;
           var meanMotion = Math.sqrt(gravitationalConstant * (centralMassKg + body.massKg) /
             Math.pow(semiMajorAxis, 3));
-          var orbitalAngle = body.phase + meanMotion * elapsedSeconds * simulatedSecondsPerRealSecond;
-          var orbitFraction = 0.34 + (body.aAU - 0.55) / (1.50 - 0.55) * 0.38;
+          var orbitalAngle = body.phase + (reducedMotion ? 0 : meanMotion * elapsedSeconds * simulatedSecondsPerRealSecond);
+          // Log-compressed display radii preserve legibility; orbital rates still use true AU values.
+          var orbitFraction = 0.24 + Math.log(body.aAU) / Math.log(30.07) * 0.54;
           var planetX = cx + outerRx * orbitFraction * Math.cos(orbitalAngle);
           var planetY = cy + outerRy * orbitFraction * Math.sin(orbitalAngle);
           planet.element.style.left = planetX + 'px';
