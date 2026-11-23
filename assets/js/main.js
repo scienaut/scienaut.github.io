@@ -202,6 +202,44 @@
       }
     }
 
+    // Planetary bodies use measured planetary masses and Keplerian mean motion.
+    var solarMassKg = 1.98847e30;
+    var centralMassKg = (2 / 3) * solarMassKg;
+    var gravitationalConstant = 6.67430e-11;
+    var astronomicalUnitMeters = 149597870700;
+    var simulatedSecondsPerRealSecond = (365.256363004 * 86400) / 30;
+    var planetData = [
+      { name: 'Earth', massKg: 5.9722e24, radiusKm: 6371.0, aAU: 0.82, color: '#4ba7ff', phase: -Math.PI / 2 },
+      { name: 'Mars', massKg: 6.4171e23, radiusKm: 3389.5, aAU: 0.55, color: '#e87955', phase: Math.PI / 4 },
+      { name: 'Neptune', massKg: 1.02413e26, radiusKm: 24622, aAU: 1.50, color: '#4778ff', phase: Math.PI },
+      { name: 'Uranus', massKg: 8.6810e25, radiusKm: 25362, aAU: 1.22, color: '#70d9dc', phase: Math.PI * 1.45 }
+    ];
+    var planetBodies = planetData.map(function(body) {
+      var element = document.createElement('span');
+      element.className = 'orbit-planet';
+      element.setAttribute('aria-label', body.name + ', mass ' + body.massKg.toExponential(4) + ' kilograms');
+      element.setAttribute('title', body.name + ' — ' + body.massKg.toExponential(4) + ' kg');
+      var sphere = document.createElement('span');
+      sphere.className = 'orbit-planet-sphere';
+      sphere.style.setProperty('--planet-color', body.color);
+      var label = document.createElement('span');
+      label.className = 'orbit-planet-label';
+      label.textContent = body.name + ' · ' + (body.massKg / 5.9722e24).toFixed(2) + ' M⊕';
+      element.appendChild(sphere);
+      element.appendChild(label);
+      navigation.appendChild(element);
+      return { data: body, element: element };
+    });
+
+    var massLabel = profile.querySelector('.central-mass-label');
+    if (!massLabel) {
+      massLabel = document.createElement('span');
+      massLabel.className = 'central-mass-label';
+      massLabel.textContent = 'M = ⅔ M☉';
+      massLabel.setAttribute('title', 'Central mass: two-thirds of the Sun');
+      profile.appendChild(massLabel);
+    }
+
     var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
     if (!nodes.length) return;
     var innerNodes = nodes.filter(function(node) {
@@ -234,7 +272,7 @@
     curvatureGroup.setAttribute('class', 'orbit-space-grid');
     curvatureGroup.setAttribute('aria-hidden', 'true');
     var curvatureLines = [];
-    for (var gridLineIndex = 0; gridLineIndex < 31; gridLineIndex += 1) {
+    for (var gridLineIndex = 0; gridLineIndex < gridLineCount; gridLineIndex += 1) {
       var verticalGrid = document.createElementNS(svgNS, 'path');
       var horizontalGrid = document.createElementNS(svgNS, 'path');
       curvatureGroup.appendChild(verticalGrid);
@@ -242,8 +280,9 @@
       curvatureLines.push({ element: verticalGrid, direction: 'vertical', index: gridLineIndex });
       curvatureLines.push({ element: horizontalGrid, direction: 'horizontal', index: gridLineIndex });
     }
+    curvatureSvg.setAttribute('preserveAspectRatio', 'none');
     curvatureSvg.appendChild(curvatureGroup);
-    header.appendChild(curvatureSvg);
+    document.body.insertBefore(curvatureSvg, document.body.firstChild);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -286,37 +325,36 @@
     });
 
     var lastCurvatureFrame = 0;
-    var earthMassKg = 5.9722e24;
-    var earthRadiusMeters = 6371000;
-    var gravitationalConstant = 6.67430e-11;
     var speedOfLight = 299792458;
-    var earthSchwarzschildRadius = 2 * gravitationalConstant * earthMassKg / (speedOfLight * speedOfLight);
+    var schwarzschildRadiusMeters = 2 * gravitationalConstant * centralMassKg / (speedOfLight * speedOfLight);
+    var curvatureAmplification = 2.5; // Visual scale only; the underlying shape uses the Schwarzschild embedding equation.
+    var gridLineCount = 43;
+    var gridSamples = 100;
 
-    function drawCurvatureGrid(width, height, cx, cy, profileRadius, targetX, targetY, targetRadius) {
-      var surfaceRadius = earthRadiusMeters;
-      var surfaceZ = 2 * Math.sqrt(earthSchwarzschildRadius * (surfaceRadius - earthSchwarzschildRadius));
-      var metersPerPixel = surfaceRadius / Math.max(profileRadius, 1);
-      var verticalDisplayScale = 0.36;
-      var lineCount = 31;
-      var samples = 64;
+    function drawCurvatureGrid(width, height, cx, cy, profileRadius) {
+      // Flamm's paraboloid: z(r) = 2 sqrt(r_s (r - r_s)), r >= r_s.
+      // Map four profile radii to the Schwarzschild radius, then amplify the
+      // embedding height for legibility without changing the physical mass.
+      var pixelsPerSchwarzschildRadius = Math.max(profileRadius / 4, 8);
+      var referenceRadius = 4 * schwarzschildRadiusMeters;
+      var referenceZ = 2 * Math.sqrt(schwarzschildRadiusMeters * (referenceRadius - schwarzschildRadiusMeters));
 
       function mapPoint(x, y) {
-        var earthDistancePx = Math.max(profileRadius, Math.hypot(x - cx, y - cy));
-        var earthDistanceMeters = surfaceRadius + (earthDistancePx - profileRadius) * metersPerPixel;
-        var z = 2 * Math.sqrt(earthSchwarzschildRadius * (earthDistanceMeters - earthSchwarzschildRadius));
-        var schwarzschildDisplacement = Math.max(0, z - surfaceZ) * verticalDisplayScale;
-        var focusRadius = Math.max(28, targetRadius * 2.3);
-        var focusDistance = Math.hypot(x - targetX, y - targetY);
-        var hoverFocus = Math.exp(-(focusDistance * focusDistance) / (focusRadius * focusRadius)) * Math.min(12, targetRadius * 0.22);
-        return { x: x, y: y - schwarzschildDisplacement + hoverFocus };
+        var radialPixels = Math.max(profileRadius, Math.hypot(x - cx, y - cy));
+        var physicalRadius = schwarzschildRadiusMeters *
+          (4 + (radialPixels - profileRadius) / pixelsPerSchwarzschildRadius);
+        var z = 2 * Math.sqrt(schwarzschildRadiusMeters * Math.max(0, physicalRadius - schwarzschildRadiusMeters));
+        var depthPixels = ((z - referenceZ) / schwarzschildRadiusMeters) *
+          pixelsPerSchwarzschildRadius * curvatureAmplification;
+        return { x: x, y: y + depthPixels };
       }
 
       curvatureLines.forEach(function(line) {
         var d = '';
-        for (var sampleIndex = 0; sampleIndex <= samples; sampleIndex += 1) {
-          var t = sampleIndex / samples;
-          var x = line.direction === 'vertical' ? line.index / (lineCount - 1) * width : t * width;
-          var y = line.direction === 'horizontal' ? line.index / (lineCount - 1) * height : t * height;
+        for (var sampleIndex = 0; sampleIndex <= gridSamples; sampleIndex += 1) {
+          var t = sampleIndex / gridSamples;
+          var x = line.direction === 'vertical' ? line.index / (gridLineCount - 1) * width : t * width;
+          var y = line.direction === 'horizontal' ? line.index / (gridLineCount - 1) * height : t * height;
           var point = mapPoint(x, y);
           d += (sampleIndex === 0 ? 'M ' : ' L ') + point.x.toFixed(1) + ' ' + point.y.toFixed(1);
         }
@@ -328,6 +366,7 @@
       if (startedAt === null) startedAt = now;
       var homeMode = !header.classList.contains('header-top') && window.innerWidth > 1050;
       if (homeMode) {
+        curvatureSvg.style.display = 'block';
         var rect = navigation.getBoundingClientRect();
         var cx = rect.width / 2, cy = rect.height / 2;
         var maxDiameter = 104;
@@ -345,7 +384,8 @@
         navigation.style.setProperty('--orbit-ry', outerRy + 'px');
         navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
         navigation.style.setProperty('--inner-orbit-ry', innerRy + 'px');
-        var phase = reducedMotion ? 0 : (now - startedAt) * 0.000055;
+        var elapsedSeconds = (now - startedAt) / 1000;
+        var phase = reducedMotion ? 0 : elapsedSeconds * 0.000055;
         function place(nodesToPlace, rx, ry, direction) {
           var step = Math.PI * 2 / nodesToPlace.length;
           nodesToPlace.forEach(function(node, index) {
@@ -368,6 +408,21 @@
           return { element: satelliteNode, x: satelliteX, y: satelliteY, angle: satelliteAngle };
         });
 
+        // Keplerian orbit: n = sqrt(G (M + m) / a^3), with a visual time scale.
+        planetBodies.forEach(function(planet, planetIndex) {
+          var body = planet.data;
+          var semiMajorAxis = body.aAU * astronomicalUnitMeters;
+          var meanMotion = Math.sqrt(gravitationalConstant * (centralMassKg + body.massKg) /
+            Math.pow(semiMajorAxis, 3));
+          var orbitalAngle = body.phase + meanMotion * elapsedSeconds * simulatedSecondsPerRealSecond;
+          var orbitFraction = 0.34 + (body.aAU - 0.55) / (1.50 - 0.55) * 0.38;
+          var planetX = cx + outerRx * orbitFraction * Math.cos(orbitalAngle);
+          var planetY = cy + outerRy * orbitFraction * Math.sin(orbitalAngle);
+          planet.element.style.left = planetX + 'px';
+          planet.element.style.top = planetY + 'px';
+          planet.element.style.setProperty('--planet-index', planetIndex);
+        });
+
         function segmentCrossesPlanet(x1, y1, x2, y2) {
           var vx = x2 - x1, vy = y2 - y1;
           var lengthSquared = vx * vx + vy * vy || 1;
@@ -376,24 +431,24 @@
           return Math.hypot(nearestX - cx, nearestY - cy) < profileRadius + 10;
         }
 
-        if (selected && selected.isConnected) {
-          var targetRect = selected.getBoundingClientRect();
+        var targetRect = selected && selected.isConnected ? selected.getBoundingClientRect() : null;
+        curvatureGroup.classList.add('is-visible');
+        if (now - lastCurvatureFrame > 80) {
+          curvatureSvg.setAttribute('viewBox', '0 0 ' + window.innerWidth + ' ' + window.innerHeight);
+          drawCurvatureGrid(
+            window.innerWidth, window.innerHeight,
+            rect.left + cx, rect.top + cy, profileRadius
+          );
+          lastCurvatureFrame = now;
+        }
+
+        if (targetRect) {
           var targetX = targetRect.left - rect.left + targetRect.width / 2;
           var targetY = targetRect.top - rect.top + targetRect.height / 2;
           var dx = targetX - cx, dy = targetY - cy;
           var distance = Math.sqrt(dx * dx + dy * dy) || 1;
           var ux = dx / distance, uy = dy / distance;
           var targetRadius = Math.min(targetRect.width, targetRect.height) / 2;
-          curvatureGroup.classList.add('is-visible');
-          if (now - lastCurvatureFrame > 32) {
-            drawCurvatureGrid(
-              window.innerWidth, window.innerHeight,
-              rect.left + cx, rect.top + cy, profileRadius,
-              targetRect.left + targetRect.width / 2,
-              targetRect.top + targetRect.height / 2, targetRadius
-            );
-            lastCurvatureFrame = now;
-          }
           var x1 = cx + ux * (profileRadius + 5);
           var y1 = cy + uy * (profileRadius + 5);
           var x2 = targetX - ux * (targetRadius + 3);
@@ -492,7 +547,7 @@
               (signalAngle * 180 / Math.PI + 180) + 'deg)';
           }
         } else {
-          curvatureGroup.classList.remove('is-visible');
+          curvatureGroup.classList.add('is-visible');
           path.classList.remove('is-visible');
           path.removeAttribute('d');
           signalPath.classList.remove('is-visible');
@@ -507,6 +562,7 @@
         navigation.style.removeProperty('--inner-orbit-ry');
         navigation.style.removeProperty('--satellite-orbit-rx');
         navigation.style.removeProperty('--satellite-orbit-ry');
+        planetBodies.forEach(function(planet) { planet.element.style.removeProperty('left'); planet.element.style.removeProperty('top'); });
         satellites.forEach(function(satelliteNode) {
           satelliteNode.style.removeProperty('left');
           satelliteNode.style.removeProperty('top');
@@ -515,6 +571,7 @@
         });
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
         curvatureGroup.classList.remove('is-visible');
+        curvatureSvg.style.display = 'none';
         path.classList.remove('is-visible');
         path.removeAttribute('d');
         signalPath.classList.remove('is-visible');
