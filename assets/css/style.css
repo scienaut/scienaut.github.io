@@ -1963,3 +1963,9 @@ section .container {
   pointer-events: auto;
   cursor: crosshair;
 }
+
+/* The three explicit paths below replace the older decorative menu ellipses. */
+#header.header-tops:not(.header-top) .nav-menu::before,
+#header.header-tops:not(.header-top) .nav-menu::after {
+  display: none !important;
+}
