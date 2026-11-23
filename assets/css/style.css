@@ -1776,3 +1776,38 @@ section .container {
   width: 100%;
   height: 100%;
 }
+
+
+/* Full-viewport spacetime fabric: denser mesh with stronger gravitational sag. */
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .orbit-curvature-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    overflow: visible;
+    pointer-events: none;
+  }
+  #header.header-tops:not(.header-top) .orbit-curvature-overlay .orbit-space-grid {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .55s cubic-bezier(.2, .7, .25, 1);
+  }
+  #header.header-tops:not(.header-top) .orbit-curvature-overlay .orbit-space-grid.is-visible {
+    opacity: .82;
+  }
+  #header.header-tops:not(.header-top) .orbit-curvature-overlay .orbit-space-grid path {
+    fill: none;
+    stroke: #60b8cf;
+    stroke-width: .85;
+    stroke-opacity: .68;
+    vector-effect: non-scaling-stroke;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #header.header-tops:not(.header-top) .orbit-curvature-overlay .orbit-space-grid {
+    transition: none;
+  }
+}
