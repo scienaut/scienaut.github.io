@@ -202,54 +202,45 @@
       }
     }
 
-    // Planetary bodies use measured planetary masses and Keplerian mean motion.
-    var solarMassKg = 1.98847e30;
-    var centralMassKg = (2 / 3) * solarMassKg;
-    var gravitationalConstant = 6.67430e-11;
-    var astronomicalUnitMeters = 149597870700;
-    var simulatedSecondsPerRealSecond = (365.256363004 * 86400) / 2;
-    var planetData = [
-      { name: 'Earth', massKg: 5.9722e24, radiusKm: 6371.0, aAU: 1.000, color: '#4ba7ff', phase: -Math.PI / 2 },
-      { name: 'Mars', massKg: 6.4171e23, radiusKm: 3389.5, aAU: 1.523679, color: '#e87955', phase: Math.PI / 4 },
-      { name: 'Neptune', massKg: 1.02413e26, radiusKm: 24622, aAU: 30.07, color: '#4778ff', phase: Math.PI },
-      { name: 'Uranus', massKg: 8.6810e25, radiusKm: 25362, aAU: 19.191, color: '#70d9dc', phase: Math.PI * 1.45 }
-    ];
-    var planetBodies = planetData.map(function(body) {
-      var element = document.createElement('span');
-      element.className = 'orbit-planet';
-      element.setAttribute('aria-label', body.name + ', mass ' + body.massKg.toExponential(4) + ' kilograms');
-      element.setAttribute('title', body.name + ' — ' + body.massKg.toExponential(4) + ' kg');
-      var sphere = document.createElement('span');
-      sphere.className = 'orbit-planet-sphere';
-      sphere.style.setProperty('--planet-color', body.color);
-      var sphereSize = Math.max(13, Math.min(25, 18 * Math.cbrt(body.radiusKm / 6371)));
-      sphere.style.width = sphereSize + 'px';
-      sphere.style.height = sphereSize + 'px';
-      var label = document.createElement('span');
-      label.className = 'orbit-planet-label';
-      label.textContent = body.name + ' · ' + (body.massKg / 5.9722e24).toFixed(2) + ' M⊕';
-      element.appendChild(sphere);
-      element.appendChild(label);
-      navigation.appendChild(element);
-      return { data: body, element: element };
-    });
-
-    var planetOrbitTracks = planetData.map(function() {
+    // Three clean orbital elements: two circular paths and one elongated relay orbit.
+    var orbitElements = [];
+    function makeOrbit(className, count) {
       var track = document.createElement('span');
-      track.className = 'planet-orbit-track';
+      track.className = 'space-orbit-track ' + className;
       track.setAttribute('aria-hidden', 'true');
       navigation.insertBefore(track, menu);
-      return track;
-    });
-
-    var massLabel = profile.querySelector('.central-mass-label');
-    if (!massLabel) {
-      massLabel = document.createElement('span');
-      massLabel.className = 'central-mass-label';
-      massLabel.textContent = 'M = ⅔ M☉  ·  rₛ ≈ 1.97 km';
-      massLabel.setAttribute('title', 'Central mass: two-thirds of the Sun');
-      profile.appendChild(massLabel);
+      var bodies = [];
+      for (var i = 0; i < count; i += 1) {
+        var body = document.createElement('span');
+        body.className = 'space-orbit-body' + (count > 1 ? ' relay-satellite' : '');
+        body.setAttribute('aria-hidden', 'true');
+        navigation.insertBefore(body, menu);
+        bodies.push(body);
+      }
+      orbitElements.push({ track: track, bodies: bodies });
     }
+    makeOrbit('orbit-one', 1);
+    makeOrbit('orbit-two', 1);
+    makeOrbit('orbit-three', 3);
+
+    var orbitHoverActive = false;
+    navigation.addEventListener('pointerover', function(event) {
+      if (event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body')) {
+        orbitHoverActive = true;
+      }
+    });
+    navigation.addEventListener('pointerout', function(event) {
+      var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body');
+      var toOrbit = event.relatedTarget && event.relatedTarget.closest &&
+        event.relatedTarget.closest('.space-orbit-track, .space-orbit-body');
+      if (fromOrbit && !toOrbit) orbitHoverActive = false;
+    });
+    navigation.addEventListener('focusin', function(event) {
+      if (event.target.closest && event.target.closest('.space-orbit-body')) orbitHoverActive = true;
+    });
+    navigation.addEventListener('focusout', function(event) {
+      if (event.target.closest && event.target.closest('.space-orbit-body')) orbitHoverActive = false;
+    });
 
     var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
     if (!nodes.length) return;
@@ -436,24 +427,24 @@
           return { element: satelliteNode, x: satelliteX, y: satelliteY, angle: satelliteAngle };
         });
 
-        // Keplerian orbit: n = sqrt(G (M + m) / a^3), with a visual time scale.
-        planetBodies.forEach(function(planet, planetIndex) {
-          var body = planet.data;
-          var semiMajorAxis = body.aAU * astronomicalUnitMeters;
-          var meanMotion = Math.sqrt(gravitationalConstant * (centralMassKg + body.massKg) /
-            Math.pow(semiMajorAxis, 3));
-          var orbitalAngle = body.phase + (reducedMotion ? 0 : meanMotion * elapsedSeconds * simulatedSecondsPerRealSecond);
-          // Log-compressed display radii preserve legibility; orbital rates still use true AU values.
-          var orbitFraction = 0.24 + Math.log(body.aAU) / Math.log(30.07) * 0.54;
-          planetOrbitTracks[planetIndex].style.width = (2 * outerRx * orbitFraction) + 'px';
-          planetOrbitTracks[planetIndex].style.height = (2 * outerRy * orbitFraction) + 'px';
-          planetOrbitTracks[planetIndex].style.left = cx + 'px';
-          planetOrbitTracks[planetIndex].style.top = cy + 'px';
-          var planetX = cx + outerRx * orbitFraction * Math.cos(orbitalAngle);
-          var planetY = cy + outerRy * orbitFraction * Math.sin(orbitalAngle);
-          planet.element.style.left = planetX + 'px';
-          planet.element.style.top = planetY + 'px';
-          planet.element.style.setProperty('--planet-index', planetIndex);
+        // Clockwise = increasing screen-space angle; the second orbit runs counter-clockwise.
+        var orbitSpecs = [
+          { rx: outerRx * 0.43, ry: outerRy * 0.43, speed: 0.34, direction: 1, phase: -Math.PI / 2 },
+          { rx: outerRx * 0.69, ry: outerRy * 0.69, speed: 0.22, direction: -1, phase: Math.PI / 2 },
+          { rx: outerRx * 1.02, ry: outerRy * 0.43, speed: 0.15, direction: 1, phase: -Math.PI / 2 }
+        ];
+        orbitElements.forEach(function(orbit, orbitIndex) {
+          var spec = orbitSpecs[orbitIndex];
+          orbit.track.style.width = (spec.rx * 2) + 'px';
+          orbit.track.style.height = (spec.ry * 2) + 'px';
+          orbit.track.style.left = cx + 'px';
+          orbit.track.style.top = cy + 'px';
+          var angle = spec.phase + (reducedMotion ? 0 : elapsedSeconds * spec.speed * spec.direction);
+          orbit.bodies.forEach(function(body, bodyIndex) {
+            var bodyAngle = angle + bodyIndex * (Math.PI * 2 / orbit.bodies.length);
+            body.style.left = (cx + spec.rx * Math.cos(bodyAngle)) + 'px';
+            body.style.top = (cy + spec.ry * Math.sin(bodyAngle)) + 'px';
+          });
         });
 
         function segmentCrossesPlanet(x1, y1, x2, y2) {
@@ -465,7 +456,7 @@
         }
 
         var targetRect = selected && selected.isConnected ? selected.getBoundingClientRect() : null;
-        curvatureGroup.classList.add('is-visible');
+        curvatureGroup.classList.toggle('is-visible', orbitHoverActive);
         if (now - lastCurvatureFrame > 80) {
           curvatureSvg.setAttribute('viewBox', '0 0 ' + window.innerWidth + ' ' + window.innerHeight);
           drawCurvatureGrid(
