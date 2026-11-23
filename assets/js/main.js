@@ -286,7 +286,7 @@
     }
     curvatureSvg.setAttribute('preserveAspectRatio', 'none');
     curvatureSvg.appendChild(curvatureGroup);
-    document.body.insertBefore(curvatureSvg, document.body.firstChild);
+    navigation.insertBefore(curvatureSvg, menu);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -329,7 +329,10 @@
     });
 
     var lastCurvatureFrame = 0;
+    var gravitationalConstant = 6.67430e-11;
     var speedOfLight = 299792458;
+    var solarMassKg = 1.98847e30;
+    var centralMassKg = (2 / 3) * solarMassKg;
     var schwarzschildRadiusMeters = 2 * gravitationalConstant * centralMassKg / (speedOfLight * speedOfLight);
     var curvatureAmplification = 2.5; // Visual scale only; the underlying shape uses the Schwarzschild embedding equation.
     function drawCurvatureGrid(width, height, cx, cy, profileRadius) {
@@ -395,8 +398,8 @@
         var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
         var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
         // Match the larger dashed navigation ellipse while keeping all three relays evenly spaced.
-        var satelliteRx = outerRx * 1.02;
-        var satelliteRy = outerRy * 0.43;
+        var satelliteRx = outerRx * 1.12;
+        var satelliteRy = Math.max(62, outerRy * 0.20);
         navigation.style.setProperty('--satellite-orbit-rx', satelliteRx + 'px');
         navigation.style.setProperty('--satellite-orbit-ry', satelliteRy + 'px');
         navigation.style.setProperty('--orbit-rx', outerRx + 'px');
@@ -404,7 +407,7 @@
         navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
         navigation.style.setProperty('--inner-orbit-ry', innerRy + 'px');
         var elapsedSeconds = (now - startedAt) / 1000;
-        var phase = reducedMotion ? 0 : elapsedSeconds * 0.000055;
+        var phase = elapsedSeconds * 0.14; // Visible clockwise orbital motion.
         function place(nodesToPlace, rx, ry, direction) {
           var step = Math.PI * 2 / nodesToPlace.length;
           nodesToPlace.forEach(function(node, index) {
@@ -429,9 +432,9 @@
 
         // Clockwise = increasing screen-space angle; the second orbit runs counter-clockwise.
         var orbitSpecs = [
-          { rx: outerRx * 0.43, ry: outerRy * 0.43, speed: 0.34, direction: 1, phase: -Math.PI / 2 },
-          { rx: outerRx * 0.69, ry: outerRy * 0.69, speed: 0.22, direction: -1, phase: Math.PI / 2 },
-          { rx: outerRx * 1.02, ry: outerRy * 0.43, speed: 0.15, direction: 1, phase: -Math.PI / 2 }
+          { rx: outerRx * 0.38, ry: outerRy * 0.38, speed: 0.34, direction: 1, phase: -Math.PI / 2 },
+          { rx: outerRx * 0.64, ry: outerRy * 0.64, speed: 0.22, direction: -1, phase: Math.PI / 2 },
+          { rx: satelliteRx, ry: satelliteRy, speed: 0.14, direction: 1, phase: -Math.PI / 2 }
         ];
         orbitElements.forEach(function(orbit, orbitIndex) {
           var spec = orbitSpecs[orbitIndex];
@@ -439,7 +442,7 @@
           orbit.track.style.height = (spec.ry * 2) + 'px';
           orbit.track.style.left = cx + 'px';
           orbit.track.style.top = cy + 'px';
-          var angle = spec.phase + (reducedMotion ? 0 : elapsedSeconds * spec.speed * spec.direction);
+          var angle = spec.phase + elapsedSeconds * spec.speed * spec.direction;
           orbit.bodies.forEach(function(body, bodyIndex) {
             var bodyAngle = angle + bodyIndex * (Math.PI * 2 / orbit.bodies.length);
             body.style.left = (cx + spec.rx * Math.cos(bodyAngle)) + 'px';
@@ -458,11 +461,8 @@
         var targetRect = selected && selected.isConnected ? selected.getBoundingClientRect() : null;
         curvatureGroup.classList.toggle('is-visible', orbitHoverActive);
         if (now - lastCurvatureFrame > 80) {
-          curvatureSvg.setAttribute('viewBox', '0 0 ' + window.innerWidth + ' ' + window.innerHeight);
-          drawCurvatureGrid(
-            window.innerWidth, window.innerHeight,
-            rect.left + cx, rect.top + cy, profileRadius
-          );
+          curvatureSvg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
+          drawCurvatureGrid(rect.width, rect.height, cx, cy, profileRadius);
           lastCurvatureFrame = now;
         }
 
@@ -586,7 +586,6 @@
         navigation.style.removeProperty('--inner-orbit-ry');
         navigation.style.removeProperty('--satellite-orbit-rx');
         navigation.style.removeProperty('--satellite-orbit-ry');
-        planetBodies.forEach(function(planet) { planet.element.style.removeProperty('left'); planet.element.style.removeProperty('top'); });
         satellites.forEach(function(satelliteNode) {
           satelliteNode.style.removeProperty('left');
           satelliteNode.style.removeProperty('top');
