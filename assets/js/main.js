@@ -244,9 +244,9 @@
       }
     });
     navigation.addEventListener('pointerout', function(event) {
-      var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite');
+      var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite, .orbit-planet');
       var toOrbit = event.relatedTarget && event.relatedTarget.closest &&
-        event.relatedTarget.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite');
+        event.relatedTarget.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite, .orbit-planet');
       if (fromOrbit && !toOrbit) orbitHoverActive = false;
     });
     navigation.addEventListener('focusin', function(event) {
@@ -432,8 +432,8 @@
         }
         place(outerNodes, outerRx, outerRy, 1);
         place(innerNodes, innerRx, innerRy, -1);
+        var satellitePhase = elapsedSeconds * 0.14;
         var satellitePositions = satellites.map(function(satelliteNode, satelliteIndex) {
-          var satellitePhase = elapsedSeconds * 0.14;
           var satelliteAngle = satellitePhase - Math.PI / 3 + satelliteIndex * (Math.PI * 2 / satellites.length);
           var satelliteX = cx + satelliteRx * Math.cos(satelliteAngle);
           var satelliteY = cy + satelliteRy * Math.sin(satelliteAngle);
