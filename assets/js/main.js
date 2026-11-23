@@ -389,7 +389,7 @@
             drawCurvatureGrid(
               window.innerWidth, window.innerHeight,
               rect.left + cx, rect.top + cy, profileRadius,
-              targetRect.left - 0 + targetRect.width / 2,
+              targetRect.left + targetRect.width / 2,
               targetRect.top + targetRect.height / 2, targetRadius
             );
             lastCurvatureFrame = now;
