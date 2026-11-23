@@ -221,16 +221,16 @@
     }
     makeOrbit('orbit-one', 1);
     makeOrbit('orbit-two', 1);
-    makeOrbit('orbit-three', 3);
+    makeOrbit('orbit-three', 0);
 
     var orbitHoverActive = false;
     navigation.addEventListener('pointerover', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body')) {
+      if (event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite')) {
         orbitHoverActive = true;
       }
     });
     navigation.addEventListener('pointerout', function(event) {
-      var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body');
+      var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite');
       var toOrbit = event.relatedTarget && event.relatedTarget.closest &&
         event.relatedTarget.closest('.space-orbit-track, .space-orbit-body');
       if (fromOrbit && !toOrbit) orbitHoverActive = false;
@@ -395,8 +395,8 @@
         var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
         var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
         // Match the larger dashed navigation ellipse while keeping all three relays evenly spaced.
-        var satelliteRx = rect.width * 0.54;
-        var satelliteRy = rect.height * 0.54;
+        var satelliteRx = outerRx * 1.02;
+        var satelliteRy = outerRy * 0.43;
         navigation.style.setProperty('--satellite-orbit-rx', satelliteRx + 'px');
         navigation.style.setProperty('--satellite-orbit-ry', satelliteRy + 'px');
         navigation.style.setProperty('--orbit-rx', outerRx + 'px');
