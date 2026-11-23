@@ -219,13 +219,27 @@
       }
       orbitElements.push({ track: track, bodies: bodies });
     }
-    makeOrbit('orbit-one', 1);
-    makeOrbit('orbit-two', 1);
+    makeOrbit('orbit-one', 0);
+    makeOrbit('orbit-two', 0);
     makeOrbit('orbit-three', 0);
+
+    var outerPlanets = [];
+    function makePlanet(className, artwork) {
+      var planet = document.createElement('span');
+      planet.className = 'orbit-planet ' + className;
+      planet.setAttribute('aria-hidden', 'true');
+      planet.innerHTML = artwork;
+      navigation.insertBefore(planet, menu);
+      outerPlanets.push(planet);
+    }
+    makePlanet('orbit-jupiter',
+      '<svg viewBox="0 0 40 40" role="presentation"><defs><radialGradient id="jupiter-sphere" cx="32%" cy="26%"><stop offset="0" stop-color="#fff0c8"/><stop offset=".42" stop-color="#d6a46d"/><stop offset="1" stop-color="#75452e"/></radialGradient><clipPath id="jupiter-clip"><circle cx="20" cy="20" r="17"/></clipPath></defs><circle cx="20" cy="20" r="17" fill="url(#jupiter-sphere)"/><g clip-path="url(#jupiter-clip)" opacity=".9"><path d="M1 9 Q10 6 20 9 T40 8 L40 12 Q29 15 19 12 T1 13Z" fill="#f3d8a8"/><path d="M1 15 Q10 12 20 15 T40 14 L40 18 Q29 21 19 18 T1 19Z" fill="#8b5638"/><path d="M1 21 Q10 18 20 21 T40 20 L40 24 Q29 27 19 24 T1 25Z" fill="#f0d1a0"/><path d="M1 28 Q10 25 20 28 T40 27 L40 31 Q29 34 19 31 T1 32Z" fill="#8b5235"/><ellipse cx="25" cy="23" rx="4.2" ry="2.5" fill="#b64e32"/><ellipse cx="25" cy="23" rx="2.4" ry="1.3" fill="#e18a5b"/></g><circle cx="20" cy="20" r="17" fill="none" stroke="#f5d8ad" stroke-opacity=".65"/></svg>');
+    makePlanet('orbit-saturn',
+      '<svg viewBox="0 0 48 40" role="presentation"><defs><radialGradient id="saturn-sphere" cx="34%" cy="27%"><stop offset="0" stop-color="#fff2c9"/><stop offset=".55" stop-color="#d6b77c"/><stop offset="1" stop-color="#80623f"/></radialGradient><linearGradient id="saturn-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e5bd"/><stop offset=".35" stop-color="#a58a61"/><stop offset=".62" stop-color="#e7d4a8"/><stop offset="1" stop-color="#786044"/></linearGradient><clipPath id="saturn-front"><circle cx="24" cy="20" r="11.5"/></clipPath></defs><ellipse cx="24" cy="20" rx="22" ry="7.2" transform="rotate(-19 24 20)" fill="none" stroke="url(#saturn-ring)" stroke-width="5.2"/><ellipse cx="24" cy="20" rx="22" ry="7.2" transform="rotate(-19 24 20)" fill="none" stroke="#fff0c8" stroke-opacity=".5" stroke-width="1"/><circle cx="24" cy="20" r="11.5" fill="url(#saturn-sphere)"/><g clip-path="url(#saturn-front)" opacity=".55"><path d="M10 14 Q24 11 38 14 L38 17 Q24 14 10 17Z" fill="#f7e2b4"/><path d="M10 21 Q24 18 38 21 L38 24 Q24 21 10 24Z" fill="#9b8057"/></g><path d="M3 23 Q24 35 45 17" fill="none" stroke="#ead9b4" stroke-width="2.2" opacity=".9"/></svg>');
 
     var orbitHoverActive = false;
     navigation.addEventListener('pointerover', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite')) {
+      if (event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite, .orbit-planet')) {
         orbitHoverActive = true;
       }
     });
@@ -236,10 +250,10 @@
       if (fromOrbit && !toOrbit) orbitHoverActive = false;
     });
     navigation.addEventListener('focusin', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-body')) orbitHoverActive = true;
+      if (event.target.closest && event.target.closest('.space-orbit-body, .orbit-satellite, .orbit-planet, .space-orbit-track')) orbitHoverActive = true;
     });
     navigation.addEventListener('focusout', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-body')) orbitHoverActive = false;
+      if (event.target.closest && event.target.closest('.space-orbit-body, .orbit-satellite, .orbit-planet, .space-orbit-track')) orbitHoverActive = false;
     });
 
     var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
@@ -398,8 +412,8 @@
         var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
         var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
         // Match the larger dashed navigation ellipse while keeping all three relays evenly spaced.
-        var satelliteRx = outerRx * 1.12;
-        var satelliteRy = Math.max(62, outerRy * 0.20);
+        var satelliteRx = Math.max(180, rect.width / 2 - 28);
+        var satelliteRy = Math.max(140, rect.height / 2 - 26);
         navigation.style.setProperty('--satellite-orbit-rx', satelliteRx + 'px');
         navigation.style.setProperty('--satellite-orbit-ry', satelliteRy + 'px');
         navigation.style.setProperty('--orbit-rx', outerRx + 'px');
@@ -407,7 +421,7 @@
         navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
         navigation.style.setProperty('--inner-orbit-ry', innerRy + 'px');
         var elapsedSeconds = (now - startedAt) / 1000;
-        var phase = elapsedSeconds * 0.14; // Visible clockwise orbital motion.
+        var phase = elapsedSeconds * 0.07; // Navigation orbit slowed by 2x.
         function place(nodesToPlace, rx, ry, direction) {
           var step = Math.PI * 2 / nodesToPlace.length;
           nodesToPlace.forEach(function(node, index) {
@@ -419,7 +433,8 @@
         place(outerNodes, outerRx, outerRy, 1);
         place(innerNodes, innerRx, innerRy, -1);
         var satellitePositions = satellites.map(function(satelliteNode, satelliteIndex) {
-          var satelliteAngle = phase - Math.PI / 3 + satelliteIndex * (Math.PI * 2 / satellites.length);
+          var satellitePhase = elapsedSeconds * 0.14;
+          var satelliteAngle = satellitePhase - Math.PI / 3 + satelliteIndex * (Math.PI * 2 / satellites.length);
           var satelliteX = cx + satelliteRx * Math.cos(satelliteAngle);
           var satelliteY = cy + satelliteRy * Math.sin(satelliteAngle);
           var earthHeading = Math.atan2(cy - satelliteY, cx - satelliteX) * 180 / Math.PI + 180;
@@ -432,8 +447,8 @@
 
         // Clockwise = increasing screen-space angle; the second orbit runs counter-clockwise.
         var orbitSpecs = [
-          { rx: outerRx * 0.38, ry: outerRy * 0.38, speed: 0.34, direction: 1, phase: -Math.PI / 2 },
-          { rx: outerRx * 0.64, ry: outerRy * 0.64, speed: 0.22, direction: -1, phase: Math.PI / 2 },
+          { rx: outerRx * 0.38, ry: outerRy * 0.38, speed: 0.17, direction: 1, phase: -Math.PI / 2 },
+          { rx: outerRx * 0.64, ry: outerRy * 0.64, speed: 0.11, direction: -1, phase: Math.PI / 2 },
           { rx: satelliteRx, ry: satelliteRy, speed: 0.14, direction: 1, phase: -Math.PI / 2 }
         ];
         orbitElements.forEach(function(orbit, orbitIndex) {
@@ -448,6 +463,12 @@
             body.style.left = (cx + spec.rx * Math.cos(bodyAngle)) + 'px';
             body.style.top = (cy + spec.ry * Math.sin(bodyAngle)) + 'px';
           });
+        });
+
+        outerPlanets.forEach(function(planetNode, planetIndex) {
+          var planetAngle = satellitePhase + Math.PI / 3 + planetIndex * Math.PI;
+          planetNode.style.left = (cx + satelliteRx * Math.cos(planetAngle)) + 'px';
+          planetNode.style.top = (cy + satelliteRy * Math.sin(planetAngle)) + 'px';
         });
 
         function segmentCrossesPlanet(x1, y1, x2, y2) {
@@ -586,6 +607,7 @@
         navigation.style.removeProperty('--inner-orbit-ry');
         navigation.style.removeProperty('--satellite-orbit-rx');
         navigation.style.removeProperty('--satellite-orbit-ry');
+        outerPlanets.forEach(function(planetNode) { planetNode.style.removeProperty('left'); planetNode.style.removeProperty('top'); });
         satellites.forEach(function(satelliteNode) {
           satelliteNode.style.removeProperty('left');
           satelliteNode.style.removeProperty('top');
