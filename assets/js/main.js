@@ -337,27 +337,35 @@
       var pixelsPerSchwarzschildRadius = Math.max(profileRadius / 4, 8);
       var referenceRadius = 4 * schwarzschildRadiusMeters;
       var referenceZ = 2 * Math.sqrt(schwarzschildRadiusMeters * (referenceRadius - schwarzschildRadiusMeters));
-      var farthestRadiusPixels = Math.hypot(Math.max(cx, width - cx), Math.max(cy, height - cy));
-      var farthestPhysicalRadius = schwarzschildRadiusMeters *
-        (4 + (farthestRadiusPixels - profileRadius) / pixelsPerSchwarzschildRadius);
-      var farthestZ = 2 * Math.sqrt(schwarzschildRadiusMeters *
-        Math.max(0, farthestPhysicalRadius - schwarzschildRadiusMeters));
-      var maximumDepthPixels = ((farthestZ - referenceZ) / schwarzschildRadiusMeters) *
-        pixelsPerSchwarzschildRadius * curvatureAmplification;
-
       function mapPoint(x, y) {
-        var radialPixels = Math.max(profileRadius, Math.hypot(x - cx, y - cy));
+        var dx = x - cx;
+        var dy = y - cy;
+        var radialPixels = Math.max(profileRadius, Math.hypot(dx, dy));
+        var unitX = dx / (Math.hypot(dx, dy) || 1);
+        var unitY = dy / (Math.hypot(dx, dy) || 1);
+
+        // Find the viewport boundary along this radial direction. This makes
+        // the displacement return to zero at every edge, including the bottom.
+        var edgeX = unitX > 0 ? (width - cx) / unitX : (unitX < 0 ? (0 - cx) / unitX : Infinity);
+        var edgeY = unitY > 0 ? (height - cy) / unitY : (unitY < 0 ? (0 - cy) / unitY : Infinity);
+        var edgeRadiusPixels = Math.max(profileRadius, Math.min(edgeX, edgeY));
         var physicalRadius = schwarzschildRadiusMeters *
           (4 + (radialPixels - profileRadius) / pixelsPerSchwarzschildRadius);
+        var edgePhysicalRadius = schwarzschildRadiusMeters *
+          (4 + (edgeRadiusPixels - profileRadius) / pixelsPerSchwarzschildRadius);
         var z = 2 * Math.sqrt(schwarzschildRadiusMeters * Math.max(0, physicalRadius - schwarzschildRadiusMeters));
+        var edgeZ = 2 * Math.sqrt(schwarzschildRadiusMeters *
+          Math.max(0, edgePhysicalRadius - schwarzschildRadiusMeters));
         var physicalDepthPixels = ((z - referenceZ) / schwarzschildRadiusMeters) *
           pixelsPerSchwarzschildRadius * curvatureAmplification;
-        // Normalize the embedding height to the viewport: zero displacement at
-        // the edges and maximum sag near the central mass, so the lower mesh stays visible.
-        var downwardSag = Math.max(0, maximumDepthPixels - physicalDepthPixels);
+        var edgeDepthPixels = ((edgeZ - referenceZ) / schwarzschildRadiusMeters) *
+          pixelsPerSchwarzschildRadius * curvatureAmplification;
+
+        // A viewport-normalized Flamm embedding: maximum sag at the central
+        // mass and zero displacement along all four viewport boundaries.
+        var downwardSag = Math.max(0, edgeDepthPixels - physicalDepthPixels);
         return { x: x, y: y + downwardSag };
       }
-
       curvatureLines.forEach(function(line) {
         var d = '';
         for (var sampleIndex = 0; sampleIndex <= gridSamples; sampleIndex += 1) {
