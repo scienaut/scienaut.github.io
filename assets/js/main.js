@@ -271,6 +271,8 @@
     var curvatureGroup = document.createElementNS(svgNS, 'g');
     curvatureGroup.setAttribute('class', 'orbit-space-grid');
     curvatureGroup.setAttribute('aria-hidden', 'true');
+    var gridLineCount = 43;
+    var gridSamples = 100;
     var curvatureLines = [];
     for (var gridLineIndex = 0; gridLineIndex < gridLineCount; gridLineIndex += 1) {
       var verticalGrid = document.createElementNS(svgNS, 'path');
@@ -328,9 +330,6 @@
     var speedOfLight = 299792458;
     var schwarzschildRadiusMeters = 2 * gravitationalConstant * centralMassKg / (speedOfLight * speedOfLight);
     var curvatureAmplification = 2.5; // Visual scale only; the underlying shape uses the Schwarzschild embedding equation.
-    var gridLineCount = 43;
-    var gridSamples = 100;
-
     function drawCurvatureGrid(width, height, cx, cy, profileRadius) {
       // Flamm's paraboloid: z(r) = 2 sqrt(r_s (r - r_s)), r >= r_s.
       // Map four profile radii to the Schwarzschild radius, then amplify the
@@ -338,15 +337,25 @@
       var pixelsPerSchwarzschildRadius = Math.max(profileRadius / 4, 8);
       var referenceRadius = 4 * schwarzschildRadiusMeters;
       var referenceZ = 2 * Math.sqrt(schwarzschildRadiusMeters * (referenceRadius - schwarzschildRadiusMeters));
+      var farthestRadiusPixels = Math.hypot(Math.max(cx, width - cx), Math.max(cy, height - cy));
+      var farthestPhysicalRadius = schwarzschildRadiusMeters *
+        (4 + (farthestRadiusPixels - profileRadius) / pixelsPerSchwarzschildRadius);
+      var farthestZ = 2 * Math.sqrt(schwarzschildRadiusMeters *
+        Math.max(0, farthestPhysicalRadius - schwarzschildRadiusMeters));
+      var maximumDepthPixels = ((farthestZ - referenceZ) / schwarzschildRadiusMeters) *
+        pixelsPerSchwarzschildRadius * curvatureAmplification;
 
       function mapPoint(x, y) {
         var radialPixels = Math.max(profileRadius, Math.hypot(x - cx, y - cy));
         var physicalRadius = schwarzschildRadiusMeters *
           (4 + (radialPixels - profileRadius) / pixelsPerSchwarzschildRadius);
         var z = 2 * Math.sqrt(schwarzschildRadiusMeters * Math.max(0, physicalRadius - schwarzschildRadiusMeters));
-        var depthPixels = ((z - referenceZ) / schwarzschildRadiusMeters) *
+        var physicalDepthPixels = ((z - referenceZ) / schwarzschildRadiusMeters) *
           pixelsPerSchwarzschildRadius * curvatureAmplification;
-        return { x: x, y: y + depthPixels };
+        // Normalize the embedding height to the viewport: zero displacement at
+        // the edges and maximum sag near the central mass, so the lower mesh stays visible.
+        var downwardSag = Math.max(0, maximumDepthPixels - physicalDepthPixels);
+        return { x: x, y: y + downwardSag };
       }
 
       curvatureLines.forEach(function(line) {
