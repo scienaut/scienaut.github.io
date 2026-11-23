@@ -1893,3 +1893,14 @@ section .container {
 @media (prefers-reduced-motion: reduce) {
   .orbit-curvature-overlay .orbit-space-grid { transition: none; }
 }
+
+
+#header.header-tops:not(.header-top) .section-navigation .planet-orbit-track {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  border: 1px solid rgba(83, 177, 204, .22);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
