@@ -226,11 +226,15 @@
     var relayPath = document.createElementNS(svgNS, 'path');
     relayPath.setAttribute('class', 'orbit-signal-path orbit-relay-path');
     svg.appendChild(relayPath);
+    var curvatureSvg = document.createElementNS(svgNS, 'svg');
+    curvatureSvg.setAttribute('class', 'orbit-curvature-overlay');
+    curvatureSvg.setAttribute('aria-hidden', 'true');
+    curvatureSvg.setAttribute('focusable', 'false');
     var curvatureGroup = document.createElementNS(svgNS, 'g');
     curvatureGroup.setAttribute('class', 'orbit-space-grid');
     curvatureGroup.setAttribute('aria-hidden', 'true');
     var curvatureLines = [];
-    for (var gridLineIndex = 0; gridLineIndex < 15; gridLineIndex += 1) {
+    for (var gridLineIndex = 0; gridLineIndex < 31; gridLineIndex += 1) {
       var verticalGrid = document.createElementNS(svgNS, 'path');
       var horizontalGrid = document.createElementNS(svgNS, 'path');
       curvatureGroup.appendChild(verticalGrid);
@@ -238,7 +242,8 @@
       curvatureLines.push({ element: verticalGrid, direction: 'vertical', index: gridLineIndex });
       curvatureLines.push({ element: horizontalGrid, direction: 'horizontal', index: gridLineIndex });
     }
-    svg.insertBefore(curvatureGroup, path);
+    curvatureSvg.appendChild(curvatureGroup);
+    header.appendChild(curvatureSvg);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -291,9 +296,9 @@
       var surfaceRadius = earthRadiusMeters;
       var surfaceZ = 2 * Math.sqrt(earthSchwarzschildRadius * (surfaceRadius - earthSchwarzschildRadius));
       var metersPerPixel = surfaceRadius / Math.max(profileRadius, 1);
-      var verticalDisplayScale = 0.12;
-      var lineCount = 15;
-      var samples = 32;
+      var verticalDisplayScale = 0.36;
+      var lineCount = 31;
+      var samples = 64;
 
       function mapPoint(x, y) {
         var earthDistancePx = Math.max(profileRadius, Math.hypot(x - cx, y - cy));
@@ -381,7 +386,12 @@
           var targetRadius = Math.min(targetRect.width, targetRect.height) / 2;
           curvatureGroup.classList.add('is-visible');
           if (now - lastCurvatureFrame > 32) {
-            drawCurvatureGrid(rect.width, rect.height, cx, cy, profileRadius, targetX, targetY, targetRadius);
+            drawCurvatureGrid(
+              window.innerWidth, window.innerHeight,
+              rect.left + cx, rect.top + cy, profileRadius,
+              targetRect.left - 0 + targetRect.width / 2,
+              targetRect.top + targetRect.height / 2, targetRadius
+            );
             lastCurvatureFrame = now;
           }
           var x1 = cx + ux * (profileRadius + 5);
