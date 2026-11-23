@@ -222,6 +222,9 @@
       var sphere = document.createElement('span');
       sphere.className = 'orbit-planet-sphere';
       sphere.style.setProperty('--planet-color', body.color);
+      var sphereSize = Math.max(13, Math.min(25, 18 * Math.cbrt(body.radiusKm / 6371)));
+      sphere.style.width = sphereSize + 'px';
+      sphere.style.height = sphereSize + 'px';
       var label = document.createElement('span');
       label.className = 'orbit-planet-label';
       label.textContent = body.name + ' · ' + (body.massKg / 5.9722e24).toFixed(2) + ' M⊕';
@@ -229,6 +232,14 @@
       element.appendChild(label);
       navigation.appendChild(element);
       return { data: body, element: element };
+    });
+
+    var planetOrbitTracks = planetData.map(function() {
+      var track = document.createElement('span');
+      track.className = 'planet-orbit-track';
+      track.setAttribute('aria-hidden', 'true');
+      navigation.insertBefore(track, menu);
+      return track;
     });
 
     var massLabel = profile.querySelector('.central-mass-label');
@@ -434,6 +445,10 @@
           var orbitalAngle = body.phase + (reducedMotion ? 0 : meanMotion * elapsedSeconds * simulatedSecondsPerRealSecond);
           // Log-compressed display radii preserve legibility; orbital rates still use true AU values.
           var orbitFraction = 0.24 + Math.log(body.aAU) / Math.log(30.07) * 0.54;
+          planetOrbitTracks[planetIndex].style.width = (2 * outerRx * orbitFraction) + 'px';
+          planetOrbitTracks[planetIndex].style.height = (2 * outerRy * orbitFraction) + 'px';
+          planetOrbitTracks[planetIndex].style.left = cx + 'px';
+          planetOrbitTracks[planetIndex].style.top = cy + 'px';
           var planetX = cx + outerRx * orbitFraction * Math.cos(orbitalAngle);
           var planetY = cy + outerRy * orbitFraction * Math.sin(orbitalAngle);
           planet.element.style.left = planetX + 'px';
