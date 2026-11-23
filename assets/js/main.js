@@ -571,7 +571,7 @@
               (signalAngle * 180 / Math.PI + 180) + 'deg)';
           }
         } else {
-          curvatureGroup.classList.add('is-visible');
+          curvatureGroup.classList.toggle('is-visible', orbitHoverActive);
           path.classList.remove('is-visible');
           path.removeAttribute('d');
           signalPath.classList.remove('is-visible');
