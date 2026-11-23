@@ -1969,3 +1969,55 @@ section .container {
 #header.header-tops:not(.header-top) .nav-menu::after {
   display: none !important;
 }
+
+
+/* Final orbital scene layers: local grid, two circular paths and one highly
+   elongated dotted relay ellipse. */
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .section-navigation {
+    isolation: isolate;
+  }
+  #header.header-tops:not(.header-top) .section-navigation::before {
+    display: none !important;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .orbit-curvature-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: visible;
+    pointer-events: none;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .orbit-space-grid {
+    opacity: 0 !important;
+    transition: opacity .25s ease;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .orbit-space-grid.is-visible {
+    opacity: .88 !important;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track {
+    z-index: 2 !important;
+    display: block !important;
+    border: 1.5px solid rgba(125, 190, 215, .72) !important;
+    box-shadow: 0 0 8px rgba(69, 171, 206, .10);
+    pointer-events: auto;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three {
+    border: 2px dotted rgba(255, 190, 75, .95) !important;
+    box-shadow: 0 0 10px rgba(255, 190, 75, .16);
+  }
+  #header.header-tops:not(.header-top) .section-navigation > .nav-menu {
+    z-index: 3 !important;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .orbit-satellite {
+    z-index: 4 !important;
+    display: block !important;
+    pointer-events: auto;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-body {
+    z-index: 4 !important;
+    display: block !important;
+  }
+}
