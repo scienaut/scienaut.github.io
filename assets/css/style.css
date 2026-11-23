@@ -1957,3 +1957,9 @@ section .container {
   #header.header-tops:not(.header-top) .section-navigation .space-orbit-track,
   #header.header-tops:not(.header-top) .section-navigation .space-orbit-body { display: none; }
 }
+
+#header.header-tops:not(.header-top) .section-navigation .orbit-satellite {
+  z-index: 4;
+  pointer-events: auto;
+  cursor: crosshair;
+}
