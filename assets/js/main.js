@@ -232,7 +232,7 @@
     navigation.addEventListener('pointerout', function(event) {
       var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite');
       var toOrbit = event.relatedTarget && event.relatedTarget.closest &&
-        event.relatedTarget.closest('.space-orbit-track, .space-orbit-body');
+        event.relatedTarget.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite');
       if (fromOrbit && !toOrbit) orbitHoverActive = false;
     });
     navigation.addEventListener('focusin', function(event) {
