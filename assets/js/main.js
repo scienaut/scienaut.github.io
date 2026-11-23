@@ -237,25 +237,6 @@
     makePlanet('orbit-saturn',
       '<svg viewBox="0 0 48 40" role="presentation"><defs><radialGradient id="saturn-sphere" cx="34%" cy="27%"><stop offset="0" stop-color="#fff2c9"/><stop offset=".55" stop-color="#d6b77c"/><stop offset="1" stop-color="#80623f"/></radialGradient><linearGradient id="saturn-ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e5bd"/><stop offset=".35" stop-color="#a58a61"/><stop offset=".62" stop-color="#e7d4a8"/><stop offset="1" stop-color="#786044"/></linearGradient><clipPath id="saturn-front"><circle cx="24" cy="20" r="11.5"/></clipPath></defs><ellipse cx="24" cy="20" rx="22" ry="7.2" transform="rotate(-19 24 20)" fill="none" stroke="url(#saturn-ring)" stroke-width="5.2"/><ellipse cx="24" cy="20" rx="22" ry="7.2" transform="rotate(-19 24 20)" fill="none" stroke="#fff0c8" stroke-opacity=".5" stroke-width="1"/><circle cx="24" cy="20" r="11.5" fill="url(#saturn-sphere)"/><g clip-path="url(#saturn-front)" opacity=".55"><path d="M10 14 Q24 11 38 14 L38 17 Q24 14 10 17Z" fill="#f7e2b4"/><path d="M10 21 Q24 18 38 21 L38 24 Q24 21 10 24Z" fill="#9b8057"/></g><path d="M3 23 Q24 35 45 17" fill="none" stroke="#ead9b4" stroke-width="2.2" opacity=".9"/></svg>');
 
-    var orbitHoverActive = false;
-    navigation.addEventListener('pointerover', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite, .orbit-planet')) {
-        orbitHoverActive = true;
-      }
-    });
-    navigation.addEventListener('pointerout', function(event) {
-      var fromOrbit = event.target.closest && event.target.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite, .orbit-planet');
-      var toOrbit = event.relatedTarget && event.relatedTarget.closest &&
-        event.relatedTarget.closest('.space-orbit-track, .space-orbit-body, .orbit-satellite, .orbit-planet');
-      if (fromOrbit && !toOrbit) orbitHoverActive = false;
-    });
-    navigation.addEventListener('focusin', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-body, .orbit-satellite, .orbit-planet, .space-orbit-track')) orbitHoverActive = true;
-    });
-    navigation.addEventListener('focusout', function(event) {
-      if (event.target.closest && event.target.closest('.space-orbit-body, .orbit-satellite, .orbit-planet, .space-orbit-track')) orbitHoverActive = false;
-    });
-
     var nodes = Array.prototype.slice.call(list.querySelectorAll(':scope > li'));
     if (!nodes.length) return;
     var innerNodes = nodes.filter(function(node) {
@@ -280,27 +261,6 @@
     var relayPath = document.createElementNS(svgNS, 'path');
     relayPath.setAttribute('class', 'orbit-signal-path orbit-relay-path');
     svg.appendChild(relayPath);
-    var curvatureSvg = document.createElementNS(svgNS, 'svg');
-    curvatureSvg.setAttribute('class', 'orbit-curvature-overlay');
-    curvatureSvg.setAttribute('aria-hidden', 'true');
-    curvatureSvg.setAttribute('focusable', 'false');
-    var curvatureGroup = document.createElementNS(svgNS, 'g');
-    curvatureGroup.setAttribute('class', 'orbit-space-grid');
-    curvatureGroup.setAttribute('aria-hidden', 'true');
-    var gridLineCount = 43;
-    var gridSamples = 100;
-    var curvatureLines = [];
-    for (var gridLineIndex = 0; gridLineIndex < gridLineCount; gridLineIndex += 1) {
-      var verticalGrid = document.createElementNS(svgNS, 'path');
-      var horizontalGrid = document.createElementNS(svgNS, 'path');
-      curvatureGroup.appendChild(verticalGrid);
-      curvatureGroup.appendChild(horizontalGrid);
-      curvatureLines.push({ element: verticalGrid, direction: 'vertical', index: gridLineIndex });
-      curvatureLines.push({ element: horizontalGrid, direction: 'horizontal', index: gridLineIndex });
-    }
-    curvatureSvg.setAttribute('preserveAspectRatio', 'none');
-    curvatureSvg.appendChild(curvatureGroup);
-    navigation.insertBefore(curvatureSvg, menu);
     navigation.insertBefore(svg, menu);
 
     nodes.forEach(function(node) {
@@ -342,67 +302,10 @@
       });
     });
 
-    var lastCurvatureFrame = 0;
-    var gravitationalConstant = 6.67430e-11;
-    var speedOfLight = 299792458;
-    var solarMassKg = 1.98847e30;
-    var centralMassKg = (2 / 3) * solarMassKg;
-    var schwarzschildRadiusMeters = 2 * gravitationalConstant * centralMassKg / (speedOfLight * speedOfLight);
-    var curvatureAmplification = 2.5; // Visual scale only; the underlying shape uses the Schwarzschild embedding equation.
-    function drawCurvatureGrid(width, height, cx, cy, profileRadius) {
-      // Flamm's paraboloid: z(r) = 2 sqrt(r_s (r - r_s)), r >= r_s.
-      // Map the profile boundary to 6 r_s (a compact-object surface outside r_s),
-      // then amplify the embedding height for legibility without changing mass.
-      var pixelsPerSchwarzschildRadius = Math.max(profileRadius / 6, 8);
-      var referenceRadius = 6 * schwarzschildRadiusMeters;
-      var referenceZ = 2 * Math.sqrt(schwarzschildRadiusMeters * (referenceRadius - schwarzschildRadiusMeters));
-      function mapPoint(x, y) {
-        var dx = x - cx;
-        var dy = y - cy;
-        var radialPixels = Math.max(profileRadius, Math.hypot(dx, dy));
-        var unitX = dx / (Math.hypot(dx, dy) || 1);
-        var unitY = dy / (Math.hypot(dx, dy) || 1);
-
-        // Find the viewport boundary along this radial direction. This makes
-        // the displacement return to zero at every edge, including the bottom.
-        var edgeX = unitX > 0 ? (width - cx) / unitX : (unitX < 0 ? (0 - cx) / unitX : Infinity);
-        var edgeY = unitY > 0 ? (height - cy) / unitY : (unitY < 0 ? (0 - cy) / unitY : Infinity);
-        var edgeRadiusPixels = Math.max(profileRadius, Math.min(edgeX, edgeY));
-        var physicalRadius = schwarzschildRadiusMeters *
-          (6 + (radialPixels - profileRadius) / pixelsPerSchwarzschildRadius);
-        var edgePhysicalRadius = schwarzschildRadiusMeters *
-          (6 + (edgeRadiusPixels - profileRadius) / pixelsPerSchwarzschildRadius);
-        var z = 2 * Math.sqrt(schwarzschildRadiusMeters * Math.max(0, physicalRadius - schwarzschildRadiusMeters));
-        var edgeZ = 2 * Math.sqrt(schwarzschildRadiusMeters *
-          Math.max(0, edgePhysicalRadius - schwarzschildRadiusMeters));
-        var physicalDepthPixels = ((z - referenceZ) / schwarzschildRadiusMeters) *
-          pixelsPerSchwarzschildRadius * curvatureAmplification;
-        var edgeDepthPixels = ((edgeZ - referenceZ) / schwarzschildRadiusMeters) *
-          pixelsPerSchwarzschildRadius * curvatureAmplification;
-
-        // A viewport-normalized Flamm embedding: maximum sag at the central
-        // mass and zero displacement along all four viewport boundaries.
-        var downwardSag = Math.max(0, edgeDepthPixels - physicalDepthPixels);
-        return { x: x, y: y + downwardSag };
-      }
-      curvatureLines.forEach(function(line) {
-        var d = '';
-        for (var sampleIndex = 0; sampleIndex <= gridSamples; sampleIndex += 1) {
-          var t = sampleIndex / gridSamples;
-          var x = line.direction === 'vertical' ? line.index / (gridLineCount - 1) * width : t * width;
-          var y = line.direction === 'horizontal' ? line.index / (gridLineCount - 1) * height : t * height;
-          var point = mapPoint(x, y);
-          d += (sampleIndex === 0 ? 'M ' : ' L ') + point.x.toFixed(1) + ' ' + point.y.toFixed(1);
-        }
-        line.element.setAttribute('d', d);
-      });
-    }
-
     function frame(now) {
       if (startedAt === null) startedAt = now;
       var homeMode = !header.classList.contains('header-top') && window.innerWidth > 1050;
       if (homeMode) {
-        curvatureSvg.style.display = 'block';
         var rect = navigation.getBoundingClientRect();
         var cx = rect.width / 2, cy = rect.height / 2;
         var maxDiameter = 104;
@@ -466,7 +369,7 @@
         });
 
         outerPlanets.forEach(function(planetNode, planetIndex) {
-          var planetAngle = satellitePhase + Math.PI / 3 + planetIndex * Math.PI;
+          var planetAngle = satellitePhase + (planetIndex === 0 ? 0 : 2 * Math.PI / 3);
           planetNode.style.left = (cx + satelliteRx * Math.cos(planetAngle)) + 'px';
           planetNode.style.top = (cy + satelliteRy * Math.sin(planetAngle)) + 'px';
         });
@@ -480,12 +383,6 @@
         }
 
         var targetRect = selected && selected.isConnected ? selected.getBoundingClientRect() : null;
-        curvatureGroup.classList.toggle('is-visible', orbitHoverActive);
-        if (now - lastCurvatureFrame > 80) {
-          curvatureSvg.setAttribute('viewBox', '0 0 ' + rect.width + ' ' + rect.height);
-          drawCurvatureGrid(rect.width, rect.height, cx, cy, profileRadius);
-          lastCurvatureFrame = now;
-        }
 
         if (targetRect) {
           var targetX = targetRect.left - rect.left + targetRect.width / 2;
@@ -592,7 +489,6 @@
               (signalAngle * 180 / Math.PI + 180) + 'deg)';
           }
         } else {
-          curvatureGroup.classList.toggle('is-visible', orbitHoverActive);
           path.classList.remove('is-visible');
           path.removeAttribute('d');
           signalPath.classList.remove('is-visible');
@@ -615,8 +511,6 @@
           satelliteNode.classList.remove('is-relay', 'is-transmitting');
         });
         nodes.forEach(function(node) { node.style.removeProperty('left'); node.style.removeProperty('top'); });
-        curvatureGroup.classList.remove('is-visible');
-        curvatureSvg.style.display = 'none';
         path.classList.remove('is-visible');
         path.removeAttribute('d');
         signalPath.classList.remove('is-visible');
