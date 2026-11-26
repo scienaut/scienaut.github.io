@@ -3,8 +3,6 @@ name: Refresh portfolio visitor country flags
 on:
   push:
     branches: [master]
-    paths:
-      - '.github/workflows/update-visitor-summary.yml'
   schedule:
     - cron: '17 2 * * *'
   workflow_dispatch:
