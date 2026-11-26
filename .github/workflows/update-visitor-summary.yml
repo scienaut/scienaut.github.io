@@ -1,4 +1,4 @@
-name: Refresh portfolio visitor summary
+name: Refresh portfolio visitor country flags
 
 on:
   schedule:
@@ -9,13 +9,13 @@ permissions:
   contents: write
 
 jobs:
-  update-visitor-summary:
+  update-country-summary:
     runs-on: ubuntu-latest
     steps:
       - name: Check out portfolio
         uses: actions/checkout@v4
 
-      - name: Fetch all-time GoatCounter visitor statistics
+      - name: Fetch all-time country statistics from GoatCounter
         env:
           GOATCOUNTER_API_TOKEN: ${{ secrets.GOATCOUNTER_API_TOKEN }}
         run: |
@@ -25,46 +25,48 @@ jobs:
             exit 1
           fi
           mkdir -p assets/analytics
-          curl --fail --silent --show-error \\
-            -H "Authorization: Bearer ${GOATCOUNTER_API_TOKEN}" \\
-            -H "Content-Type: application/json" \\
-            "https://scienaut.goatcounter.com/api/v0/stats/locations?start=2005-01-01T00%3A00%3A00Z&limit=100" \\
-            -o /tmp/locations.json
+          curl --fail --silent --show-error -H "Authorization: Bearer ${GOATCOUNTER_API_TOKEN}" -H "Content-Type: application/json" "https://scienaut.goatcounter.com/api/v0/stats/locations?start=2005-01-01T00%3A00%3A00Z&limit=100" -o /tmp/locations.json
           python3 - <<'PY'
-          import json, os, re
+          import json
+          import os
+          import re
           from datetime import datetime, timezone
-          with open('/tmp/locations.json', encoding='utf-8') as f:
-              location_data = json.load(f)
-          raw = location_data.get('stats', [])
+
+          with open('/tmp/locations.json', encoding='utf-8') as file:
+              location_data = json.load(file)
+
           countries = []
-          for row in raw:
+          for row in location_data.get('stats', []):
               code = str(row.get('id', '')).upper()
               name = str(row.get('name', '')).strip()
               count = row.get('count', 0)
               if re.fullmatch(r'[A-Z]{2}', code) and name and isinstance(count, (int, float)):
                   countries.append({'code': code, 'name': name, 'count': int(count)})
-          countries.sort(key=lambda x: x['count'], reverse=True)
+
+          countries.sort(key=lambda item: item['count'], reverse=True)
           output = {
               'source': 'GoatCounter',
-              'metric': 'all-time pageview visitors',
+              'period': 'All time (from 2005-01-01)',
               'countries': countries[:10],
               'updated': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
           }
+
           os.makedirs('assets/analytics', exist_ok=True)
-          with open('assets/analytics/countries.json', 'w', encoding='utf-8') as f:
-              json.dump(output, f, ensure_ascii=False, indent=2)
-          print('Updated total:', output['total'], 'country entries:', len(output['countries']))
+          with open('assets/analytics/countries.json', 'w', encoding='utf-8') as file:
+              json.dump(output, file, ensure_ascii=False, indent=2)
+
+          print('Country entries written:', len(output['countries']))
           PY
 
-      - name: Commit visitor summary
+      - name: Commit refreshed country summary
         run: |
           set -euo pipefail
-          if git diff --quiet -- assets/analytics/visitors.json; then
-            echo "No visitor-summary changes."
+          if git diff --quiet -- assets/analytics/countries.json; then
+            echo "No country-summary changes."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/analytics/visitors.json
-          git commit -m "Update portfolio visitor summary"
+          git add assets/analytics/countries.json
+          git commit -m "Update portfolio visitor country summary"
           git push
