@@ -1,4 +1,42 @@
 {
-  "countries": [],
-  "updated": null
+  "source": "GoatCounter",
+  "period": "All time (from 2005-01-01)",
+  "countries": [
+    {
+      "code": "IN",
+      "name": "India",
+      "count": 181
+    },
+    {
+      "code": "GB",
+      "name": "United Kingdom",
+      "count": 10
+    },
+    {
+      "code": "US",
+      "name": "United States",
+      "count": 9
+    },
+    {
+      "code": "AU",
+      "name": "Australia",
+      "count": 5
+    },
+    {
+      "code": "SA",
+      "name": "Saudi Arabia",
+      "count": 5
+    },
+    {
+      "code": "VN",
+      "name": "Vietnam",
+      "count": 4
+    },
+    {
+      "code": "CA",
+      "name": "Canada",
+      "count": 3
+    }
+  ],
+  "updated": "2026-11-26 14:21 UTC"
 }
