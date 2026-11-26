@@ -202,6 +202,22 @@
       }
     }
 
+    // A compact Earth/Moon system: the profile core is Earth, with a visible globe marker.
+    var moonTrack = document.createElement('span');
+    moonTrack.className = 'earth-moon-orbit';
+    moonTrack.setAttribute('aria-hidden', 'true');
+    navigation.insertBefore(moonTrack, menu);
+    var earthMarker = document.createElement('span');
+    earthMarker.className = 'center-earth-marker';
+    earthMarker.setAttribute('aria-hidden', 'true');
+    earthMarker.innerHTML = '<svg viewBox="0 0 40 40" role="presentation"><defs><radialGradient id="center-earth-ocean" cx="30%" cy="25%"><stop offset="0" stop-color="#a9f0ff"/><stop offset=".45" stop-color="#2589c8"/><stop offset="1" stop-color="#07365f"/></radialGradient><clipPath id="center-earth-clip"><circle cx="20" cy="20" r="16"/></clipPath></defs><circle cx="20" cy="20" r="16" fill="url(#center-earth-ocean)"/><g clip-path="url(#center-earth-clip)" fill="#55bd83"><path d="M8 5 15 7 17 12 13 15 15 20 10 23 7 18 4 14Z"/><path d="M22 4 29 7 31 12 27 16 29 21 24 24 20 19 22 14 18 10Z"/><path d="M16 25 22 24 25 29 22 35 16 32 13 28Z"/></g><circle cx="20" cy="20" r="16" fill="none" stroke="#b8edff" stroke-opacity=".8"/></svg>';
+    navigation.insertBefore(earthMarker, menu);
+    var moonMarker = document.createElement('span');
+    moonMarker.className = 'orbiting-moon';
+    moonMarker.setAttribute('aria-hidden', 'true');
+    moonMarker.innerHTML = '<svg viewBox="0 0 24 24" role="presentation"><defs><radialGradient id="moon-surface" cx="32%" cy="26%"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#cbd5df"/><stop offset="1" stop-color="#687789"/></radialGradient></defs><circle cx="12" cy="12" r="9" fill="url(#moon-surface)"/><g fill="#8795a5" opacity=".7"><circle cx="8" cy="8" r="1.8"/><circle cx="15.5" cy="10" r="1.3"/><circle cx="11" cy="15.5" r="2.1"/></g></svg>';
+    navigation.insertBefore(moonMarker, menu);
+
     // Three clean orbital elements: two circular paths and one elongated relay orbit.
     var orbitElements = [];
     function makeOrbit(className, count) {
@@ -324,6 +340,16 @@
         navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
         navigation.style.setProperty('--inner-orbit-ry', innerRy + 'px');
         var elapsedSeconds = (now - startedAt) / 1000;
+        var moonOrbitRadius = Math.max(profileRadius + 24, 150);
+        moonTrack.style.width = (moonOrbitRadius * 2) + 'px';
+        moonTrack.style.height = (moonOrbitRadius * 2) + 'px';
+        moonTrack.style.left = cx + 'px';
+        moonTrack.style.top = cy + 'px';
+        earthMarker.style.left = cx + 'px';
+        earthMarker.style.top = cy + 'px';
+        var moonAngle = elapsedSeconds * 0.34 - Math.PI / 2;
+        moonMarker.style.left = (cx + moonOrbitRadius * Math.cos(moonAngle)) + 'px';
+        moonMarker.style.top = (cy + moonOrbitRadius * Math.sin(moonAngle)) + 'px';
         var phase = elapsedSeconds * 0.07; // Navigation orbit slowed by 2x.
         function place(nodesToPlace, rx, ry, direction) {
           var step = Math.PI * 2 / nodesToPlace.length;
