@@ -25,26 +25,16 @@ jobs:
             exit 1
           fi
           mkdir -p assets/analytics
-          curl --fail --silent --show-error \
-            -H "Authorization: Bearer ${GOATCOUNTER_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            "https://scienaut.goatcounter.com/api/v0/stats/total?start=2005-01-01T00%3A00%3A00Z" \
-            -o /tmp/total.json
-          curl --fail --silent --show-error \
-            -H "Authorization: Bearer ${GOATCOUNTER_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            "https://scienaut.goatcounter.com/api/v0/stats/locations?start=2005-01-01T00%3A00%3A00Z&limit=100" \
+          curl --fail --silent --show-error \\
+            -H "Authorization: Bearer ${GOATCOUNTER_API_TOKEN}" \\
+            -H "Content-Type: application/json" \\
+            "https://scienaut.goatcounter.com/api/v0/stats/locations?start=2005-01-01T00%3A00%3A00Z&limit=100" \\
             -o /tmp/locations.json
           python3 - <<'PY'
           import json, os, re
           from datetime import datetime, timezone
-          with open('/tmp/total.json', encoding='utf-8') as f:
-              total_data = json.load(f)
           with open('/tmp/locations.json', encoding='utf-8') as f:
               location_data = json.load(f)
-          total = total_data.get('total')
-          if total is None:
-              raise SystemExit('GoatCounter total response did not include total')
           raw = location_data.get('stats', [])
           countries = []
           for row in raw:
@@ -57,12 +47,11 @@ jobs:
           output = {
               'source': 'GoatCounter',
               'metric': 'all-time pageview visitors',
-              'total': int(total),
               'countries': countries[:10],
               'updated': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
           }
           os.makedirs('assets/analytics', exist_ok=True)
-          with open('assets/analytics/visitors.json', 'w', encoding='utf-8') as f:
+          with open('assets/analytics/countries.json', 'w', encoding='utf-8') as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
           print('Updated total:', output['total'], 'country entries:', len(output['countries']))
           PY
