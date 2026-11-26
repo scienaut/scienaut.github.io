@@ -43,11 +43,54 @@ ids.forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter"){e.preve
 function setModuleTab(which){const selection=which==="selection";$("performance-workspace").hidden=selection;$("selection-workspace").hidden=!selection;$("tab-performance").classList.toggle("active",!selection);$("tab-selection").classList.toggle("active",selection);if(selection)window.scrollTo({top:0,behavior:"smooth"});}
 $("tab-performance").addEventListener("click",()=>setModuleTab("performance"));$("tab-selection").addEventListener("click",()=>setModuleTab("selection"));$("back-performance").addEventListener("click",()=>setModuleTab("performance"));
 $("fullscreen-selector").addEventListener("click",()=>{$("selection-workspace").classList.add("fullscreen");$("fullscreen-selector").textContent="Full-page view active";$("close-fullscreen-selector").hidden=false;});$("close-fullscreen-selector").addEventListener("click",()=>{$("selection-workspace").classList.remove("fullscreen");$("fullscreen-selector").textContent="Open full-page selector ⛶";});
-let bearingCandidates=[];
-function addCandidate(){const candidate={name:$("candidate-name").value.trim(),id:Number($("candidate-id").value),od:Number($("candidate-od").value),width:Number($("candidate-width").value),C:Number($("candidate-c").value)||0,C0:Number($("candidate-c0").value)||0,source:$("candidate-source").value.trim()};if(!candidate.name||!(candidate.id>0&&candidate.od>candidate.id&&candidate.width>0)){ $("selection-status").textContent="Enter a designation, positive ID and width, and OD greater than ID.";return}bearingCandidates.push(candidate);$("candidate-count").textContent=bearingCandidates.length+" CANDIDATES";$("selection-status").textContent="Candidate added. Click Find matching bearings to compare it against your target dimensions.";renderCandidates(false);}
-function renderCandidates(filter){const tbody=$("candidate-results"),tol=Number($("dimension-tolerance").value)||0,req={id:Number($("req-id").value),od:Number($("req-od").value),width:Number($("req-width").value)};const valid=Object.values(req).every(v=>v>0);let rows=bearingCandidates.map((c,i)=>{const match=valid&&Math.abs(c.id-req.id)<=tol&&Math.abs(c.od-req.od)<=tol&&Math.abs(c.width-req.width)<=tol;return {c,i,match};});if(filter&&valid)rows=rows.filter(x=>x.match);$("candidate-count").textContent=(filter?rows.length:bearingCandidates.length)+" / "+bearingCandidates.length+" MATCHES";if(!rows.length){tbody.innerHTML='<tr><td colspan="8" class="empty-row">'+(valid&&filter?"No exact dimensional matches in the entered candidates.":"No catalogue candidates entered.")+'</td></tr>';return}tbody.innerHTML=rows.map(({c,i,match})=>'<tr><td><b>'+escapeHtml(c.name)+'</b><br><small>'+escapeHtml(c.source||"Source not supplied")+'</small></td><td>'+fmt(c.id)+'</td><td>'+fmt(c.od)+'</td><td>'+fmt(c.width)+'</td><td>'+(c.C?fmt(c.C):"—")+'</td><td>'+(c.C0?fmt(c.C0):"—")+'</td><td><span class="'+(match?"match-pill":"no-match-pill")+'">'+(match?"DIMENSION MATCH":"OUTSIDE TARGET")+'</span></td><td><button class="select-candidate" data-candidate="'+i+'">Use in performance</button></td></tr>').join("");tbody.querySelectorAll("[data-candidate]").forEach(btn=>btn.addEventListener("click",()=>{const c=bearingCandidates[Number(btn.dataset.candidate)];$("bearing-name").value=c.name;$("c").value=c.C||"";$("c0").value=c.C0||"";$("source").value=c.source;$("input-status").textContent="Candidate dimensions selected. Verify load factors and catalogue ratings before calculating.";setModuleTab("performance");}));}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-$("add-bearing-candidate").addEventListener("click",addCandidate);$("find-bearing-matches").addEventListener("click",()=>{if(![Number($("req-id").value),Number($("req-od").value),Number($("req-width").value)].every(v=>v>0)){$("selection-status").textContent="Enter positive required ID, OD and width before filtering.";return}renderCandidates(true);$("selection-status").textContent="Filtering your entered catalogue data only. Dimensional match does not imply load, life, speed or fit suitability.";});
+let bearingCandidates=[],rangeFilterActive=false;
+function readDimensionRanges(){return {id:{min:Number($("req-id-min").value),max:Number($("req-id-max").value)},od:{min:Number($("req-od-min").value),max:Number($("req-od-max").value)},width:{min:Number($("req-width-min").value),max:Number($("req-width-max").value)}};}
+function validRanges(){try{const ranges=readDimensionRanges();BearingEngine.validateDimensionRanges(ranges);return {ok:true,ranges};}catch(error){return {ok:false,error};}}
+function addCandidate(){
+ const candidate={name:$("candidate-name").value.trim(),id:Number($("candidate-id").value),od:Number($("candidate-od").value),width:Number($("candidate-width").value),C:$("candidate-c").value.trim()===""?null:Number($("candidate-c").value),C0:$("candidate-c0").value.trim()===""?null:Number($("candidate-c0").value),source:$("candidate-source").value.trim()};
+ if(!candidate.name||!(candidate.id>0&&candidate.od>candidate.id&&candidate.width>0)){$("selection-status").textContent="Enter a designation, positive ID and width, and an OD greater than ID.";return;}
+ if((candidate.C!==null&&(!Number.isFinite(candidate.C)||candidate.C<=0))||(candidate.C0!==null&&(!Number.isFinite(candidate.C0)||candidate.C0<=0))){$("selection-status").textContent="Catalogue ratings must be positive, or left blank if unavailable.";return;}
+ if(bearingCandidates.some(item=>item.name.toLowerCase()===candidate.name.toLowerCase()&&item.id===candidate.id&&item.od===candidate.od&&item.width===candidate.width)){$("selection-status").textContent="This exact designation and dimensional record is already in the list.";return;}
+ bearingCandidates.push(candidate);
+ ["candidate-name","candidate-id","candidate-od","candidate-width","candidate-c","candidate-c0","candidate-source"].forEach(id=>$(id).value="");
+ rangeFilterActive=false;
+ $("selection-status").textContent="Verified candidate added. Set the six dimensional limits and select Find all bearings within ranges.";
+ renderCandidates(false);
+}
+function safeSourceLink(source){try{const url=new URL(source);return url.protocol==="https:"?url.href:null;}catch(_){return null;}}
+function renderCandidates(filtered){
+ const tbody=$("candidate-results"),state=validRanges();
+ let rows=bearingCandidates.map((candidate,index)=>({candidate,index,match:state.ok&&BearingEngine.matchesDimensions(candidate,state.ranges)}));
+ if(filtered)rows=rows.filter(row=>row.match);
+ rows.sort((a,b)=>(Number(b.match)-Number(a.match))||a.candidate.name.localeCompare(b.candidate.name));
+ $("candidate-count").textContent=filtered?rows.length+" MATCHES":bearingCandidates.length+" CANDIDATES";
+ if(!rows.length){
+  const message=bearingCandidates.length===0?"No catalogue candidates entered. This static page does not fetch manufacturer catalogues automatically.":filtered?"No entered candidates fall inside all three selected dimension ranges.":"No candidates to display.";
+  tbody.innerHTML='<tr><td colspan="8" class="empty-row">'+escapeHtml(message)+'</td></tr>';return;
+ }
+ tbody.innerHTML=rows.map(({candidate,index,match})=>{
+  const link=safeSourceLink(candidate.source),source=link?'<a href="'+escapeHtml(link)+'" target="_blank" rel="noopener noreferrer">Manufacturer catalogue ↗</a>':escapeHtml(candidate.source||"Source not supplied");
+  const status=state.ok?(match?'<span class="match-pill">WITHIN ALL RANGES</span>':'<span class="no-match-pill">OUTSIDE RANGE</span>'):'<span class="no-match-pill">SET VALID RANGES</span>';
+  return '<tr><td><b>'+escapeHtml(candidate.name)+'</b><br><small>'+source+'</small></td><td>'+fmt(candidate.id)+'</td><td>'+fmt(candidate.od)+'</td><td>'+fmt(candidate.width)+'</td><td>'+(candidate.C===null?"—":fmt(candidate.C))+'</td><td>'+(candidate.C0===null?"—":fmt(candidate.C0))+'</td><td>'+status+'</td><td><button class="select-candidate" data-candidate="'+index+'" '+(candidate.C===null?'disabled title="Add dynamic rating C before performance calculation"':'')+'>Use in performance</button></td></tr>';
+ }).join("");
+ tbody.querySelectorAll("[data-candidate]").forEach(button=>button.addEventListener("click",()=>{
+  const candidate=bearingCandidates[Number(button.dataset.candidate)];if(!candidate||candidate.C===null)return;
+  $("bearing-name").value=candidate.name;$("c").value=candidate.C;$("c0").value=candidate.C0===null?"":candidate.C0;$("source").value=candidate.source;
+  $("input-status").textContent="Candidate designation and ratings transferred. Verify bearing family, load factors, speed limits and the complete catalogue data before calculating.";
+  setModuleTab("performance");
+ }));
+}
+function escapeHtml(source){return String(source).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));}
+$("add-bearing-candidate").addEventListener("click",addCandidate);
+$("find-bearing-matches").addEventListener("click",()=>{
+ const state=validRanges();if(!state.ok){$("selection-status").textContent=state.error.message;return;}
+ rangeFilterActive=true;renderCandidates(true);
+ const count=bearingCandidates.filter(candidate=>BearingEngine.matchesDimensions(candidate,state.ranges)).length;
+ $("selection-status").textContent=count+" of "+bearingCandidates.length+" entered catalogue candidates fall within all six inclusive dimension limits. Only data entered in this browser session is searched; no manufacturer database is queried.";
+});
+["req-id-min","req-id-max","req-od-min","req-od-max","req-width-min","req-width-max"].forEach(id=>$(id).addEventListener("input",()=>{
+ if(rangeFilterActive){const state=validRanges();if(state.ok)renderCandidates(true);else $("selection-status").textContent=state.error.message;}
+}));
 function importShaftInputs(){const q=new URLSearchParams(location.search);if(q.get("fromShaft")!=="1")return;const fr=Number(q.get("Fr")),fa=Number(q.get("Fa")),speed=Number(q.get("speed")),bore=Number(q.get("bore"));if(!(fr>=0&&fa>=0&&speed>0&&bore>0))return;$("fr").value=fr;$("fa").value=fa;$("speed").value=speed;$("bearing-name").value="Shaft support "+(q.get("support")||"")+" · transferred load";$("source").value=q.get("source")||"Shaft Design calculator";$("req-id").value=bore*1000;$("tab-performance").click();$("input-status").textContent="Imported from Shaft Design: support "+(q.get("support")||"")+"; Fr="+fmt(fr)+" N, Fa="+fmt(fa)+" N; estimated bearing bore="+fmt(bore*1000)+" mm. Verify bearing load factors and catalogue data.";if($("req-id").value){$("tab-selection").click();$("selection-status").textContent="Shaft journal diameter imported as the required bearing bore. Enter target OD and width, then add catalogue candidates.";}}
 $("draw-bearing").addEventListener("click",drawBearingSection);["geo-id","geo-od","geo-width","geo-d2","geo-d1","geo-radius"].forEach(id=>$(id).addEventListener("input",drawBearingSection));
 syncMode();syncType();calculate();importShaftInputs();drawBearingSection();
