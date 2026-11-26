@@ -320,7 +320,26 @@
 
     function frame(now) {
       if (startedAt === null) startedAt = now;
-      var homeMode = !header.classList.contains('header-top') && window.innerWidth > 1050;
+      var isHome = !header.classList.contains('header-top');
+      var homeMode = isHome && window.innerWidth > 1050;
+      if (isHome) {
+        // Keep the Earth/Moon system centred on the profile at every viewport size.
+        var moonNavRect = navigation.getBoundingClientRect();
+        var moonProfileRect = profile.getBoundingClientRect();
+        var moonCx = moonProfileRect.left - moonNavRect.left + moonProfileRect.width / 2;
+        var moonCy = moonProfileRect.top - moonNavRect.top + moonProfileRect.height / 2;
+        var responsiveProfileRadius = moonProfileRect.width / 2;
+        var moonOrbitRadius = window.innerWidth > 1050
+          ? Math.max(responsiveProfileRadius + 24, 150)
+          : Math.max(34, Math.min(responsiveProfileRadius * 0.42, window.innerWidth * 0.18));
+        moonTrack.style.width = (moonOrbitRadius * 2) + 'px';
+        moonTrack.style.height = (moonOrbitRadius * 2) + 'px';
+        moonTrack.style.left = moonCx + 'px';
+        moonTrack.style.top = moonCy + 'px';
+        var moonAngle = ((now - startedAt) / 1000) * 0.34 - Math.PI / 2;
+        moonMarker.style.left = (moonCx + moonOrbitRadius * Math.cos(moonAngle)) + 'px';
+        moonMarker.style.top = (moonCy + moonOrbitRadius * Math.sin(moonAngle)) + 'px';
+      }
       if (homeMode) {
         var rect = navigation.getBoundingClientRect();
         var cx = rect.width / 2, cy = rect.height / 2;
@@ -340,14 +359,6 @@
         navigation.style.setProperty('--inner-orbit-rx', innerRx + 'px');
         navigation.style.setProperty('--inner-orbit-ry', innerRy + 'px');
         var elapsedSeconds = (now - startedAt) / 1000;
-        var moonOrbitRadius = Math.max(profileRadius + 24, 150);
-        moonTrack.style.width = (moonOrbitRadius * 2) + 'px';
-        moonTrack.style.height = (moonOrbitRadius * 2) + 'px';
-        moonTrack.style.left = cx + 'px';
-        moonTrack.style.top = cy + 'px';
-        var moonAngle = elapsedSeconds * 0.34 - Math.PI / 2;
-        moonMarker.style.left = (cx + moonOrbitRadius * Math.cos(moonAngle)) + 'px';
-        moonMarker.style.top = (cy + moonOrbitRadius * Math.sin(moonAngle)) + 'px';
         var phase = elapsedSeconds * 0.07; // Navigation orbit slowed by 2x.
         function place(nodesToPlace, rx, ry, direction) {
           var step = Math.PI * 2 / nodesToPlace.length;
