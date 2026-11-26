@@ -2089,36 +2089,45 @@ section .container {
 }
 
 
-/* Satellite relay ellipse: make its horizontal major axis span nearly the full viewport.
-   The subtle red/green centerlines indicate the major and minor axes. */
+/* Earth at the centre of the profile, with a separate Moon orbiting it. */
 @media (min-width: 1051px) {
-  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::before,
-  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::after {
-    content: "";
+  #header.header-tops:not(.header-top) .section-navigation .earth-moon-orbit {
     position: absolute;
-    z-index: 0;
+    z-index: 2;
     display: block;
+    border: 1px dashed rgba(154, 205, 235, .42);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
     pointer-events: none;
-    opacity: .48;
+    box-shadow: 0 0 12px rgba(95, 170, 220, .08);
   }
-  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::before {
-    left: 0;
-    top: 50%;
+  #header.header-tops:not(.header-top) .section-navigation .center-earth-marker {
+    position: absolute;
+    z-index: 5;
+    display: block;
+    width: 25px;
+    height: 25px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    filter: drop-shadow(0 0 7px rgba(66, 180, 230, .5));
+  }
+  #header.header-tops:not(.header-top) .section-navigation .center-earth-marker svg,
+  #header.header-tops:not(.header-top) .section-navigation .orbiting-moon svg {
+    display: block;
     width: 100%;
-    height: 1px;
-    transform: translateY(-50%);
-    background: #ff3030;
-  }
-  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::after {
-    left: 50%;
-    top: 0;
-    width: 1px;
     height: 100%;
-    transform: translateX(-50%);
-    background: #32e64b;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .orbiting-moon {
+    position: absolute;
+    z-index: 6;
+    display: block;
+    width: 18px;
+    height: 18px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    filter: drop-shadow(0 0 5px rgba(220, 230, 240, .6));
   }
 }
-
 /* Final cleanup: plain deep-space background, no spacetime mesh. */
 @media (min-width: 1051px) {
   #header.header-tops:not(.header-top) {
