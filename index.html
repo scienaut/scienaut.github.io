@@ -1529,34 +1529,60 @@
   <script src="assets/js/main.js?v=satellite-relay-orbit-20261121-v2"></script>
 
 
-  <!-- Display the site-wide total from GoatCounter's public counter JSON endpoint -->
+  <!-- Fixed bottom-right visitor badge: all-time total plus anonymised country flags. -->
+  <aside id="portfolio-visitor-badge" aria-label="Portfolio visitor statistics">
+    <div class="visitor-total">
+      <i class="bx bx-show" aria-hidden="true"></i>
+      <span>Visitors</span>
+      <strong id="visitor-total-value">Loading…</strong>
+    </div>
+    <div id="visitor-country-flags" class="visitor-country-flags" aria-label="Visitor countries" hidden></div>
+  </aside>
+  <style>
+    #portfolio-visitor-badge{position:fixed;right:16px;bottom:16px;z-index:99999;display:flex;align-items:center;gap:10px;padding:9px 12px;color:#a8b7c7;font:12px/1.2 inherit;background:rgba(4,15,26,.96);border:1px solid rgba(255,255,255,.22);border-radius:999px;box-shadow:0 4px 18px rgba(0,0,0,.35);backdrop-filter:blur(10px)}
+    #portfolio-visitor-badge .visitor-total{display:flex;align-items:center;gap:7px;white-space:nowrap}
+    #portfolio-visitor-badge .visitor-total i{color:#12d640;font-size:15px}
+    #portfolio-visitor-badge .visitor-total strong{color:#f4f7fb;font-weight:700;font-variant-numeric:tabular-nums}
+    #portfolio-visitor-badge .visitor-country-flags{display:flex;align-items:center;gap:4px;padding-left:9px;border-left:1px solid rgba(255,255,255,.2)}
+    #portfolio-visitor-badge .visitor-country-flags[hidden]{display:none}
+    #portfolio-visitor-badge .country-flag{width:19px;height:14px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
+    #portfolio-visitor-badge .country-more{font-size:10px;color:#a8b7c7}
+    @media(max-width:480px){#portfolio-visitor-badge{right:9px;bottom:9px;padding:8px 10px;gap:8px}#portfolio-visitor-badge .visitor-country-flags{gap:3px;padding-left:7px}#portfolio-visitor-badge .country-flag{width:16px;height:12px}}
+  </style>
   <script>
     (function () {
-      var output = document.getElementById('goatcounter-total');
-      if (!output) return;
-
-      fetch('https://scienaut.goatcounter.com/counter/TOTAL.json', {
-        method: 'GET',
-        mode: 'cors',
-        credentials: 'omit',
-        cache: 'no-store'
-      })
+      var total = document.getElementById('visitor-total-value');
+      var flags = document.getElementById('visitor-country-flags');
+      if (!total || !flags) return;
+      fetch('/assets/analytics/visitors.json?v=' + Date.now(), {cache:'no-store'})
         .then(function (response) {
-          if (!response.ok) throw new Error('Counter request failed: ' + response.status);
+          if (!response.ok) throw new Error('Visitor data unavailable');
           return response.json();
         })
         .then(function (data) {
-          if (data && typeof data.count !== 'undefined') {
-            output.textContent = data.count;
-            output.setAttribute('aria-label', data.count + ' total portfolio visits');
-          } else {
-            throw new Error('Counter response did not include a count');
+          if (!data || !Number.isFinite(Number(data.total))) throw new Error('Invalid visitor data');
+          total.textContent = Number(data.total).toLocaleString();
+          total.title = 'All-time visitors · Updated ' + (data.updated || 'recently');
+          var countries = Array.isArray(data.countries) ? data.countries.slice(0,5) : [];
+          countries.forEach(function (country) {
+            if (!/^[A-Z]{2}$/.test(country.code || '')) return;
+            var img = document.createElement('img');
+            img.className = 'country-flag';
+            img.alt = country.name || country.code;
+            img.title = (country.name || country.code) + ': ' + Number(country.count || 0).toLocaleString() + ' visitors';
+            img.loading = 'lazy';
+            img.src = 'https://flagcdn.com/24x18/' + country.code.toLowerCase() + '.png';
+            flags.appendChild(img);
+          });
+          if (countries.length) {
+            flags.hidden = false;
+            flags.setAttribute('aria-label', countries.map(function (x) { return x.name; }).join(', '));
           }
         })
         .catch(function (error) {
-          console.error('GoatCounter visitor count could not be loaded:', error);
-          output.textContent = 'Unavailable';
-          output.title = 'Visitor count is temporarily unavailable';
+          console.warn('Portfolio visitor summary could not be loaded:', error);
+          total.textContent = '—';
+          total.title = 'Visitor summary is temporarily unavailable';
         });
     })();
   </script>
