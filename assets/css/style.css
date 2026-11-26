@@ -2089,6 +2089,36 @@ section .container {
 }
 
 
+/* Satellite relay ellipse: make its horizontal major axis span nearly the full viewport.
+   The subtle red/green centerlines indicate the major and minor axes. */
+@media (min-width: 1051px) {
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::before,
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    display: block;
+    pointer-events: none;
+    opacity: .48;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::before {
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    transform: translateY(-50%);
+    background: #ff3030;
+  }
+  #header.header-tops:not(.header-top) .section-navigation .space-orbit-track.orbit-three::after {
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    transform: translateX(-50%);
+    background: #32e64b;
+  }
+}
+
 /* Final cleanup: plain deep-space background, no spacetime mesh. */
 @media (min-width: 1051px) {
   #header.header-tops:not(.header-top) {
