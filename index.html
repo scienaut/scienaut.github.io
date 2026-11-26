@@ -1537,9 +1537,9 @@
     #portfolio-visitor-badge .visitor-total strong{color:#f4f7fb;font-weight:700;font-variant-numeric:tabular-nums}
     #portfolio-visitor-badge .visitor-country-flags{display:flex;align-items:center;gap:4px;padding-left:9px;border-left:1px solid rgba(255,255,255,.2)}
     #portfolio-visitor-badge .visitor-country-flags[hidden]{display:none}
-    #portfolio-visitor-badge .country-flag{width:19px;height:14px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
+    #portfolio-visitor-badge .country-flag{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
     #portfolio-visitor-badge .country-more{font-size:10px;color:#a8b7c7}
-    @media(max-width:480px){#portfolio-visitor-badge{right:9px;bottom:9px;padding:8px 10px;gap:8px}#portfolio-visitor-badge .visitor-country-flags{gap:3px;padding-left:7px}#portfolio-visitor-badge .country-flag{width:16px;height:12px}}
+    @media(max-width:480px){#portfolio-visitor-badge{right:9px;bottom:9px;padding:7px 8px;gap:6px;max-width:calc(100vw - 18px)}#portfolio-visitor-badge .visitor-country-flags{gap:2px;padding-left:6px}#portfolio-visitor-badge .country-flag{width:15px;height:11px}}
   </style>
   <script>
     (function () {
@@ -1567,7 +1567,7 @@
           return response.json();
         })
         .then(function (data) {
-          var countries = Array.isArray(data.countries) ? data.countries.slice(0,5) : [];
+          var countries = Array.isArray(data.countries) ? data.countries.slice(0,7) : [];
           countries.forEach(function (country) {
             if (!/^[A-Z]{2}$/.test(country.code || '')) return;
             var img = document.createElement('img');

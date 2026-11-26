@@ -47,7 +47,7 @@ jobs:
           output = {
               'source': 'GoatCounter',
               'period': 'All time (from 2005-01-01)',
-              'countries': countries[:10],
+              'countries': countries[:7],
               'updated': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
           }
 
