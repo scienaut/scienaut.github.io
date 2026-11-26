@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071321">
   <meta name="description" content="Advanced rolling bearing load, rating life and static safety calculator with traceable engineering calculations.">
-  <title>Bearing Design &amp; Selection Calculator</title>
+  <title>Bearing Finder | Scienaut Engineering Tools</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,16 +20,32 @@
 </head>
 <body>
   <header class="topbar"><div class="topbar-inner">
-    <a class="brand" href="/engineering-tools/"><span class="brand-mark">SC</span><span>ENGINEERING TOOLS<small>MECHANICAL DESIGN WORKSPACE</small></span></a>
+    <a class="brand" href="/engineering-tools/"><span class="brand-mark">SC</span><span>Scienaut Engineering Tools<small>Mechanical Design Workspace</small></span></a>
     <a class="back-link" href="/engineering-tools/">← All calculators</a>
   </div></header>
   <main class="shell">
     <section class="page-heading">
-      <div><div class="eyebrow">MACHINE DESIGN / ROTATING EQUIPMENT</div><h1>Bearing Design <span>&amp; Selection</span></h1>
+      <div><div class="eyebrow">Machine Design / Rotating Equipment</div><h1>Bearing Finder <span>&amp; Engineering Analysis</span></h1>
       <p>Calculate equivalent bearing loads, ISO 281 basic rating life and ISO 76 static safety. Enter bearing-specific factors from a current manufacturer catalogue; every calculation is exposed for review.</p></div>
-      <div class="release-chip"><i></i> ENGINEERING CALCULATOR · V1.0</div>
+      <div class="release-chip"><i></i> Engineering Calculator · V1.1</div>
     </section>
-    <section class="notice"><strong>Engineering boundary:</strong> This release calculates rating life and static load safety from supplied catalogue data. It does not infer X/Y factors, ISO 281 aISO, lubrication suitability, internal clearance, fits, minimum load or speed limits. A result is only as reliable as the entered bearing data and load model.</section>
+    <section class="notice"><strong>Catalogue data policy:</strong> No paid APIs are used. This GitHub Pages release does not claim live access to every manufacturer database. It filters manually entered, verified catalogue candidates and provides official manufacturer references. Dimensional matches are not automatically validated for load, life, speed, fit or lubrication suitability.</section>
+
+    <section class="panel geometry-panel" aria-labelledby="geometry-title">
+      <div class="panel-title"><div><span class="eyebrow">LIVE DIMENSIONAL DRAWING</span><h2 id="geometry-title">Bearing sectional view</h2></div><span class="step-pill">PARAMETRIC 2D SVG</span></div>
+      <p class="geometry-intro">Axial section inspired by manufacturer bearing drawings. Edit the principal dimensions and available shoulder/chamfer dimensions to update the drawing. Internal geometry is schematic, not a manufacturing drawing.</p>
+      <div class="geometry-layout"><div class="geometry-controls"><div class="field-grid">
+        <div class="field"><label for="geo-id">Bore diameter, d (mm)</label><input id="geo-id" type="number" min="0.1" step="any" value="25"></div>
+        <div class="field"><label for="geo-od">Outside diameter, D (mm)</label><input id="geo-od" type="number" min="0.2" step="any" value="52"></div>
+        <div class="field"><label for="geo-width">Bearing width, B (mm)</label><input id="geo-width" type="number" min="0.1" step="any" value="15"></div>
+        <div class="field"><label for="geo-d2">Reference diameter, D₂ (mm)</label><input id="geo-d2" type="number" min="0" step="any" placeholder="Catalogue value"></div>
+        <div class="field"><label for="geo-d1">Reference diameter, d₁ (mm)</label><input id="geo-d1" type="number" min="0" step="any" placeholder="Catalogue value"></div>
+        <div class="field"><label for="geo-radius">Corner radius, r₁ / r₂ (mm)</label><input id="geo-radius" type="number" min="0" step="any" placeholder="Catalogue value"></div>
+      </div><button type="button" id="draw-bearing" class="secondary">Update drawing</button><p class="helper">D₂, d₁ and r₁/r₂ are optional. Blank values use schematic proportions only, not manufacturer specifications.</p><div id="geo-summary" class="geometry-summary" aria-live="polite"></div><div class="drawing-legend"><span><i class="legend-ring"></i> Bearing rings</span><span><i class="legend-ball"></i> Rolling elements</span><span><i class="legend-axis"></i> Centre lines</span></div></div>
+      <div class="drawing-wrap"><svg id="bearing-section-svg" viewBox="0 0 620 450" role="img" aria-label="Axial section with dimensions D, D2, d, d1, B, r1 and r2"></svg></div></div>
+      <p class="geometry-footnote">Shoulder diameters and chamfer radii vary by bearing family and manufacturer. The raceway and rolling-element geometry is illustrative.</p>
+    </section>
+
     <nav class="module-tabs" aria-label="Bearing module views"><button type="button" class="module-tab active" id="tab-performance">Bearing Performance</button><button type="button" class="module-tab" id="tab-selection">Bearing Selection</button></nav>
     <section id="selection-workspace" class="selection-workspace" hidden>
       <div class="selection-heading"><div><span class="eyebrow">DIMENSIONAL CATALOGUE FILTER</span><h2>Bearing Selection <span>by Dimensions</span></h2><p>Enter the required bearing bore (ID), outside diameter (OD) and width. Add verified manufacturer catalogue candidates below; the tool filters only the data you provide.</p></div><button type="button" class="primary" id="fullscreen-selector">Open full-page selector ⛶</button></div>
@@ -128,7 +144,18 @@
           </div>
           <div id="reference-check" class="reference-check">Run a published example to see the numerical verification status.</div>
         </section>
-        <footer class="page-footer">Scienaut Engineering Tools · Bearing calculations are engineering aids, not a substitute for full application analysis or manufacturer approval.</footer>
+
+        <section class="panel references-panel"><div class="panel-title"><div><span class="eyebrow">ACADEMIC &amp; INDUSTRIAL REFERENCES</span><h2>Engineering equations and guidance</h2></div></div><div class="reference-list">
+          <article><b>ISO 281:2007 – Dynamic load ratings and rating life</b><p>Defines basic rating life at 90% reliability and modified rating-life methods that account for reliability, lubrication, contamination and fatigue load.</p><a href="https://committee.iso.org/standard/38102.html?browse=ics" target="_blank" rel="noopener">ISO catalogue entry ↗</a></article>
+          <article><b>ISO 76:2006 – Static load ratings</b><p>Reference standard for basic static load ratings and static equivalent loads. Confirm the applicable edition and bearing-family provisions.</p><a href="https://www.iso.org/search.html?q=ISO%2076" target="_blank" rel="noopener">ISO search ↗</a></article>
+          <article><b>NSK – Dynamic load ratings and fatigue life</b><p>Explains the basic life equations for ball and roller bearings and the relationship between dynamic rating, equivalent load and speed.</p><a href="https://www.nsk.com/tools-resources/abc-bearings/dynamic-load-ratings-and-fatigue-life/" target="_blank" rel="noopener">NSK technical guide ↗</a></article>
+          <article><b>SKF – Rolling bearing catalogue</b><p>Use exact designation-specific manufacturer drawings for principal dimensions, shoulder diameters, corner radii, seals and published ratings.</p><a href="https://www.skf.com/group/products/rolling-bearings" target="_blank" rel="noopener">SKF rolling bearings ↗</a></article>
+          <article><b>Shigley’s Mechanical Engineering Design – Rolling-contact bearings</b><p>Academic reference for bearing selection, combined loading, reliability, fatigue life and design application. Verify edition and chapter numbering against your copy.</p></article>
+        </div></section>
+        <section class="panel review-panel"><div class="panel-title"><div><span class="eyebrow">DESIGN REVIEW &amp; APPROVAL</span><h2>Before bearing procurement</h2></div></div>
+          <p>Review all calculations in accordance with your organisation’s engineering policies and design validation process. Verify bearing dimensions, shaft and housing fits, radial and axial loads, shock loading, required life, static safety, speed limits, lubrication, operating temperature, sealing, alignment and installation requirements.</p>
+          <p>The displayed results are preliminary engineering assessments. They do not constitute final design approval or guarantee component performance. Verify manufacturer ratings and catalogue revisions, obtain the required engineering and procurement approvals, and confirm that the selected bearing is suitable for the complete application before proceeding with ordering or installation.</p></section>
+        <footer class="page-footer">Scienaut Engineering Tools · Bearing Finder · Preliminary engineering assessment. Review and approve through your organisation’s design process before procurement.</footer>
       </section>
     </div>
   </main>
