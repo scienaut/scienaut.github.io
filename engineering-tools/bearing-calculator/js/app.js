@@ -4,6 +4,22 @@ const $=id=>document.getElementById(id),fmt=v=>BearingEngine.fmt(v);
 const ids=["bearing-name","bearing-family","bearing-type","load-method","life-exponent","fr","fa","x","y","e","y1","y2","c","c0","speed","target-life","x0","y0","a1","source"];
 function value(id){return $(id).value;}
 function inputs(){const type=value("bearing-type");return {name:value("bearing-name"),family:value("bearing-family"),type,method:value("load-method"),Fr:Number(value("fr")),Fa:Number(value("fa")),X:Number(value("x")),Y:Number(value("y")),e:Number(value("e")),Y1:Number(value("y1")),Y2:Number(value("y2")),C:Number(value("c")),C0:Number(value("c0")),n:Number(value("speed")),targetLife:Number(value("target-life")),X0:Number(value("x0")),Y0:Number(value("y0")),a1:Number(value("a1")),p:type==="ball"?3:type==="roller"?10/3:Number(value("life-exponent")),source:value("source"),aISO:false};}
+function drawBearingSection(){
+ const svg=$("bearing-section-svg"); if(!svg)return;
+ const d=Math.max(1,Number($("geo-id").value)||25),D=Math.max(d+0.1,Number($("geo-od").value)||52),B=Math.max(.1,Number($("geo-width").value)||15);
+ const D2=Math.max(d,Math.min(D,Number($("geo-d2").value)||D*.78)),d1=Math.max(d,Math.min(D2,Number($("geo-d1").value)||d*1.45)),r=Math.max(0,Number($("geo-radius").value)||.6);
+ const cx=310,cy=225,scale=Math.min(300/D,350/B),ro=D*scale/2,ri=d*scale/2,half=B*scale/2,so=D2*scale/2,si=d1*scale/2,x0=cx-half,x1=cx+half,yt=cy-ro,yb=cy+ro;
+ const br=Math.max(5,Math.min((D-d)*scale*.105,13)),by1=cy-(ro+ri)/2,by2=cy+(ro+ri)/2;
+ const dim=(a,b,c,d,label,tx,ty)=>`<g class="dim"><path d="M${a} ${b} L${c} ${d}"/><path d="M${a-5} ${b-5} l10 10 M${c-5} ${d-5} l10 10"/><text x="${tx}" y="${ty}">${label}</text></g>`;
+ svg.innerHTML=`<title>Parametric deep groove ball bearing axial section</title><g class="centerline"><path d="M50 ${cy} H570 M${cx} 28 V410"/></g>
+ <path d="M${x0} ${yt+r*scale} Q${x0} ${yt} ${x0+r*scale} ${yt} H${x1-r*scale} Q${x1} ${yt} ${x1} ${yt+r*scale} V${cy-so} H${x1-B*scale*.17} V${cy-si} H${x0+B*scale*.17} V${cy-so} H${x0} Z" fill="#71869e" fill-opacity=".72" stroke="#d5dfeb" stroke-width="1.8"/>
+ <path d="M${x0} ${yb-r*scale} Q${x0} ${yb} ${x0+r*scale} ${yb} H${x1-r*scale} Q${x1} ${yb} ${x1} ${yb-r*scale} V${cy+so} H${x1-B*scale*.17} V${cy+si} H${x0+B*scale*.17} V${cy+so} H${x0} Z" fill="#71869e" fill-opacity=".72" stroke="#d5dfeb" stroke-width="1.8"/>
+ <g fill="#e4edf6" stroke="#ffffff" stroke-width="1.8"><circle cx="${cx}" cy="${by1}" r="${br}"/><circle cx="${cx}" cy="${by2}" r="${br}"/></g>
+ <g class="dimensions">${dim(90,yt,90,yb,"D",67,cy+4)}${dim(145,cy-so,145,cy+so,"D₂",123,cy+4)}${dim(530,cy-ri,530,cy+ri,"d",548,cy+4)}${dim(485,cy-si,485,cy+si,"d₁",500,cy+4)}${dim(x0,45,x1,45,"B",cx,32)}</g>
+ <g class="radius-labels"><path d="M${x1-4} ${yt+3} L${x1+28} ${yt-18}"/><text x="${x1+32}" y="${yt-20}">r₁</text><path d="M${x0+4} ${yt+3} L${x0-28} ${yt-18}"/><text x="${x0-45}" y="${yt-20}">r₂</text></g>
+ <text class="drawing-note" x="310" y="425" text-anchor="middle">Schematic sectional geometry · verify against manufacturer drawing</text>`;
+ $("geo-summary").textContent=`d ${d} mm · D ${D} mm · B ${B} mm · D₂ ${D2} mm · d₁ ${d1} mm · r ${r} mm`;
+}
 function syncMode(){const m=value("load-method");$("xy-fields").hidden=m!=="xy";$("spherical-fields").hidden=m!=="spherical";$("load-method-help").textContent=m==="spherical"?"For a spherical roller bearing: if Fa/Fr ≤ e, P = Fr + Y₁Fa; otherwise P = 0.67Fr + Y₂Fa. Enter catalogue values.":m==="axial"?"Axial-only mode sets P = Fa and P₀ = Fa. Radial load must be zero.":"X, Y, X₀ and Y₀ are catalogue values for the exact bearing and load case. Do not assume factors when axial load is present.";}
 function syncType(){$("custom-p-wrap").hidden=value("bearing-type")!=="custom";}
 function render(result){
@@ -33,5 +49,6 @@ function renderCandidates(filter){const tbody=$("candidate-results"),tol=Number(
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 $("add-bearing-candidate").addEventListener("click",addCandidate);$("find-bearing-matches").addEventListener("click",()=>{if(![Number($("req-id").value),Number($("req-od").value),Number($("req-width").value)].every(v=>v>0)){$("selection-status").textContent="Enter positive required ID, OD and width before filtering.";return}renderCandidates(true);$("selection-status").textContent="Filtering your entered catalogue data only. Dimensional match does not imply load, life, speed or fit suitability.";});
 function importShaftInputs(){const q=new URLSearchParams(location.search);if(q.get("fromShaft")!=="1")return;const fr=Number(q.get("Fr")),fa=Number(q.get("Fa")),speed=Number(q.get("speed")),bore=Number(q.get("bore"));if(!(fr>=0&&fa>=0&&speed>0&&bore>0))return;$("fr").value=fr;$("fa").value=fa;$("speed").value=speed;$("bearing-name").value="Shaft support "+(q.get("support")||"")+" · transferred load";$("source").value=q.get("source")||"Shaft Design calculator";$("req-id").value=bore*1000;$("tab-performance").click();$("input-status").textContent="Imported from Shaft Design: support "+(q.get("support")||"")+"; Fr="+fmt(fr)+" N, Fa="+fmt(fa)+" N; estimated bearing bore="+fmt(bore*1000)+" mm. Verify bearing load factors and catalogue data.";if($("req-id").value){$("tab-selection").click();$("selection-status").textContent="Shaft journal diameter imported as the required bearing bore. Enter target OD and width, then add catalogue candidates.";}}
-syncMode();syncType();calculate();importShaftInputs();
+$("draw-bearing").addEventListener("click",drawBearingSection);["geo-id","geo-od","geo-width","geo-d2","geo-d1","geo-radius"].forEach(id=>$(id).addEventListener("input",drawBearingSection));
+syncMode();syncType();calculate();importShaftInputs();drawBearingSection();
 })();
