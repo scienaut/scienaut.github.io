@@ -44,6 +44,8 @@ jobs:
 
           countries = []
           for row in location_data['stats']:
+              if not isinstance(row, dict):
+                  continue
               code = str(row.get('id', '')).upper()
               name = str(row.get('name', '')).strip()
               count = row.get('count', 0)
