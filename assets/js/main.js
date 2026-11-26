@@ -315,7 +315,7 @@
         var innerRx = Math.max(profileRadius + maxDiameter / 2 + 24, outerRx * 0.55);
         var innerRy = Math.max(profileRadius + maxDiameter / 2 + 24, outerRy * 0.55);
         // Match the larger dashed navigation ellipse while keeping all three relays evenly spaced.
-        var satelliteRx = Math.max(180, rect.width / 2 - 28);
+        var satelliteRx = Math.max(180, window.innerWidth / 2 - 12); // Extend the outer ellipse almost edge-to-edge across the viewport.
         var satelliteRy = Math.max(140, rect.height / 2 - 26);
         navigation.style.setProperty('--satellite-orbit-rx', satelliteRx + 'px');
         navigation.style.setProperty('--satellite-orbit-ry', satelliteRy + 'px');
