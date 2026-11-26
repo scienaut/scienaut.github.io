@@ -1537,9 +1537,11 @@
     #portfolio-visitor-badge .visitor-total strong{color:#f4f7fb;font-weight:700;font-variant-numeric:tabular-nums}
     #portfolio-visitor-badge .visitor-country-flags{display:flex;align-items:center;gap:4px;padding-left:9px;border-left:1px solid rgba(255,255,255,.2)}
     #portfolio-visitor-badge .visitor-country-flags[hidden]{display:none}
-    #portfolio-visitor-badge .country-flag{width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
-    #portfolio-visitor-badge .country-more{font-size:10px;color:#a8b7c7}
-    @media(max-width:480px){#portfolio-visitor-badge{right:9px;bottom:9px;padding:7px 8px;gap:6px;max-width:calc(100vw - 18px)}#portfolio-visitor-badge .visitor-country-flags{gap:2px;padding-left:6px}#portfolio-visitor-badge .country-flag{width:15px;height:11px}}
+    #portfolio-visitor-badge .country-flag-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;outline:none}
+    #portfolio-visitor-badge .country-flag{display:block;width:18px;height:13px;object-fit:cover;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.16)}
+    #portfolio-visitor-badge .country-flag-wrap:after{content:attr(data-tooltip);position:absolute;right:0;bottom:calc(100% + 9px);z-index:100000;display:block;width:max-content;max-width:220px;padding:7px 9px;color:#f4f7fb;font-size:11px;font-weight:600;line-height:1.35;white-space:nowrap;background:#102334;border:1px solid rgba(255,255,255,.2);border-radius:7px;box-shadow:0 4px 16px rgba(0,0,0,.4);opacity:0;visibility:hidden;transform:translateY(3px);pointer-events:none;transition:opacity .14s ease,transform .14s ease,visibility .14s ease}
+    #portfolio-visitor-badge .country-flag-wrap:hover:after,#portfolio-visitor-badge .country-flag-wrap:focus:after{opacity:1;visibility:visible;transform:translateY(0)}
+    @media(max-width:480px){#portfolio-visitor-badge{right:9px;bottom:9px;padding:7px 8px;gap:6px;max-width:calc(100vw - 18px)}#portfolio-visitor-badge .visitor-country-flags{gap:2px;padding-left:6px}#portfolio-visitor-badge .country-flag{width:15px;height:11px}#portfolio-visitor-badge .country-flag-wrap:after{font-size:10px;max-width:180px}}
   </style>
   <script>
     (function () {
@@ -1567,20 +1569,28 @@
           return response.json();
         })
         .then(function (data) {
-          var countries = Array.isArray(data.countries) ? data.countries.slice(0,7) : [];
+          var countries = Array.isArray(data.countries) ? data.countries.slice(0,10) : [];
           countries.forEach(function (country) {
             if (!/^[A-Z]{2}$/.test(country.code || '')) return;
+            var name = country.name || country.code;
+            var count = Number(country.count || 0);
+            var wrap = document.createElement('span');
+            wrap.className = 'country-flag-wrap';
+            wrap.tabIndex = 0;
+            wrap.setAttribute('role', 'img');
+            wrap.setAttribute('aria-label', name + ': ' + count.toLocaleString() + ' visitors');
+            wrap.setAttribute('data-tooltip', name + ' · ' + count.toLocaleString() + ' visitors');
             var img = document.createElement('img');
             img.className = 'country-flag';
-            img.alt = country.name || country.code;
-            img.title = (country.name || country.code) + ': ' + Number(country.count || 0).toLocaleString() + ' visitors';
+            img.alt = '';
             img.loading = 'lazy';
             img.src = 'https://flagcdn.com/24x18/' + country.code.toLowerCase() + '.png';
-            flags.appendChild(img);
+            wrap.appendChild(img);
+            flags.appendChild(wrap);
           });
           if (flags.children.length) {
             flags.hidden = false;
-            flags.setAttribute('aria-label', countries.map(function (x) { return x.name; }).join(', '));
+            flags.setAttribute('aria-label', 'Top 10 visitor countries: ' + countries.map(function (x) { return x.name; }).join(', '));
           }
         })
         .catch(function (error) {
