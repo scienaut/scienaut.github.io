@@ -68,9 +68,6 @@
       if(!Number.isFinite(min)||!Number.isFinite(max)||min<=0||max<=0)throw new Error("Enter positive minimum and maximum values for ID, OD and width.");
       if(min>max)throw new Error("Minimum "+key.toUpperCase()+" cannot exceed maximum "+key.toUpperCase()+".");
     }
-    if(Number(ranges.od.min)<=Number(ranges.id.max)) {
-      // Overlapping ID/OD intervals are permitted for broad searches; each catalogue row is checked individually.
-    }
     return true;
   }
   function matchesDimensions(candidate,ranges){
