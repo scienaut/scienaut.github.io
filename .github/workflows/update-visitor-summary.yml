@@ -73,7 +73,7 @@ jobs:
           output = {
               'source': 'GoatCounter',
               'period': 'All time (from 2005-01-01)',
-              'countries': countries[:7],
+              'countries': countries[:10],
               'updated': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')
           }
 
@@ -81,7 +81,8 @@ jobs:
           with open('assets/analytics/countries.json', 'w', encoding='utf-8') as file:
               json.dump(output, file, ensure_ascii=False, indent=2)
 
-          print('Country entries written:', len(output['countries']))
+          print('All-time country entries available:', len(countries))
+print('Top 10 country entries written:', len(output['countries']))
           print('Top country codes:', ', '.join(item['code'] for item in output['countries']))
           PY
 
