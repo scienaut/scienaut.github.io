@@ -60,6 +60,27 @@
     if(!i.aISO)warnings.push({kind:"warn",text:"Full ISO 281 modified life Lnm is not calculated. Lubrication, contamination, viscosity ratio and aISO remain outside this release."});
     return {P,P0,C,C0,n,p,a1,L10,L10h,Lna,s0,Creq,target,steps,warnings,loadRatio:ratio,lifePass:target>0?L10h>=target:null};
   }
+  function validateDimensionRanges(ranges){
+    const dimensions=["id","od","width"];
+    for(const key of dimensions){
+      const range=ranges&&ranges[key];
+      const min=Number(range&&range.min),max=Number(range&&range.max);
+      if(!Number.isFinite(min)||!Number.isFinite(max)||min<=0||max<=0)throw new Error("Enter positive minimum and maximum values for ID, OD and width.");
+      if(min>max)throw new Error("Minimum "+key.toUpperCase()+" cannot exceed maximum "+key.toUpperCase()+".");
+    }
+    if(Number(ranges.od.min)<=Number(ranges.id.max)) {
+      // Overlapping ID/OD intervals are permitted for broad searches; each catalogue row is checked individually.
+    }
+    return true;
+  }
+  function matchesDimensions(candidate,ranges){
+    validateDimensionRanges(ranges);
+    const dimensions=["id","od","width"];
+    return dimensions.every(key=>{
+      const actual=Number(candidate&&candidate[key]);
+      return Number.isFinite(actual)&&actual>0&&actual>=Number(ranges[key].min)&&actual<=Number(ranges[key].max);
+    });
+  }
   function fmt(v){return Number(v).toLocaleString("en-US",{maximumFractionDigits:6});}
-  return {calculate,fmt};
+  return {calculate,fmt,validateDimensionRanges,matchesDimensions};
 });
