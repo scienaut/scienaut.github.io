@@ -1,6 +1,10 @@
 name: Refresh portfolio visitor country flags
 
 on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/update-visitor-summary.yml'
   schedule:
     - cron: '17 2 * * *'
   workflow_dispatch:
@@ -35,8 +39,11 @@ jobs:
           with open('/tmp/locations.json', encoding='utf-8') as file:
               location_data = json.load(file)
 
+          if not isinstance(location_data, dict) or not isinstance(location_data.get('stats'), list):
+              raise SystemExit('Unexpected GoatCounter response: expected an object containing a stats array')
+
           countries = []
-          for row in location_data.get('stats', []):
+          for row in location_data['stats']:
               code = str(row.get('id', '')).upper()
               name = str(row.get('name', '')).strip()
               count = row.get('count', 0)
@@ -44,6 +51,9 @@ jobs:
                   countries.append({'code': code, 'name': name, 'count': int(count)})
 
           countries.sort(key=lambda item: item['count'], reverse=True)
+          if not countries:
+              sample_ids = [str(row.get('id', '')) for row in location_data['stats'][:10] if isinstance(row, dict)]
+              raise SystemExit('No ISO alpha-2 country entries found. Sample location IDs: ' + ', '.join(sample_ids))
           output = {
               'source': 'GoatCounter',
               'period': 'All time (from 2005-01-01)',
@@ -56,6 +66,7 @@ jobs:
               json.dump(output, file, ensure_ascii=False, indent=2)
 
           print('Country entries written:', len(output['countries']))
+          print('Top country codes:', ', '.join(item['code'] for item in output['countries']))
           PY
 
       - name: Commit refreshed country summary
