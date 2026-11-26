@@ -2101,13 +2101,15 @@ section .container {
     pointer-events: none;
     box-shadow: 0 0 12px rgba(95, 170, 220, .08);
   }
-  #header.header-tops:not(.header-top) .section-navigation .center-earth-marker {
+  #header.header-tops:not(.header-top) .home-profile-core .center-earth-marker {
     position: absolute;
-    z-index: 5;
+    z-index: 4;
+    top: 13px;
+    left: 50%;
     display: block;
     width: 25px;
     height: 25px;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     pointer-events: none;
     filter: drop-shadow(0 0 7px rgba(66, 180, 230, .5));
   }
