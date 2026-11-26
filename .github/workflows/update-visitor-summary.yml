@@ -27,7 +27,23 @@ jobs:
             exit 1
           fi
           mkdir -p assets/analytics
-          curl --fail --silent --show-error -H "Authorization: Bearer ${GOATCOUNTER_API_TOKEN}" -H "Content-Type: application/json" "https://scienaut.goatcounter.com/api/v0/stats/locations?start=2005-01-01T00%3A00%3A00Z&limit=100" -o /tmp/locations.json
+          API_BASE="https://scienaut.goatcounter.com/api/v0"
+          AUTH_HEADER="Authorization: Bearer ${GOATCOUNTER_API_TOKEN}"
+
+          # Verify that this host recognizes the token before requesting statistics.
+          ME_STATUS=$(curl --silent --show-error -H "$AUTH_HEADER" -H "Content-Type: application/json" -o /tmp/me.json -w "%{http_code}" "$API_BASE/me")
+          if [ "$ME_STATUS" -lt 200 ] || [ "$ME_STATUS" -ge 300 ]; then
+            echo "::error::GoatCounter /api/v0/me returned HTTP $ME_STATUS. Response:"
+            cat /tmp/me.json
+            exit 1
+          fi
+
+          STATS_STATUS=$(curl --silent --show-error -H "$AUTH_HEADER" -H "Content-Type: application/json" -o /tmp/locations.json -w "%{http_code}" "$API_BASE/stats/locations?start=2005-01-01T00%3A00%3A00Z&limit=100")
+          if [ "$STATS_STATUS" -lt 200 ] || [ "$STATS_STATUS" -ge 300 ]; then
+            echo "::error::GoatCounter /api/v0/stats/locations returned HTTP $STATS_STATUS. Response:"
+            cat /tmp/locations.json
+            exit 1
+          fi
           python3 - <<'PY'
           import json
           import os
