@@ -10,15 +10,15 @@ function drawBearingSection(){
  const D2=Math.max(d,Math.min(D,Number($("geo-d2").value)||D*.78)),d1=Math.max(d,Math.min(D2,Number($("geo-d1").value)||d*1.45)),r=Math.max(0,Number($("geo-radius").value)||.6);
  const cx=310,cy=225,scale=Math.min(300/D,350/B),ro=D*scale/2,ri=d*scale/2,half=B*scale/2,so=D2*scale/2,si=d1*scale/2,x0=cx-half,x1=cx+half,yt=cy-ro,yb=cy+ro;
  const br=Math.max(5,Math.min((D-d)*scale*.105,13)),by1=cy-(ro+ri)/2,by2=cy+(ro+ri)/2;
- const dim=(a,b,c,d,label,tx,ty)=>`<g class="dim"><path d="M${a} ${b} L${c} ${d}"/><path d="M${a-5} ${b-5} l10 10 M${c-5} ${d-5} l10 10"/><text x="${tx}" y="${ty}">${label}</text></g>`;
- svg.innerHTML=`<title>Parametric deep groove ball bearing axial section</title><g class="centerline"><path d="M50 ${cy} H570 M${cx} 28 V410"/></g>
- <path d="M${x0} ${yt+r*scale} Q${x0} ${yt} ${x0+r*scale} ${yt} H${x1-r*scale} Q${x1} ${yt} ${x1} ${yt+r*scale} V${cy-so} H${x1-B*scale*.17} V${cy-si} H${x0+B*scale*.17} V${cy-so} H${x0} Z" fill="#71869e" fill-opacity=".72" stroke="#d5dfeb" stroke-width="1.8"/>
- <path d="M${x0} ${yb-r*scale} Q${x0} ${yb} ${x0+r*scale} ${yb} H${x1-r*scale} Q${x1} ${yb} ${x1} ${yb-r*scale} V${cy+so} H${x1-B*scale*.17} V${cy+si} H${x0+B*scale*.17} V${cy+so} H${x0} Z" fill="#71869e" fill-opacity=".72" stroke="#d5dfeb" stroke-width="1.8"/>
- <g fill="#e4edf6" stroke="#ffffff" stroke-width="1.8"><circle cx="${cx}" cy="${by1}" r="${br}"/><circle cx="${cx}" cy="${by2}" r="${br}"/></g>
- <g class="dimensions">${dim(90,yt,90,yb,"D",67,cy+4)}${dim(145,cy-so,145,cy+so,"D₂",123,cy+4)}${dim(530,cy-ri,530,cy+ri,"d",548,cy+4)}${dim(485,cy-si,485,cy+si,"d₁",500,cy+4)}${dim(x0,45,x1,45,"B",cx,32)}</g>
- <g class="radius-labels"><path d="M${x1-4} ${yt+3} L${x1+28} ${yt-18}"/><text x="${x1+32}" y="${yt-20}">r₁</text><path d="M${x0+4} ${yt+3} L${x0-28} ${yt-18}"/><text x="${x0-45}" y="${yt-20}">r₂</text></g>
- <text class="drawing-note" x="310" y="425" text-anchor="middle">Schematic sectional geometry · verify against manufacturer drawing</text>`;
- $("geo-summary").textContent=`d ${d} mm · D ${D} mm · B ${B} mm · D₂ ${D2} mm · d₁ ${d1} mm · r ${r} mm`;
+ const dim=(a,b,c,d,label,tx,ty)=>"<g class=\"dim\"><path d=\"M"+a+" "+b+" L"+c+" "+d+"\"/><path d=\"M"+(a-5)+" "+(b-5)+" l10 10 M"+(c-5)+" "+(d-5)+" l10 10\"/><text x=\""+tx+"\" y=\""+ty+"\">"+label+"</text></g>";
+ svg.innerHTML="<title>Parametric deep groove ball bearing axial section</title><g class=\"centerline\"><path d=\"M50 "+cy+" H570 M"+cx+" 28 V410\"/></g>"+
+ "<path d=\"M"+x0+" "+(yt+r*scale)+" Q"+x0+" "+yt+" "+(x0+r*scale)+" "+yt+" H"+(x1-r*scale)+" Q"+x1+" "+yt+" "+x1+" "+(yt+r*scale)+" V"+(cy-so)+" H"+(x1-B*scale*.17)+" V"+(cy-si)+" H"+(x0+B*scale*.17)+" V"+(cy-so)+" H"+x0+" Z\" fill=\"#71869e\" fill-opacity=\".72\" stroke=\"#d5dfeb\" stroke-width=\"1.8\"/>"+
+ "<path d=\"M"+x0+" "+(yb-r*scale)+" Q"+x0+" "+yb+" "+(x0+r*scale)+" "+yb+" H"+(x1-r*scale)+" Q"+x1+" "+yb+" "+x1+" "+(yb-r*scale)+" V"+(cy+so)+" H"+(x1-B*scale*.17)+" V"+(cy+si)+" H"+(x0+B*scale*.17)+" V"+(cy+so)+" H"+x0+" Z\" fill=\"#71869e\" fill-opacity=\".72\" stroke=\"#d5dfeb\" stroke-width=\"1.8\"/>"+
+ "<g fill=\"#e4edf6\" stroke=\"#ffffff\" stroke-width=\"1.8\"><circle cx=\""+cx+"\" cy=\""+by1+"\" r=\""+br+"\"/><circle cx=\""+cx+"\" cy=\""+by2+"\" r=\""+br+"\"/></g>"+
+ "<g class=\"dimensions\">"+dim(90,yt,90,yb,"D",67,cy+4)+dim(145,cy-so,145,cy+so,"D₂",123,cy+4)+dim(530,cy-ri,530,cy+ri,"d",548,cy+4)+dim(485,cy-si,485,cy+si,"d₁",500,cy+4)+dim(x0,45,x1,45,"B",cx,32)+"</g>"+
+ "<g class=\"radius-labels\"><path d=\"M"+(x1-4)+" "+(yt+3)+" L"+(x1+28)+" "+(yt-18)+"\"/><text x=\""+(x1+32)+"\" y=\""+(yt-20)+"\">r₁</text><path d=\"M"+(x0+4)+" "+(yt+3)+" L"+(x0-28)+" "+(yt-18)+"\"/><text x=\""+(x0-45)+"\" y=\""+(yt-20)+"\">r₂</text></g>"+
+ "<text class=\"drawing-note\" x=\"310\" y=\"425\" text-anchor=\"middle\">Schematic sectional geometry · verify against manufacturer drawing</text>";
+ $("geo-summary").textContent="d "+d+" mm · D "+D+" mm · B "+B+" mm · D₂ "+D2+" mm · d₁ "+d1+" mm · r "+r+" mm";
 }
 function syncMode(){const m=value("load-method");$("xy-fields").hidden=m!=="xy";$("spherical-fields").hidden=m!=="spherical";$("load-method-help").textContent=m==="spherical"?"For a spherical roller bearing: if Fa/Fr ≤ e, P = Fr + Y₁Fa; otherwise P = 0.67Fr + Y₂Fa. Enter catalogue values.":m==="axial"?"Axial-only mode sets P = Fa and P₀ = Fa. Radial load must be zero.":"X, Y, X₀ and Y₀ are catalogue values for the exact bearing and load case. Do not assume factors when axial load is present.";}
 function syncType(){$("custom-p-wrap").hidden=value("bearing-type")!=="custom";}
